@@ -10,7 +10,7 @@ import json
 import os
 import requests  # type: ignore
 from urllib.parse import urlencode
-from typing import Optional, Union, Dict, Any, List
+from typing import Optional, Union, Dict, Any, List, Annotated
 from mcp.types import TextContent
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -1317,21 +1317,21 @@ def _safe_format_law_detail(data: dict, search_term: str, url: str) -> str:
     tags={"법령검색", "법률", "대통령령", "시행령", "시행규칙", "현행법", "법조문", "제정", "개정", "폐지", "정밀검색"}
 )
 def search_law(
-    query: Optional[str] = None,
-    search: int = 1,  # 법령명 검색이 더 정확함. 결과 없으면 본문검색으로 fallback
-    display: int = 20,
-    page: int = 1,
-    sort: Optional[str] = None,
-    date: Optional[str] = None,
-    ef_date_range: Optional[str] = None,
-    announce_date_range: Optional[str] = None,
-    announce_no_range: Optional[str] = None,
-    revision_type: Optional[str] = None,
-    announce_no: Optional[str] = None,
-    ministry_code: Optional[str] = None,
-    law_type_code: Optional[str] = None,
-    law_chapter: Optional[str] = None,
-    alphabetical: Optional[str] = None
+    query: Annotated[Optional[str], "검색어 (법령명)"] = None,
+    search: Annotated[int, "검색범위 (1=법령명, 2=본문)"] = 1,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+    sort: Annotated[Optional[str], "정렬 (lasc, ldes, dasc, ddes, nasc, ndes, efasc, efdes)"] = None,
+    date: Annotated[Optional[str], "공포일자 (YYYYMMDD)"] = None,
+    ef_date_range: Annotated[Optional[str], "시행일자 범위 (20090101~20090130)"] = None,
+    announce_date_range: Annotated[Optional[str], "공포일자 범위 (20090101~20090130)"] = None,
+    announce_no_range: Annotated[Optional[str], "공포번호 범위 (306~400)"] = None,
+    revision_type: Annotated[Optional[str], "제개정 종류 (300201, 300202, 300203 등)"] = None,
+    announce_no: Annotated[Optional[str], "공포번호"] = None,
+    ministry_code: Annotated[Optional[str], "소관부처 코드"] = None,
+    law_type_code: Annotated[Optional[str], "법령종류 코드"] = None,
+    law_chapter: Annotated[Optional[str], "법령분류 (01~44)"] = None,
+    alphabetical: Annotated[Optional[str], "사전식 검색 (ga, na, da, ra, ma 등)"] = None
 ) -> TextContent:
     """법령 목록 검색 (풍부한 검색 파라미터 지원)
     

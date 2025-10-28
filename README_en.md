@@ -219,11 +219,16 @@ LEGISLATION_SERVICE_URL=http://www.law.go.kr/DRF/lawService.do
 
 # MCP Server Configuration
 HOST=0.0.0.0
-PORT=8000
+PORT=8001
 TRANSPORT=stdio
 LOG_LEVEL=INFO
 MCP_SERVER_NAME=kr-legislation-mcp
 ```
+
+> [!NOTE]
+> `TRANSPORT` environment variable:
+> - `stdio`: Default value, uses stdio transport
+> - `http`: Runs in streamable-http mode (endpoint: `http://HOST:PORT/mcp`)
 
 > **📋 API Key Information:**
 > - The Korean Ministry of Legislation API is **free** to use
@@ -284,7 +289,7 @@ To use with Claude Desktop, you need to modify the configuration file:
 %APPDATA%\Claude\claude_desktop_config.json
 ```
 
-**Configuration Example:**
+**Basic Configuration (stdio transport):**
 ```json
 {
   "mcpServers": {
@@ -292,7 +297,7 @@ To use with Claude Desktop, you need to modify the configuration file:
       "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
-        "PORT": "8000",
+        "PORT": "8001",
         "TRANSPORT": "stdio",
         "LOG_LEVEL": "INFO",
         "MCP_SERVER_NAME": "KR Legislation MCP"
@@ -301,6 +306,31 @@ To use with Claude Desktop, you need to modify the configuration file:
   }
 }
 ```
+
+**Streamable HTTP Configuration (Optional):**
+You can also run with streamable-http using HTTP transport:
+
+```json
+{
+  "mcpServers": {
+    "mcp-kr-legislation": {
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "env": {
+        "LEGISLATION_API_KEY": "your_email@example.com",
+        "HOST": "0.0.0.0",
+        "PORT": "8001",
+        "TRANSPORT": "http",
+        "LOG_LEVEL": "INFO",
+        "MCP_SERVER_NAME": "KR Legislation MCP"
+      }
+    }
+  }
+}
+```
+
+> [!NOTE]
+> - `TRANSPORT=http` setting runs the server in streamable-http mode
+> - Endpoint: `http://HOST:PORT/mcp`
 
 > **⚠️ Important Notes:**
 > - Update the `command` path to your actual virtual environment path

@@ -57,7 +57,7 @@ class MCPConfig:
     port: int = 8001
     log_level: str = "INFO"
     server_name: str = "kr-legislation-mcp"
-    transport: Literal["stdio", "sse"] = "stdio"
+    transport: Literal["stdio", "http"] = "stdio"
 
     @classmethod
     def from_env(cls) -> "MCPConfig":
@@ -66,7 +66,7 @@ class MCPConfig:
             port=int(os.getenv("PORT", "8001")),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             server_name=os.getenv("MCP_SERVER_NAME", "kr-legislation-mcp"),
-            transport=cast(Literal["stdio", "sse"], os.getenv("TRANSPORT", "stdio"))
+            transport=cast(Literal["stdio", "http"], os.getenv("TRANSPORT", "stdio"))
         )
 
 # 설정 인스턴스 생성

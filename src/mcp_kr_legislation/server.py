@@ -20,15 +20,13 @@
 
 import logging
 import sys
-import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, Literal, Optional
+from typing import Any, Optional
 from typing import AsyncIterator
 
 from fastmcp import FastMCP
 from mcp.types import TextContent
-from mcp.server.session import ServerSession
 
 from .config import MCPConfig, LegislationConfig, mcp_config, legislation_config
 from .apis.client import LegislationClient
@@ -46,7 +44,7 @@ logging.basicConfig(
 )
 
 @dataclass
-class LegislationContext(ServerSession):
+class LegislationContext:
     """법제처 API 통합 컨텍스트"""
     client: Optional[LegislationClient] = None
     law_api: Any = None
@@ -64,13 +62,6 @@ class LegislationContext(ServerSession):
             self.law_api = law_api.LawAPI(self.client)
         if self.legislation_api is None:
             self.legislation_api = legislation_api.LegislationAPI(self.client)
-
-    async def __aenter__(self):
-        logger.info("🔁 LegislationContext entered (Claude requested tool execution)")
-        return self
-
-    async def __aexit__(self, *args):
-        logger.info("🔁 LegislationContext exited")
 
 # 전역 컨텍스트 생성 (fallback용)
 legislation_client = None
@@ -171,29 +162,13 @@ def main():
         logger.error("법제처 설정이 올바르게 로드되지 않았습니다. .env 파일을 확인하세요.")
         return
     
-    transport = mcp_config.transport
-    port = mcp_config.port
+    mcp_config = MCPConfig.from_env()
     
-    if transport == "sse":
-        asyncio.run(run_server(transport="sse", port=port))
+    if mcp_config.transport == "http":
+        logger.info(f"Starting server with HTTP transport on http://{mcp_config.host}:{mcp_config.port}")
+        mcp.run(transport="streamable-http", host=mcp_config.host, port=mcp_config.port)
     else:
         mcp.run()
-
-async def run_server(
-    transport: Literal["stdio", "sse"] = "stdio",
-    port: int = 8001,
-) -> None:
-    """MCP 법제처 서버 실행
-    
-    Args:
-        transport: 전송 방식. "stdio" 또는 "sse" 중 하나
-        port: SSE 전송용 포트
-    """
-    if transport == "stdio":
-        await mcp.run_stdio_async()
-    elif transport == "sse":
-        logger.info(f"Starting server with SSE transport on http://0.0.0.0:{port}")
-        await mcp.run_sse_async(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
     main() 

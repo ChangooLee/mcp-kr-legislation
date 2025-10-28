@@ -221,11 +221,16 @@ LEGISLATION_SERVICE_URL=http://www.law.go.kr/DRF/lawService.do
 
 # MCP 서버 설정
 HOST=0.0.0.0
-PORT=8000
+PORT=8001
 TRANSPORT=stdio
 LOG_LEVEL=INFO
 MCP_SERVER_NAME=kr-legislation-mcp
 ```
+
+> [!NOTE]
+> `TRANSPORT` 환경변수:
+> - `stdio`: 기본값, stdio transport 사용
+> - `http`: streamable-http 방식으로 실행 (엔드포인트: `http://HOST:PORT/mcp`)
 
 > ** API 키 안내:**
 > - 법제처 API는 **무료**로 제공됩니다
@@ -286,7 +291,7 @@ Claude Desktop에서 사용하려면 설정 파일을 수정해야 합니다:
 %APPDATA%\Claude\claude_desktop_config.json
 ```
 
-**설정 예시:**
+**기본 설정 (stdio transport):**
 ```json
 {
   "mcpServers": {
@@ -294,8 +299,29 @@ Claude Desktop에서 사용하려면 설정 파일을 수정해야 합니다:
       "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
-        "PORT": "8000",
-        "TRANSPORT": "stdio", 
+        "PORT": "8001",
+        "TRANSPORT": "stdio",
+        "LOG_LEVEL": "INFO",
+        "MCP_SERVER_NAME": "KR Legislation MCP"
+      }
+    }
+  }
+}
+```
+
+**Streamable HTTP 설정 (선택 사항):**
+HTTP transport를 사용하여 streamable-http로 실행할 수도 있습니다:
+
+```json
+{
+  "mcpServers": {
+    "mcp-kr-legislation": {
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "env": {
+        "LEGISLATION_API_KEY": "your_email@example.com",
+        "HOST": "0.0.0.0",
+        "PORT": "8001",
+        "TRANSPORT": "http",
         "LOG_LEVEL": "INFO",
         "MCP_SERVER_NAME": "KR Legislation MCP"
       }
@@ -308,6 +334,8 @@ Claude Desktop에서 사용하려면 설정 파일을 수정해야 합니다:
 > - `command` 경로는 실제 설치된 가상환경 경로로 수정하세요
 > - `LEGISLATION_API_KEY`는 본인의 이메일 주소를 입력하세요
 > - 법제처 API는 무료이며 별도 신청 없이 이메일만으로 사용 가능합니다
+> - `TRANSPORT=http` 설정시 서버는 streamable-http 방식으로 실행됩니다
+> - HTTP transport 사용시 엔드포인트: `http://HOST:PORT/mcp`
 
 ---
 
