@@ -11,7 +11,7 @@ import json
 import os
 import requests  # type: ignore
 from urllib.parse import urlencode
-from typing import Optional, Union
+from typing import Optional, Union, Annotated
 from mcp.types import TextContent
 
 from ..server import mcp

@@ -960,8 +960,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
         return f"검색 결과 처리 중 오류가 발생했습니다: {str(e)}"
 
 def _format_effective_law_articles(data: dict, law_id: str, article_no: Optional[str] = None, 
-                                 paragraph_no: Optional[str] = None, item_no: Optional[str] = None, 
-                                 subitem_no: Optional[str] = None) -> str:
+                                  paragraph_no: Optional[str] = None, item_no: Optional[str] = None, 
+                                  subitem_no: Optional[str] = None) -> str:
     """시행일법령 조항호목 전용 포맷팅 함수 - 실제 API 구조 기반"""
     try:
         result = f"**시행일 법령 조항호목 조회** (법령ID: {law_id})\n"
@@ -1567,14 +1567,14 @@ def search_law(
     tags={"영문법령", "영어번역", "English", "국제법무", "외국인", "번역", "Civil Act", "Commercial Act", "한국법"}
 )
 def search_english_law(
-    query: Optional[str] = None,
-    search: int = 1,
-    display: int = 20,
-    page: int = 1,
-    sort: Optional[str] = None,
-    law_type: Optional[str] = None,
-    promulgate_date: Optional[str] = None,
-    enforce_date: Optional[str] = None
+    query: Annotated[Optional[str], "검색어 (영문 법령명)"] = None,
+    search: Annotated[int, "검색범위 (1=법령명, 2=본문)"] = 1,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+    sort: Annotated[Optional[str], "정렬 (lasc, ldes, dasc, ddes)"] = None,
+    law_type: Annotated[Optional[str], "법령종류 (L=법률, P=대통령령, M=총리령부령)"] = None,
+    promulgate_date: Annotated[Optional[str], "공포일자 (YYYYMMDD)"] = None,
+    enforce_date: Annotated[Optional[str], "시행일자 (YYYYMMDD)"] = None
 ) -> TextContent:
     """영문법령 검색
     
@@ -1646,7 +1646,7 @@ def search_english_law(
 2단계: get_english_law_detail(mst="204485") → 영문법령 전체 내용 조회
 
 사용 예시: get_english_law_detail(mst="204485")""")
-def get_english_law_detail(mst: Union[str, int]) -> TextContent:
+def get_english_law_detail(mst: Annotated[Union[str, int], "법령일련번호(MST)"] = "") -> TextContent:
     """영문법령 상세내용 조회"""
     if not mst:
         return TextContent(type="text", text="법령일련번호(MST)를 입력해주세요.")
@@ -1781,22 +1781,22 @@ def _format_english_law_detail(data: dict, law_id: str) -> str:
     tags={"시행일법령", "시행일", "법령상태", "시행예정", "미시행", "폐지", "연혁", "효력발생", "컴플라이언스"}
 )
 def search_effective_law(
-    query: Optional[str] = None,
-    search: int = 1,
-    display: int = 20,
-    page: int = 1,
-    status_type: Optional[str] = None,
-    law_id: Optional[str] = None,
-    sort: Optional[str] = None,
-    effective_date_range: Optional[str] = None,
-    date: Optional[str] = None,
-    announce_date_range: Optional[str] = None,
-    announce_no_range: Optional[str] = None,
-    revision_type: Optional[str] = None,
-    announce_no: Optional[str] = None,
-    ministry_code: Optional[str] = None,
-    law_type_code: Optional[str] = None,
-    alphabetical: Optional[str] = None
+    query: Annotated[Optional[str], "검색어 (법령명)"] = None,
+    search: Annotated[int, "검색범위 (1=법령명, 2=본문)"] = 1,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+    status_type: Annotated[Optional[str], "시행상태 (100=시행, 200=미시행, 300=폐지)"] = None,
+    law_id: Annotated[Optional[str], "법령ID"] = None,
+    sort: Annotated[Optional[str], "정렬 옵션"] = None,
+    effective_date_range: Annotated[Optional[str], "시행일자 범위 (YYYYMMDD~YYYYMMDD)"] = None,
+    date: Annotated[Optional[str], "공포일자 (YYYYMMDD)"] = None,
+    announce_date_range: Annotated[Optional[str], "공포일자 범위 (YYYYMMDD~YYYYMMDD)"] = None,
+    announce_no_range: Annotated[Optional[str], "공포번호 범위"] = None,
+    revision_type: Annotated[Optional[str], "제개정 종류"] = None,
+    announce_no: Annotated[Optional[str], "공포번호"] = None,
+    ministry_code: Annotated[Optional[str], "소관부처 코드"] = None,
+    law_type_code: Annotated[Optional[str], "법령종류 코드"] = None,
+    alphabetical: Annotated[Optional[str], "사전식 검색"] = None
 ) -> TextContent:
     """시행일법령 검색 (풍부한 검색 파라미터 지원)
     
@@ -1900,7 +1900,10 @@ def search_effective_law(
 - search_law_nickname(start_date="20230101", end_date="20231231")  # 2023년 등록 약칭
 
 참고: 법령의 통칭이나 줄임말로 검색할 때 유용합니다. 예: '개인정보법' → '개인정보보호법'""")
-def search_law_nickname(start_date: Optional[str] = None, end_date: Optional[str] = None) -> TextContent:
+def search_law_nickname(
+    start_date: Annotated[Optional[str], "시작일자 (YYYYMMDD)"] = None,
+    end_date: Annotated[Optional[str], "종료일자 (YYYYMMDD)"] = None
+) -> TextContent:
     """법령 약칭 검색
     
     Args:
@@ -1950,7 +1953,14 @@ def search_law_nickname(start_date: Optional[str] = None, end_date: Optional[str
 - search_deleted_law_data(from_date="20240101", to_date="20241231")  # 기간별 삭제 데이터
 
 참고: 폐지되거나 삭제된 법령 정보를 추적할 때 사용합니다.""")
-def search_deleted_law_data(data_type: Optional[int] = None, delete_date: Optional[str] = None, from_date: Optional[str] = None, to_date: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+def search_deleted_law_data(
+    data_type: Annotated[Optional[int], "데이터 타입 (1=현행법령, 2=시행일법령, 3=법령연혁, 4=영문법령, 5=별표서식)"] = None,
+    delete_date: Annotated[Optional[str], "삭제일자 (YYYYMMDD)"] = None,
+    from_date: Annotated[Optional[str], "시작일자 (YYYYMMDD)"] = None,
+    to_date: Annotated[Optional[str], "종료일자 (YYYYMMDD)"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1
+) -> TextContent:
     """삭제된 법령 데이터 검색
     
     Args:
@@ -2002,7 +2012,11 @@ def search_deleted_law_data(data_type: Optional[int] = None, delete_date: Option
 - search_law_articles(mst="267581")  # 은행법 조문 목록
 - search_law_articles(mst="248613", display=50)  # 개인정보보호법 조문 50개
 - search_law_articles(mst="248613", page=2)  # 개인정보보호법 2페이지""")
-def search_law_articles(mst: Union[str, int], display: int = 20, page: int = 1) -> TextContent:
+def search_law_articles(
+    mst: Annotated[Union[str, int], "법령일련번호(MST) - search_law 결과에서 사용"],
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1
+) -> TextContent:
     """법령 조문 검색 (현행법령 본문 조항호목 조회)
     
     Args:

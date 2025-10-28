@@ -7,7 +7,7 @@
 """
 
 import logging
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Annotated
 from mcp import types
 from mcp.types import TextContent
 
