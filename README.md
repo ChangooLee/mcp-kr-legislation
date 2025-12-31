@@ -192,6 +192,24 @@ AI 어시스턴트에게 다음과 같은 요청을 할 수 있습니다:
 
 ### 2. 설치
 
+#### 방법 1: uv 사용 (권장)
+
+```bash
+# 저장소 복제
+git clone https://github.com/ChangooLee/mcp-kr-legislation.git
+cd mcp-kr-legislation
+
+# uv 설치 (없는 경우)
+# macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
+# Windows: powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# 가상 환경 생성 및 의존성 설치
+uv venv
+uv pip install -e .
+```
+
+#### 방법 2: pip 사용
+
 ```bash
 # 저장소 복제
 git clone https://github.com/ChangooLee/mcp-kr-legislation.git
@@ -296,13 +314,16 @@ Claude Desktop에서 사용하려면 설정 파일을 수정해야 합니다:
 {
   "mcpServers": {
     "mcp-kr-legislation": {
-      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/python",
+      "args": ["-m", "mcp_kr_legislation.server"],
+      "cwd": "/your/path/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
-        "PORT": "8001",
+        "HOST": "0.0.0.0",
+        "PORT": "8002",
         "TRANSPORT": "stdio",
         "LOG_LEVEL": "INFO",
-        "MCP_SERVER_NAME": "KR Legislation MCP"
+        "MCP_SERVER_NAME": "mcp-kr-legislation"
       }
     }
   }
@@ -316,14 +337,16 @@ HTTP transport를 사용하여 streamable-http로 실행할 수도 있습니다:
 {
   "mcpServers": {
     "mcp-kr-legislation": {
-      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/python",
+      "args": ["-m", "mcp_kr_legislation.server"],
+      "cwd": "/your/path/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
         "HOST": "0.0.0.0",
-        "PORT": "8001",
+        "PORT": "8002",
         "TRANSPORT": "http",
         "LOG_LEVEL": "INFO",
-        "MCP_SERVER_NAME": "KR Legislation MCP"
+        "MCP_SERVER_NAME": "mcp-kr-legislation"
       }
     }
   }

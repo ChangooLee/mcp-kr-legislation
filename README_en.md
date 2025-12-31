@@ -190,6 +190,24 @@ Korean Ministry of Legislation API is **free** and requires only an email addres
 
 ### 2. Installation
 
+#### Method 1: Using uv (Recommended)
+
+```bash
+# Clone repository
+git clone https://github.com/ChangooLee/mcp-kr-legislation.git
+cd mcp-kr-legislation
+
+# Install uv (if not installed)
+# macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
+# Windows: powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Create virtual environment and install dependencies
+uv venv
+uv pip install -e .
+```
+
+#### Method 2: Using pip
+
 ```bash
 # Clone repository
 git clone https://github.com/ChangooLee/mcp-kr-legislation.git
@@ -294,13 +312,16 @@ To use with Claude Desktop, you need to modify the configuration file:
 {
   "mcpServers": {
     "mcp-kr-legislation": {
-      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/python",
+      "args": ["-m", "mcp_kr_legislation.server"],
+      "cwd": "/your/path/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
-        "PORT": "8001",
+        "HOST": "0.0.0.0",
+        "PORT": "8002",
         "TRANSPORT": "stdio",
         "LOG_LEVEL": "INFO",
-        "MCP_SERVER_NAME": "KR Legislation MCP"
+        "MCP_SERVER_NAME": "mcp-kr-legislation"
       }
     }
   }
@@ -314,14 +335,16 @@ You can also run with streamable-http using HTTP transport:
 {
   "mcpServers": {
     "mcp-kr-legislation": {
-      "command": "/your/path/mcp-kr-legislation/.venv/bin/mcp-kr-legislation",
+      "command": "/your/path/mcp-kr-legislation/.venv/bin/python",
+      "args": ["-m", "mcp_kr_legislation.server"],
+      "cwd": "/your/path/mcp-kr-legislation",
       "env": {
         "LEGISLATION_API_KEY": "your_email@example.com",
         "HOST": "0.0.0.0",
-        "PORT": "8001",
+        "PORT": "8002",
         "TRANSPORT": "http",
         "LOG_LEVEL": "INFO",
-        "MCP_SERVER_NAME": "KR Legislation MCP"
+        "MCP_SERVER_NAME": "mcp-kr-legislation"
       }
     }
   }
