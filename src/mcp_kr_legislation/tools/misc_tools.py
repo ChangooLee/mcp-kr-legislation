@@ -51,8 +51,9 @@ def get_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
         oc = os.getenv("LEGISLATION_API_KEY", "lchangoo")
         url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&ID={ordinance_id}&type=JSON"
         
-        # API 요청 - 직접 requests 사용
-        response = requests.get(url, timeout=15)
+        # API 요청 - 직접 requests 사용 (Referer 헤더 필수)
+        headers = {"Referer": "https://open.law.go.kr/"}
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         
         data = response.json()

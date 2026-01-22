@@ -1,0 +1,453 @@
+{
+  "category": "법령정보 지식베이스",
+  "category_en": "knowledge_base",
+  "updated_at": "2026-01-22",
+  "api_count": 9,
+  "apis": [
+    {
+      "id": "1",
+      "title": "법령용어 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=lstrmAI",
+      "target": "lstrmAI",
+      "api_type": null,
+      "sub_category": "용어",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (법령용어 : lstrmAI)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령용어명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "homonymYn",
+          "type": "char",
+          "description": "동음이의어 존재여부 (Y/N)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lstrmAI&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lstrmAI&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "일상용어 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=dlytrm",
+      "target": "dlytrm",
+      "api_type": null,
+      "sub_category": "용어",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (일상용어 : dlytrm)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "일상용어명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=dlytrm&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=dlytrm&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "법령용어-일상용어 연계 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=lstrmRlt",
+      "target": "lstrmRlt",
+      "api_type": null,
+      "sub_category": "용어 간 관계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (법령용어-일상용어 연계 : lstrmRlt)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령용어명에서 검색을 원하는 질의 (query 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령용어명 일련번호"
+        },
+        {
+          "name": "trmRltCd",
+          "type": "int",
+          "description": "용어관계 동의어 : 140301 반의어 : 140302 상위어 : 140303 하위어 : 140304 연관어 : 140305"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=lstrmRlt&type=XML&query=청원"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=lstrmRlt&type=JSON&query=청원"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "일상용어-법령용어 연계 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=dlytrmRlt",
+      "target": "dlytrmRlt",
+      "api_type": null,
+      "sub_category": "용어 간 관계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (일상용어-법령용어 연계 : dlytrmRlt)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "일상용어명에서 검색을 원하는 질의 (query 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "일상용어명 일련번호"
+        },
+        {
+          "name": "trmRltCd",
+          "type": "int",
+          "description": "용어관계 동의어 : 140301 반의어 : 140302 상위어 : 140303 하위어 : 140304 연관어 : 140305"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=dlytrmRlt&type=XML&query=민원"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=dlytrmRlt&type=JSON&query=민원"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "법령용어-조문 연계 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=lstrmRltJo",
+      "target": "lstrmRltJo",
+      "api_type": null,
+      "sub_category": "조문 간 관계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (법령용어-조문 연계 : lstrmRltJo)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string(필수)",
+          "description": "법령용어명에서 검색을 원하는 질의"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=lstrmRltJo&type=XML&query=민원"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=lstrmRltJo&type=JSON&query=민원"
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "조문-법령용어 연계 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=joRltLstrm",
+      "target": "joRltLstrm",
+      "api_type": null,
+      "sub_category": "조문 간 관계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (조문-법령용어 연계 : joRltLstrm)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (query 또는 ID 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "ID",
+          "type": "int",
+          "description": "법령 ID"
+        },
+        {
+          "name": "JO",
+          "type": "int(필수)",
+          "description": "조번호 조번호 4자리 + 조가지번호 2자리 (000200 : 2조, 000202 : 제2조의2)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=joRltLstrm&type=XML&query=상법시행법&JO=000400"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=joRltLstrm&type=JSON&query=상법시행법&JO=000400"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "title": "관련법령 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=lsRlt",
+      "target": "lsRlt",
+      "api_type": null,
+      "sub_category": "법령 간 관계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (관련법령 : lsRlt)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "기준법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "ID",
+          "type": "int",
+          "description": "법령 ID"
+        },
+        {
+          "name": "lsRltCd",
+          "type": "int",
+          "description": "법령 간 관계 코드"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsRlt&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsRlt&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "title": "지능형 법령검색 시스템 검색 API 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=aiSearch",
+      "target": "aiSearch",
+      "api_type": null,
+      "sub_category": "지능형 법령검색 시스템",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (지능형 법령검색 시스템 검색 API : aiSearch)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 법령분류 (0:법령조문, 1:법령 별표·서식, 2:행정규칙 조문, 3:행정규칙 별표·서식)"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"뺑소니\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=aiSearch&type=XML&search=0&query=뺑소니"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=aiSearch&type=JSON&search=0&query=뺑소니"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "title": "지능형 법령검색 시스템 연관법령 API 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=aiRltLs",
+      "target": "aiRltLs",
+      "api_type": null,
+      "sub_category": "지능형 법령검색 시스템",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (지능형 법령검색 시스템 연관법령 API : aiRltLs)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 법령분류(0:법령조문, 1:행정규칙조문)"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"뺑소니\")"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=aiRltLs&type=XML&search=0&query=뺑소니"
+        },
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=aiRltLs&type=JSON&search=0&query=뺑소니"
+        }
+      ]
+    }
+  ]
+}

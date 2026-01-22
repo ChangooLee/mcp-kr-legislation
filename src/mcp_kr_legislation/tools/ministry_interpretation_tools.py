@@ -43,10 +43,10 @@ def search_moef_interpretation(query: Optional[str] = None, display: int = 20, p
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "moef", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moef", params)
-        result = _format_search_results(data, "moef", search_query)
+        data = _make_legislation_request("moefCgmExpc", params)
+        result = _format_search_results(data, "moefCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"기획재정부 법령해석 검색 중 오류: {str(e)}")
@@ -65,10 +65,10 @@ def search_molit_interpretation(query: Optional[str] = None, display: int = 20, 
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "molit", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("molit", params)
-        result = _format_search_results(data, "molit", search_query)
+        data = _make_legislation_request("molitCgmExpc", params)
+        result = _format_search_results(data, "molitCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국토교통부 법령해석 검색 중 오류: {str(e)}")
@@ -87,10 +87,10 @@ def search_moel_interpretation(query: Optional[str] = None, display: int = 20, p
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "moel", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moel", params)
-        result = _format_search_results(data, "moel", search_query)
+        data = _make_legislation_request("moelCgmExpc", params)
+        result = _format_search_results(data, "moelCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"고용노동부 법령해석 검색 중 오류: {str(e)}")
@@ -109,10 +109,10 @@ def search_mof_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "mof", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mof", params)
-        result = _format_search_results(data, "mof", search_query)
+        data = _make_legislation_request("mofCgmExpc", params)
+        result = _format_search_results(data, "mofCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"해양수산부 법령해석 검색 중 오류: {str(e)}")
@@ -124,17 +124,17 @@ def search_mof_interpretation(query: Optional[str] = None, display: int = 20, pa
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_mohw_interpretation("의료법"), search_mohw_interpretation("복지", display=50)""")
+사용 예시: search_mohw_interpretation("복지"), search_mohw_interpretation("의료", display=50)""")
 def search_mohw_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """보건복지부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "mohw", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mohw", params)
-        result = _format_search_results(data, "mohw", search_query)
+        data = _make_legislation_request("mohwCgmExpc", params)
+        result = _format_search_results(data, "mohwCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"보건복지부 법령해석 검색 중 오류: {str(e)}")
@@ -146,17 +146,17 @@ def search_mohw_interpretation(query: Optional[str] = None, display: int = 20, p
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_moe_interpretation("학교"), search_moe_interpretation("교육", display=50)""")
+사용 예시: search_moe_interpretation("교육"), search_moe_interpretation("학교", display=50)""")
 def search_moe_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """교육부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "moe", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moe", params)
-        result = _format_search_results(data, "moe", search_query)
+        data = _make_legislation_request("moeCgmExpc", params)
+        result = _format_search_results(data, "moeCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"교육부 법령해석 검색 중 오류: {str(e)}")
@@ -175,10 +175,10 @@ def search_korea_interpretation(query: Optional[str] = None, display: int = 20, 
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "korea", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("korea", params)
-        result = _format_search_results(data, "korea", search_query)
+        data = _make_legislation_request("koreaCgmExpc", params)
+        result = _format_search_results(data, "koreaCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"한국 법령해석 검색 중 오류: {str(e)}")
@@ -197,10 +197,10 @@ def search_mssp_interpretation(query: Optional[str] = None, display: int = 20, p
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "mssp", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mssp", params)
-        result = _format_search_results(data, "mssp", search_query)
+        data = _make_legislation_request("msspCgmExpc", params)
+        result = _format_search_results(data, "msspCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"보훈처 법령해석 검색 중 오류: {str(e)}")
@@ -212,17 +212,17 @@ def search_mssp_interpretation(query: Optional[str] = None, display: int = 20, p
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_mote_interpretation("무역"), search_mote_interpretation("산업", display=50)""")
+사용 예시: search_mote_interpretation("공장"), search_mote_interpretation("면적", display=50)""")
 def search_mote_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """산업통상자원부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "mote", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mote", params)
-        result = _format_search_results(data, "mote", search_query)
+        data = _make_legislation_request("motieCgmExpc", params)
+        result = _format_search_results(data, "motieCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"산업통상자원부 법령해석 검색 중 오류: {str(e)}")
@@ -241,10 +241,10 @@ def search_maf_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "maf", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("maf", params)
-        result = _format_search_results(data, "maf", search_query)
+        data = _make_legislation_request("mafraCgmExpc", params)
+        result = _format_search_results(data, "mafraCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"농림축산식품부 법령해석 검색 중 오류: {str(e)}")
@@ -256,17 +256,17 @@ def search_maf_interpretation(query: Optional[str] = None, display: int = 20, pa
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_moms_interpretation("병역"), search_moms_interpretation("군인", display=50)""")
+사용 예시: search_moms_interpretation("국방"), search_moms_interpretation("군사", display=50)""")
 def search_moms_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """국방부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "moms", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moms", params)
-        result = _format_search_results(data, "moms", search_query)
+        data = _make_legislation_request("mndCgmExpc", params)
+        result = _format_search_results(data, "mndCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국방부 법령해석 검색 중 오류: {str(e)}")
@@ -278,17 +278,17 @@ def search_moms_interpretation(query: Optional[str] = None, display: int = 20, p
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_sme_interpretation("중소기업"), search_sme_interpretation("벤처", display=50)""")
+사용 예시: search_sme_interpretation("창업"), search_sme_interpretation("중소기업", display=50)""")
 def search_sme_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """중소벤처기업부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "sme", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("sme", params)
-        result = _format_search_results(data, "sme", search_query)
+        data = _make_legislation_request("mssCgmExpc", params)
+        result = _format_search_results(data, "mssCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"중소벤처기업부 법령해석 검색 중 오류: {str(e)}")
@@ -307,10 +307,10 @@ def search_nfa_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "nfa", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("nfa", params)
-        result = _format_search_results(data, "nfa", search_query)
+        data = _make_legislation_request("kfsCgmExpc", params)
+        result = _format_search_results(data, "kfsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"산림청 법령해석 검색 중 오류: {str(e)}")
@@ -329,10 +329,10 @@ def search_korail_interpretation(query: Optional[str] = None, display: int = 20,
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "korail", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("korail", params)
-        result = _format_search_results(data, "korail", search_query)
+        data = _make_legislation_request("korailCgmExpc", params)
+        result = _format_search_results(data, "korailCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"한국철도공사 법령해석 검색 중 오류: {str(e)}")
@@ -351,10 +351,10 @@ def search_nts_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "nts", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("nts", params)
-        result = _format_search_results(data, "nts", search_query)
+        data = _make_legislation_request("ntsCgmExpc", params)
+        result = _format_search_results(data, "ntsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국세청 법령해석 검색 중 오류: {str(e)}")
@@ -373,10 +373,10 @@ def search_kcs_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "kcs", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("kcs", params)
-        result = _format_search_results(data, "kcs", search_query)
+        data = _make_legislation_request("kcsCgmExpc", params)
+        result = _format_search_results(data, "kcsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"관세청 법령해석 검색 중 오류: {str(e)}")
@@ -395,9 +395,9 @@ def get_moef_interpretation_detail(interpretation_id: Union[str, int]) -> TextCo
     """기획재정부 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("moef", params, is_detail=True)
-        url = _generate_api_url("moef", params, is_detail=True)
-        result = _format_search_results(data, "moef", str(interpretation_id))
+        data = _make_legislation_request("moefCgmExpc", params, is_detail=True)
+        url = _generate_api_url("moefCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "moefCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"기획재정부 법령해석 상세조회 중 오류: {str(e)}")
@@ -412,9 +412,9 @@ def get_nts_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     """국세청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("nts", params, is_detail=True)
-        url = _generate_api_url("nts", params, is_detail=True)
-        result = _format_search_results(data, "nts", str(interpretation_id))
+        data = _make_legislation_request("ntsCgmExpc", params, is_detail=True)
+        url = _generate_api_url("ntsCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "ntsCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국세청 법령해석 상세조회 중 오류: {str(e)}")
@@ -429,9 +429,9 @@ def get_kcs_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     """관세청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("kcs", params, is_detail=True)
-        url = _generate_api_url("kcs", params, is_detail=True)
-        result = _format_search_results(data, "kcs", str(interpretation_id))
+        data = _make_legislation_request("kcsCgmExpc", params, is_detail=True)
+        url = _generate_api_url("kcsCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "kcsCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"관세청 법령해석 상세조회 중 오류: {str(e)}")

@@ -80,37 +80,39 @@ def get_law_summary(
             }
             
             search_result = _make_legislation_request("law", search_params)
-            if search_result and search_result.get("법령"):
-                laws = search_result.get("법령", [])
+            # 응답 구조: LawSearch.law
+            law_search = search_result.get("LawSearch", {}) if search_result else {}
+            if law_search and law_search.get("law"):
+                laws = law_search.get("law", [])
                 if isinstance(laws, dict):
                     laws = [laws]
                 
                 # 법령명 일치 우선
                 target_law = None
                 for law in laws:
-                    law_info = law.get("기본정보", {}) if isinstance(law, dict) else {}
-                    api_law_name = (law_info.get("법령명_한글") or 
-                                  law_info.get("법령명한글") or 
-                                  law_info.get("법령명", ""))
+                    # 직접 필드 접근 (LawSearch 응답 구조)
+                    api_law_name = (law.get("법령명한글") or 
+                                  law.get("법령명_한글") or 
+                                  law.get("법령명", ""))
                     
                     # 정확한 이름 매칭
                     if api_law_name == law_name:
                         target_law = law
                         break
-                    # 부분 매칭
-                    elif law_name in api_law_name or api_law_name in law_name:
+                    # 부분 매칭 (공백 제거 후 비교)
+                    clean_api_name = api_law_name.replace(" ", "")
+                    clean_law_name = law_name.replace(" ", "")
+                    if clean_law_name in clean_api_name or clean_api_name in clean_law_name:
                         if not target_law:  # 첫 번째 부분 일치만 사용
                             target_law = law
                 
                 if target_law:
-                    basic_info = target_law.get("기본정보", {})
-                    law_id = (basic_info.get("법령일련번호") or 
-                             basic_info.get("법령MST") or
-                             target_law.get("법령키", "")[:10] if target_law.get("법령키") else None)
+                    # 직접 필드 접근
+                    law_id = target_law.get("법령일련번호") or target_law.get("법령MST")
                     
-                    actual_law_name = (basic_info.get("법령명_한글") or 
-                                     basic_info.get("법령명한글") or 
-                                     basic_info.get("법령명", ""))
+                    actual_law_name = (target_law.get("법령명한글") or 
+                                     target_law.get("법령명_한글") or 
+                                     target_law.get("법령명", ""))
                     logger.info(f"법령 검색 성공: {actual_law_name} (MST: {law_id})")
                 else:
                     return TextContent(

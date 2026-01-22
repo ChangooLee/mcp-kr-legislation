@@ -1,0 +1,1820 @@
+{
+  "category": "법령",
+  "category_en": "law",
+  "updated_at": "2026-01-22",
+  "api_count": 26,
+  "apis": [
+    {
+      "id": "1",
+      "title": "현행법령(공포일) 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=law",
+      "target": "law",
+      "api_type": "목록조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : law(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 법령명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "법령의 공포일자 검색"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색(306~400)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "법령의 공포번호 검색"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "lsChapNo",
+          "type": "string",
+          "description": "법령분류 (01-제1편 / 02-제2편 / 03-제3편... 44-제44편)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=law&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=law&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=law&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=law&type=XML&query=자동차관리법"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "현행법령(공포일) 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=law",
+      "target": "law",
+      "api_type": "본문조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : law(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "JO",
+          "type": "int",
+          "description": "조번호 생략(기본값) : 모든 조를 표시함 6자리숫자 : 조번호(4자리)+조가지번호(2자리) (000200 : 2조, 001002 : 10조의 2)"
+        },
+        {
+          "name": "LANG",
+          "type": "char",
+          "description": "원문/한글 여부 생략(기본값) : 한글 (KO : 한글, ORI : 원문)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&ID=009682&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&MST=261457&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&ID=009682&type=XML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&MST=261457&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&ID=009682&type=JSON"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=law&MST=261457&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "법령 연혁 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsHistory",
+      "target": "lsHistory",
+      "api_type": "목록조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsHistory(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "description": "공포일자 검색"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색(306~400)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "lsChapNo",
+          "type": "string",
+          "description": "법령분류 (01-제1편 / 02-제2편 / 03-제3편... 44-제44편)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsHistory&type=HTML&query=자동차관리법"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsHistory&type=HTML&org=1741000"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "법령 연혁 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=lsHistory",
+      "target": "lsHistory",
+      "api_type": "본문조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsHistory(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "chrClsCd",
+          "type": "char",
+          "description": "원문/한글 여부 생략(기본값) : 한글 (010202 : 한글, 010201 : 원문)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsHistory&MST=9094&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsHistory&MST=166500&type=HTML"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "현행법령(공포일) 본문 조항호목 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=lawjosub",
+      "target": "lawjosub",
+      "api_type": "본문조회",
+      "sub_category": "조항호목",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lawjosub(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력) (ID로 검색하면 그 법령의 현행 법령 본문 조회)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "JO",
+          "type": "char(필수)",
+          "description": "조 번호 6자리숫자 예) 제2조 : 000200, 제10조의2 : 001002"
+        },
+        {
+          "name": "HANG",
+          "type": "char",
+          "description": "항 번호 6자리숫자 예) 제2항 : 000200"
+        },
+        {
+          "name": "HO",
+          "type": "char",
+          "description": "호 번호 6자리숫자 예) 제2호 : 000200, 제10호의2 : 001002"
+        },
+        {
+          "name": "MOK",
+          "type": "char",
+          "description": "목 한자리 문자 예) 가,나,다,라, … 카,타,파,하 한글은 인코딩 하여 사용하여야 정상적으로 사용이가능 URLDecoder.decode(\"다\", \"UTF-8\")"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lawjosub&type=XML&ID=001823&JO=000300&HANG=000100&HO=000200&MOK=다"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lawjosub&type=HTML&ID=001823&JO=000300&HANG=000100&HO=000200&MOK=다"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lawjosub&type=JSON&ID=001823&JO=000300&HANG=000100&HO=000200&MOK=다"
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "영문 법령 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=elaw",
+      "target": "elaw",
+      "api_type": "목록조회",
+      "sub_category": "영문법령",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : elaw(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 법령명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의(default=*)"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "법령의 공포일자 검색"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색(306~400)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "법령의 공포번호 검색"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "type",
+          "type": "char",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=elaw&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=elaw&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=elaw&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=elaw&type=XML&query=가정폭력방지"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=elaw&type=XML&query=insurance"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "title": "영문 법령 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=elaw",
+      "target": "elaw",
+      "api_type": "본문조회",
+      "sub_category": "영문법령",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : elaw(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "type",
+          "type": "char",
+          "description": "출력 형태 : HTML/XML/JSON"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=elaw&ID=000744&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=elaw&MST=127280&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=elaw&MST=127280&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "title": "법령 변경이력 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsHstInf",
+      "target": "lsHstInf",
+      "api_type": "목록조회",
+      "sub_category": "이력",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsHstInf(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "regDt",
+          "type": "int(필수)",
+          "description": "법령 변경일 검색(20150101)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsHstInf&OC=test&regDt=20170726&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsHstInf&OC=test&regDt=20170726&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsHstInf&OC=test&regDt=20170726&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "title": "일자별 조문 개정 이력 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsJoHstInf",
+      "target": "lsJoHstInf",
+      "api_type": "목록조회",
+      "sub_category": "이력",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsJoHstInf(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 XML/JSON"
+        },
+        {
+          "name": "regDt",
+          "type": "int",
+          "description": "조문 개정일, 8자리 (20150101)"
+        },
+        {
+          "name": "fromRegDt",
+          "type": "int",
+          "description": "조회기간 시작일, 8자리 (20150101)"
+        },
+        {
+          "name": "toRegDt",
+          "type": "int",
+          "description": "조회기간 종료일, 8자리 (20150101)"
+        },
+        {
+          "name": "ID",
+          "type": "int",
+          "description": "법령ID"
+        },
+        {
+          "name": "JO",
+          "type": "int",
+          "description": "조문번호 조문번호 4자리 + 조 가지번호 2자리 (000202 : 제2조의2)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://law.go.kr/DRF/lawSearch.do?target=lsJoHstInf&OC=test&regDt=20250401&type=XML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsJoHstInf&OC=test&fromRegDt=20250101&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsJoHstInf&OC=test&regDt=20250401&org=1352000&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "title": "조문별 변경 이력 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=lsJoHstInf",
+      "target": "lsJoHstInf",
+      "api_type": "목록조회",
+      "sub_category": "이력",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsJoHstInf(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "법령 ID"
+        },
+        {
+          "name": "JO",
+          "type": "int(필수)",
+          "description": "조번호 6자리숫자 : 조번호(4자리)+조가지번호(2자리) (000200 : 2조, 001002 : 10조의 2)"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsJoHstInf&ID=001971&JO=000500&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsJoHstInf&ID=001971&JO=000500&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "title": "법령 기준 자치법규 연계 관련 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lnkLs",
+      "target": "lnkLs",
+      "api_type": "목록조회",
+      "sub_category": "연계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lnkLs(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLs&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLs&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLs&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLs&type=XML&query=자동차관리법"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLsOrdJo&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLsOrdJo&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLsOrdJo&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLsOrdJo&type=XML&knd=002118"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkLsOrdJo&type=XML&knd=002118&JO=0020"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkDep&org=1400000&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkDep&org=1400000&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lnkDep&org=1400000&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "title": "법령-자치법규 연계현황 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=drlaw",
+      "target": "drlaw",
+      "api_type": null,
+      "sub_category": "연계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : drlaw(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=drlaw&type=HTML"
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "title": "위임법령 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=lsDelegated",
+      "target": "lsDelegated",
+      "api_type": null,
+      "sub_category": "연계",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsDelegated (필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력, ID로 검색하면 그 법령의 현행 법령 본문 조회)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsDelegated&type=XML&ID=000900"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsDelegated&type=JSON&ID=000900"
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "title": "법령 체계도 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsStmd",
+      "target": "lsStmd",
+      "api_type": "목록조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsStmd(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "공포일자 검색"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "공포번호 검색"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색 (10000~20000)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsStmd&type=HTML&query=자동차관리법"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsStmd&type=HTML&gana=ga"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsStmd&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsStmd&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "title": "법령 체계도 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=lsStmd",
+      "target": "lsStmd",
+      "api_type": "본문조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsStmd(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsStmd&MST=142362&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsStmd&MST=142591&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsStmd&MST=142362&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=lsStmd&MST=142362&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "title": "신구법 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=oldAndNew",
+      "target": "oldAndNew",
+      "api_type": "목록조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : oldAndNew(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "공포일자 검색"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "공포번호 검색"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색 (10000~20000)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oldAndNew&type=HTML&query=자동차관리법"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oldAndNew&type=HTML&efYd=20150101~20150131"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oldAndNew&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oldAndNew&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "title": "신구법 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=oldAndNew",
+      "target": "oldAndNew",
+      "api_type": "본문조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : oldAndNew(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oldAndNew&ID=000170&MST=122682&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oldAndNew&MST=136931&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oldAndNew&MST=122682&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oldAndNew&MST=122682&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "title": "3단 비교 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=thdCmp",
+      "target": "thdCmp",
+      "api_type": "목록조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : thdCmp(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션(기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "공포일자 검색"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "공포번호 검색"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색 (10000~20000)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=thdCmp&type=HTML&query=자동차관리법"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=thdCmp&type=HTML&rrClsCd=300201"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=thdCmp&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=thdCmp&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "title": "3단 비교 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=thdCmp",
+      "target": "thdCmp",
+      "api_type": "본문조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : thdCmp(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "knd",
+          "type": "int(필수)",
+          "description": "3단비교 종류별 검색 인용조문 : 1 / 위임조문 : 2"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=thdCmp&ID=001372&MST=162662&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=thdCmp&ID=001570&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=thdCmp&MST=236231&knd=1&type=XML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=thdCmp&MST=222549&knd=2&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=thdCmp&MST=222549&knd=2&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "20",
+      "title": "법률명 약칭 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=lsAbrv",
+      "target": "lsAbrv",
+      "api_type": null,
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : lsAbrv(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char",
+          "description": "출력 형태 : XML/JSON"
+        },
+        {
+          "name": "stdDt",
+          "type": "int",
+          "description": "등록일(검색시작날짜)"
+        },
+        {
+          "name": "endDt",
+          "type": "int",
+          "description": "등록일(검색종료날짜)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsAbrv&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=lsAbrv&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "title": "삭제 데이터 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=delHst",
+      "target": "delHst",
+      "api_type": "목록조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 : datDel"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "출력 형태 XML/JSON"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "knd",
+          "type": "int",
+          "description": "데이터 종류 법령 : 1 행정규칙 : 2 자치법규 : 3 학칙공단 : 13"
+        },
+        {
+          "name": "delDt",
+          "type": "int",
+          "description": "데이터 삭제 일자 검색 (YYYYMMDD)"
+        },
+        {
+          "name": "frmDt toDt",
+          "type": "int",
+          "description": "데이터 삭제 일자 범위 검색 (YYYYMMDD)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=delHst&type=XML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=delHst&knd=13&delDt=20231013&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=delHst&knd=3&frmDt=20231013&toDt=20231016&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "22",
+      "title": "한눈보기 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=oneview",
+      "target": "oneview",
+      "api_type": "목록조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : oneview(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oneview&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oneview&type=HTML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=oneview&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "23",
+      "title": "한눈보기 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=oneview",
+      "target": "oneview",
+      "api_type": "본문조회",
+      "sub_category": "부가서비스",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : oneview(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "JO",
+          "type": "int",
+          "description": "조번호 생략(기본값) : 모든 조를 표시함 6자리숫자 : 조번호(4자리)+조가지번호(2자리) (000200 : 2조, 001002 : 10조의 2)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oneview&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oneview&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=oneview&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "24",
+      "title": "현행법령(시행일) 목록 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=eflaw",
+      "target": "eflaw",
+      "api_type": "목록조회",
+      "sub_category": "본문",
+      "parameters": [],
+      "sample_urls": []
+    },
+    {
+      "id": "25",
+      "title": "현행법령(시행일) 본문 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=eflaw",
+      "target": "eflaw",
+      "api_type": "본문조회",
+      "sub_category": "본문",
+      "parameters": [],
+      "sample_urls": []
+    },
+    {
+      "id": "26",
+      "title": "현행법령(시행일) 본문 조항호목 조회 API",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=eflawjosub",
+      "target": "eflawjosub",
+      "api_type": "본문조회",
+      "sub_category": "조항호목",
+      "parameters": [],
+      "sample_urls": []
+    }
+  ]
+}

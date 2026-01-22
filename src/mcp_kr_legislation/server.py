@@ -20,6 +20,7 @@
 
 import logging
 import sys
+import threading
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any, Optional
@@ -42,6 +43,24 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     stream=sys.stderr
 )
+
+# 전역 LegislationContext 저장소 (fallback용)
+_global_context: Optional['LegislationContext'] = None
+_context_lock = threading.Lock()
+
+def set_global_context(ctx: 'LegislationContext') -> None:
+    """전역 LegislationContext를 설정합니다."""
+    global _global_context
+    with _context_lock:
+        _global_context = ctx
+        logger.info("✅ Global LegislationContext 저장됨")
+
+def get_global_context() -> Optional['LegislationContext']:
+    """전역 LegislationContext를 가져옵니다."""
+    global _global_context
+    with _context_lock:
+        return _global_context
+
 
 @dataclass
 class LegislationContext:
@@ -77,6 +96,8 @@ if legislation_config is not None:
             legislation_api=legislation_api.LegislationAPI(legislation_client)
         )
         ctx = legislation_context
+        # 전역 컨텍스트로 저장
+        set_global_context(legislation_context)
     except Exception as e:
         logger.warning(f"fallback 컨텍스트 생성 실패: {e}")
         ctx = None
@@ -108,7 +129,10 @@ async def legislation_lifespan(app: FastMCP) -> AsyncIterator[LegislationContext
         )
         
         logger.info("Legislation client and API modules initialized successfully.")
-        logger.info("🚀 157개 법제처 OPEN API 지원 완료!")
+        logger.info("🚀 176개 법제처 OPEN API 지원 완료!")
+        
+        # 전역 컨텍스트로 저장 (fallback용)
+        set_global_context(ctx)
         
         yield ctx
         
@@ -116,6 +140,10 @@ async def legislation_lifespan(app: FastMCP) -> AsyncIterator[LegislationContext
         logger.error(f"Failed to initialize Legislation client: {e}", exc_info=True)
         raise
     finally:
+        # 전역 컨텍스트 정리
+        global _global_context
+        with _context_lock:
+            _global_context = None
         logger.info("Shutting down Legislation FastMCP server...")
 
 # 도구 레지스트리 초기화
@@ -142,17 +170,28 @@ tool_modules = [
     "legal_term_tools",
     "linkage_tools",
     "ministry_interpretation_tools",
+    "ministry_interpretation_tools_extended",  # 확장된 중앙부처해석 도구들
     "misc_tools",
     "precedent_tools",
     "specialized_tools"
 ]
 
+logger.info(f"🔧 도구 모듈 로딩 시작... (총 {len(tool_modules)}개)")
+_loaded_count = 0
 for module_name in tool_modules:
     try:
         importlib.import_module(f"mcp_kr_legislation.tools.{module_name}")
-        logger.info(f"Loaded tool module: {module_name}")
-    except ImportError as e:
-        logger.warning(f"Failed to load tool module {module_name}: {e}")
+        _loaded_count += 1
+        logger.info(f"✅ Loaded tool module: {module_name}")
+    except Exception as e:
+        logger.error(f"❌ Failed to load tool module {module_name}: {type(e).__name__}: {e}")
+
+# 도구 등록 상태 확인
+try:
+    _tools = list(mcp._tool_manager._tools.keys()) if hasattr(mcp, '_tool_manager') else []
+    logger.info(f"🔧 도구 모듈 로딩 완료: {_loaded_count}/{len(tool_modules)}개 모듈, {len(_tools)}개 도구 등록됨")
+except Exception as e:
+    logger.warning(f"도구 등록 상태 확인 실패: {e}")
 
 def main():
     """메인 서버 실행 함수"""
@@ -161,6 +200,16 @@ def main():
     if legislation_config is None:
         logger.error("법제처 설정이 올바르게 로드되지 않았습니다. .env 파일을 확인하세요.")
         return
+    
+    # 도구 등록 상태 확인
+    try:
+        _tools = list(mcp._tool_manager._tools.keys()) if hasattr(mcp, '_tool_manager') else []
+        logger.info(f"🔧 main() 시작 시 등록된 도구: {len(_tools)}개")
+        if len(_tools) == 0:
+            logger.error("❌ 도구가 등록되지 않았습니다! mcp 인스턴스 확인 필요")
+            logger.info(f"   mcp 인스턴스 id: {id(mcp)}")
+    except Exception as e:
+        logger.warning(f"도구 등록 상태 확인 실패: {e}")
     
     mcp_config = MCPConfig.from_env()
     

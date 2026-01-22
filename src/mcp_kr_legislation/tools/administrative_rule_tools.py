@@ -49,7 +49,7 @@ def get_administrative_rule_detail(rule_id: Union[str, int]) -> TextContent:
     """행정규칙 본문 조회"""
     params = {"target": "admrul", "ID": str(rule_id)}
     try:
-        data = _make_legislation_request("admrul", params)
+        data = _make_legislation_request("admrul", params, is_detail=True)
         url = _generate_api_url("admrul", params)
         result = _format_search_results(data, "admrul", f"행정규칙ID:{rule_id}", 50)
         return TextContent(type="text", text=result)
@@ -77,7 +77,7 @@ def get_administrative_rule_comparison_detail(comparison_id: Union[str, int]) ->
     """행정규칙 신구법 비교 본문 조회"""
     params = {"target": "admrulOldAndNew", "ID": str(comparison_id)}
     try:
-        data = _make_legislation_request("admrulOldAndNew", params)
+        data = _make_legislation_request("admrulOldAndNew", params, is_detail=True)
         url = _generate_api_url("admrulOldAndNew", params)
         result = _format_search_results(data, "admrulOldAndNew", f"비교ID:{comparison_id}", 50)
         return TextContent(type="text", text=result)
@@ -154,8 +154,9 @@ def get_local_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
         oc = os.getenv("LEGISLATION_API_KEY", "lchangoo")
         url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&ID={ordinance_id}&type=JSON"
         
-        # API 요청 - 직접 requests 사용
-        response = requests.get(url, timeout=15)
+        # API 요청 - 직접 requests 사용 (Referer 헤더 필수)
+        headers = {"Referer": "https://open.law.go.kr/"}
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         
         data = response.json()

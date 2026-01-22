@@ -8,7 +8,7 @@
 ![GitHub Stars](https://img.shields.io/github/stars/ChangooLee/mcp-kr-legislation)
 ![GitHub Issues](https://img.shields.io/github/issues/ChangooLee/mcp-kr-legislation)
 
-Model Context Protocol (MCP) server integrating Korean Ministry of Legislation OPEN APIs. **130+ comprehensive tools** provide complete access to all Korean legal information including laws, additional services, administrative rules, ordinances, precedents, committee decisions, treaties, forms, school regulations, legal terms, custom services, knowledge base, special administrative trials, and ministry interpretations.
+Model Context Protocol (MCP) server integrating Korean Ministry of Legislation OPEN APIs. **191 APIs with 132 tools implemented** (expansion ongoing) provide complete access to all Korean legal information including laws, additional services, administrative rules, ordinances, precedents, committee decisions, treaties, forms, school regulations, legal terms, custom services, knowledge base, special administrative trials, and ministry interpretations (30 ministries).
 
 **🔗 GitHub Repository**: https://github.com/ChangooLee/mcp-kr-legislation
 
@@ -111,28 +111,34 @@ Ask your AI assistant to:
 | `search_employment_insurance_committee` | Employment Insurance Review Committee decision search | "Show employment insurance committee decisions" |
 | 12 detail tools | Individual committee decision details | "Show detailed content of specific committee decision" |
 
-### 5. Ministry Interpretation Tools (19 tools)
+### 5. Ministry Interpretation Tools (19 implemented, 60 planned)
+
+> The Korean Ministry of Legislation OPEN API provides legal interpretations from **30 ministries**. Currently 8 ministries are implemented, with 22 additional ministries planned.
+
+**Implemented Ministries (8)**
 | Tool Name | Function | Test Question |
 |-----------|----------|---------------|
 | `search_moef_interpretation` | Ministry of Economy and Finance interpretation | "Show MOEF personal information related interpretations" |
 | `search_molit_interpretation` | Ministry of Land, Infrastructure and Transport interpretation | "Find MOLIT legal interpretations" |
 | `search_moel_interpretation` | Ministry of Employment and Labor interpretation | "What are MOEL personal information related interpretations?" |
 | `search_mof_interpretation` | Ministry of Oceans and Fisheries interpretation | "Show MOF legal interpretations" |
-| `search_mohw_interpretation` | Ministry of Health and Welfare interpretation | "What are MOHW personal information related interpretations?" |
-| `search_moe_interpretation` | Ministry of Education interpretation | "Find MOE legal interpretations" |
-| `search_korea_interpretation` | Government-wide interpretations | "Show government-wide legal interpretations" |
-| `search_mssp_interpretation` | Ministry of Patriots and Veterans Affairs interpretation | "Find MSSP legal interpretations" |
-| `search_mote_interpretation` | Ministry of Trade, Industry and Energy interpretation | "Show MOTE legal interpretations" |
-| `search_maf_interpretation` | Ministry of Agriculture, Food and Rural Affairs interpretation | "Find MAF legal interpretations" |
-| `search_moms_interpretation` | Ministry of National Defense interpretation | "Show MOMS legal interpretations" |
-| `search_sme_interpretation` | Ministry of SMEs and Startups interpretation | "Find SME ministry legal interpretations" |
-| `search_nfa_interpretation` | Korea Forest Service interpretation | "Show KFS legal interpretations" |
-| `search_korail_interpretation` | Korea Railroad Corporation interpretation | "Find KORAIL legal interpretations" |
+| `search_mois_interpretation` | Ministry of Interior and Safety interpretation | "Find MOIS legal interpretations" |
+| `search_me_interpretation` | Ministry of Environment interpretation | "Show MOE legal interpretations" |
 | `search_nts_interpretation` | National Tax Service interpretation | "Find NTS legal interpretations" |
 | `search_kcs_interpretation` | Korea Customs Service interpretation | "Find KCS legal interpretations" |
-| 3 detail tools | Individual ministry interpretation details | "Show detailed content of specific ministry interpretation" |
 
-### 6. Specialized Tools (6 tools)
+**Planned Ministries (22)**
+- Ministry of Agriculture, Food and Rural Affairs, Ministry of Culture, Sports and Tourism, Ministry of Justice
+- Ministry of Health and Welfare, Ministry of Trade, Industry and Energy, Ministry of Gender Equality and Family
+- Ministry of Foreign Affairs, Ministry of SMEs and Startups, Ministry of Unification, Ministry of Government Legislation
+- Ministry of Food and Drug Safety, Ministry of Personnel Management, Korea Meteorological Administration
+- Korea Heritage Service, Rural Development Administration, Korean National Police Agency
+- Defense Acquisition Program Administration, Military Manpower Administration, Korea Forest Service
+- National Fire Agency, Overseas Koreans Agency, Public Procurement Service, Korea Disease Control and Prevention Agency
+- National Data Processing Office, Intellectual Property Office, Korea Coast Guard
+- National Agency for Administrative City Construction
+
+### 6. Specialized Tools (6 implemented + 4 planned)
 | Tool Name | Function | Test Question |
 |-----------|----------|---------------|
 | `search_treaty` | Treaty search | "Find international treaties related to personal information protection" |
@@ -141,6 +147,11 @@ Ask your AI assistant to:
 | `search_public_institution_regulation` | Public institution regulation search | "Find public institution personal information regulations" |
 | `search_tax_tribunal` | Tax Tribunal case search | "What are tax tribunal cases on personal information?" |
 | `search_maritime_safety_tribunal` | Korea Maritime Safety Tribunal case search | "Find maritime safety tribunal cases" |
+
+**Special Administrative Trials - Planned (2 institutions)**
+> The Korean Ministry of Legislation OPEN API provides special administrative trial cases from **4 institutions**.
+- Anti-Corruption and Civil Rights Commission Special Administrative Trials
+- Ministry of Personnel Management Appeals Commission Rulings
 
 ### 7. Knowledge Base/Consultation Tools (6 tools)
 | Tool Name | Function | Test Question |
@@ -449,6 +460,14 @@ Response: List of administrative trial cases with adjudication content and party
 - Consult with experts for legal interpretation or legal advice
 - This tool is for informational purposes and does not replace legal advice
 - You can verify original data directly through API URLs included in each response
+
+---
+
+## Related Documentation
+
+- [AGENTS.md](AGENTS.md) - Project guide and development documentation
+- [docs/api-master-guide.md](docs/api-master-guide.md) - API master guide
+- [skills/](skills/) - Development skill guides
 
 ---
 

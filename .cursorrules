@@ -1,0 +1,548 @@
+# MCP 한국 법령 — AI Coding Guidelines
+
+> **Purpose**: Complete guide for Cursor AI to work effectively on MCP Korean Legislation
+> **Philosophy**: Plan before code, test before complete, ask before breaking
+> **Version**: 1.0 (2025-12-31)
+
+---
+
+## Table of Contents
+
+1. [Core Principles](#1-core-principles)
+2. [Decision Framework](#2-decision-framework)
+3. [Development Environment Management](#3-development-environment-management)
+4. [Project Reference](#4-project-reference)
+5. [Task Checklists](#5-task-checklists)
+6. [Code Patterns](#6-code-patterns)
+7. [Prohibited Actions](#7-prohibited-actions)
+
+---
+
+## 1. Core Principles
+
+### 1.0 Sensitive Data Protection (CRITICAL)
+
+**Definition**: API keys, passwords, tokens, OC values
+
+**NEVER**:
+- Create `.env` backup files (`.env.bak`, `.env.backup`)
+- Add sensitive files to git
+- Expose API keys in logs or output
+- Hardcode OC values or API keys in code
+
+**Required Confirmation** (in Korean):
+```
+⚠️ "이 작업은 민감 정보(.env, API 키 등)를 포함합니다. 진행할까요?"
+```
+
+**Safe Alternatives**:
+- Use `.env.example` with placeholders
+- Reference via `os.environ.get('LEGISLATION_API_KEY')`
+- Verify `.gitignore` includes sensitive files
+
+### 1.1 Test Before Complete (CRITICAL)
+
+**Completion Criteria**:
+- Code alone is NOT complete
+- MUST test before marking TODO as done
+
+**Testing Procedure**:
+1. API 호출: 실제 법제처 API 호출 테스트
+2. Tool 동작: MCP tool이 정상적으로 등록되고 실행되는지 확인
+3. Integration: 전체 플로우 테스트
+
+**Correct Flow**:
+```
+1. Write/modify code
+2. Restart service if needed
+3. Execute actual test:
+   - API: 실제 법제처 API 호출
+   - Tool: MCP tool 실행 테스트
+4. Verify result
+5. ✅ No errors → Mark TODO complete
+6. ❌ Errors found → Fix and retry from step 2
+```
+
+### 1.2 Plan Before Code (ALWAYS)
+
+**Before Coding (15-20 min)**:
+- Research best practices (web search)
+- Review existing patterns in codebase
+- Check API documentation in `docs/`
+- Compare 2-3 approaches
+
+**After Completion (5-10 min)**:
+- Record learnings if significant
+- Update documentation if needed
+
+### 1.3 Required Reference Documents
+
+**Priority 1: Project Documents**
+- `AGENTS.md` — Project structure, workflows, architecture
+- `docs/api-master-guide.md` — API 구조 및 패턴
+- `docs/api-*.md` — 카테고리별 API 상세 가이드
+
+**Priority 2: Skills Documents**
+- `skills/tool-development.md` — Tool 개발 가이드
+- `skills/api-integration.md` — API 통합 가이드
+- `skills/cache-management.md` — 캐시 관리
+- `skills/graph-search.md` — 지식 그래프 검색
+- `skills/self-improvement.md` — 자가 개선 패턴
+
+**Priority 3: Code Reference**
+- `src/mcp_kr_legislation/utils/korean_law_api_complete_guide.md` — 전체 API 가이드 (참고용)
+
+---
+
+## 2. Decision Framework
+
+### 2.1 When to Ask vs Proceed
+
+**Ask User**:
+- Task is ambiguous or has multiple valid interpretations
+- Change affects existing working functionality
+- Operation involves sensitive data
+- Significant architectural decision
+- Breaking change to public API
+
+**Proceed Autonomously**:
+- Task is clearly defined
+- Following established patterns
+- Adding new isolated feature
+- Fixing obvious bugs
+- Routine refactoring within single file
+
+### 2.2 When to Use Existing Code vs Create New
+
+**Pre-Code Checklist (MANDATORY)**:
+Before writing ANY new function/component:
+```
+□ 1. Search codebase for similar functionality
+     - grep for keywords related to the task
+     - Check tools/, apis/, utils/
+     
+□ 2. Check if existing code can be:
+     - Used directly (import and call)
+     - Extended (add parameter, method)
+     - Wrapped (thin wrapper for specific use)
+     
+□ 3. If creating new, ask yourself:
+     - Why can't existing code be modified?
+     - Will this create duplication?
+     - Did I check ALL related files?
+```
+
+**Reuse Criteria**:
+| Similarity | Action |
+|------------|--------|
+| 80%+ same | Use existing, modify if needed |
+| 50-80% same | Extend existing or extract common |
+| <50% same | Create new, document why |
+
+**Anti-Patterns (PROHIBITED)**:
+```
+❌ Creating search_law2() when search_law() exists
+❌ New formatting function when law_tools_utils.py exists  
+❌ Duplicate API call logic in multiple files
+❌ Copy-paste with minor modifications
+```
+
+**Correct Approach**:
+```
+✅ Import and use existing utilities
+✅ Extend existing function with optional parameters
+✅ Create shared component and import everywhere
+✅ Extract common logic to utils layer
+```
+
+### 2.3 When to Refactor vs Patch
+
+**Patch** (default for bug fixes):
+- Minimal change to fix issue
+- No surrounding code cleanup
+- Keep PR small and focused
+
+**Refactor** (only when requested):
+- User explicitly asks for cleanup
+- Bug fix is impossible without refactoring
+- Technical debt is blocking feature
+
+---
+
+## 3. Development Environment Management
+
+### 3.1 Environment Setup
+
+**Required**:
+- Python 3.10 이상
+- uv 패키지 매니저 (권장) 또는 pip
+- 법제처 API 키 (LEGISLATION_API_KEY)
+
+**Setup**:
+```bash
+# Python 버전 확인
+python3 --version  # 3.10 이상이어야 함
+
+# 가상환경 생성 (uv 사용)
+uv venv
+uv pip install -e .
+
+# 또는 pip 사용
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+### 3.2 Environment Variables
+
+`.env` 파일을 프로젝트 루트에 생성:
+
+```bash
+LEGISLATION_API_KEY=lchangoo  # 또는 이메일 주소
+LEGISLATION_SEARCH_URL=http://www.law.go.kr/DRF/lawSearch.do
+LEGISLATION_SERVICE_URL=http://www.law.go.kr/DRF/lawService.do
+HOST=0.0.0.0
+PORT=8002
+TRANSPORT=stdio
+LOG_LEVEL=INFO
+MCP_SERVER_NAME=mcp-kr-legislation
+```
+
+### 3.3 Service Execution
+
+**Local Development**:
+```bash
+# stdio transport
+python -m mcp_kr_legislation.server
+
+# http transport
+TRANSPORT=http python -m mcp_kr_legislation.server
+```
+
+**Claude Desktop Integration**:
+- 설정 파일: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- 참고: `README.md`의 Claude Desktop 설정 섹션
+
+---
+
+## 4. Project Reference
+
+### 4.1 Project Structure
+
+```
+src/mcp_kr_legislation/
+├── __init__.py
+├── server.py                # FastMCP 서버 메인 로직
+├── config.py                # 설정 관리 (LegislationConfig, MCPConfig)
+├── apis/                    # 법제처 API 클라이언트
+│   ├── client.py           # LegislationClient (기본 클라이언트)
+│   ├── law_api.py          # 법령 API
+│   └── legislation_api.py  # 자치법규 API
+├── tools/                   # MCP 도구 정의 (14개 모듈)
+│   ├── law_tools.py
+│   ├── precedent_tools.py
+│   ├── committee_tools.py
+│   └── ...
+├── utils/                   # 유틸리티 함수
+│   ├── ctx_helper.py       # 컨텍스트 처리
+│   ├── law_tools_utils.py  # 법령 도구 유틸리티
+│   └── data_processor.py   # 데이터 처리
+├── registry/               # 도구 레지스트리
+│   ├── tool_registry.py
+│   └── initialize_registry.py
+└── utils/
+    └── korean_law_api_complete_guide.md  # 전체 API 가이드
+```
+
+### 4.2 API Pattern
+
+**법제처 API 구조**:
+- **목록 조회**: `lawSearch.do?target={value}`
+- **본문 조회**: `lawService.do?target={value}`
+- **target 파라미터**: 50개 이상의 고유한 값으로 기능 구분
+
+**예시**:
+- `target=law`: 현행법령
+- `target=prec`: 판례
+- `target=ppc`: 개인정보보호위원회 결정문
+
+### 4.3 Tool Pattern
+
+**기본 Tool 구조**:
+```python
+from typing import Annotated
+from mcp_kr_legislation.server import mcp
+from mcp.types import TextContent
+from mcp_kr_legislation.utils.ctx_helper import with_context
+
+@mcp.tool(
+    name="tool_name",
+    description="도구 설명 (LLM이 이해할 수 있도록 명확하게)",
+)
+def tool_function(
+    param1: Annotated[str, "파라미터 설명"],
+) -> TextContent:
+    result = with_context(
+        None,  # ctx는 내부에서 fallback 처리
+        "tool_name",
+        lambda context: context.law_api.search(param1)
+    )
+    return TextContent(type="text", text=str(result))
+```
+
+---
+
+## 5. Task Checklists
+
+### 5.1 Tool Development
+
+**Before Starting**:
+- [ ] Check existing tools in `tools/` directory
+- [ ] Review API documentation in `docs/`
+- [ ] Check similar patterns in codebase
+
+**During Development**:
+- [ ] Use `@mcp.tool` decorator
+- [ ] Use `with_context()` for API calls
+- [ ] Add type hints with `Annotated`
+- [ ] Write clear descriptions
+
+**After Completion**:
+- [ ] Test tool execution
+- [ ] Verify tool appears in MCP server
+- [ ] Check error handling
+
+### 5.2 API Integration
+
+**Before Starting**:
+- [ ] Check API documentation in `docs/api-*.md`
+- [ ] Review existing API patterns in `apis/`
+- [ ] Understand target parameter mapping
+
+**During Development**:
+- [ ] Use `LegislationClient` for API calls
+- [ ] Follow `lawSearch.do` / `lawService.do` pattern
+- [ ] Handle OC value correctly (from config)
+
+**After Completion**:
+- [ ] Test actual API call
+- [ ] Verify response structure
+- [ ] Check error cases
+
+### 5.3 Cache Implementation
+
+**Before Starting**:
+- [ ] Review `skills/cache-management.md`
+- [ ] Check existing cache structure
+- [ ] Plan cache key strategy
+
+**During Development**:
+- [ ] Use consistent cache directory structure
+- [ ] Implement cache save/load functions
+- [ ] Handle cache invalidation
+
+**After Completion**:
+- [ ] Test cache save/load
+- [ ] Verify cache persistence
+- [ ] Check cache size management
+
+---
+
+## 6. Code Patterns
+
+### 6.1 Tool Function Pattern
+
+```python
+from typing import Annotated
+from mcp_kr_legislation.server import mcp
+from mcp.types import TextContent
+from mcp_kr_legislation.utils.ctx_helper import with_context
+
+@mcp.tool(
+    name="search_law",
+    description="현행 법령 검색",
+)
+def search_law(
+    query: Annotated[str, "검색어"],
+    display: Annotated[int, "결과 개수 (기본값: 20)"] = 20,
+) -> TextContent:
+    result = with_context(
+        None,
+        "search_law",
+        lambda context: context.law_api.search(
+            target="law",
+            query=query,
+            display=display
+        )
+    )
+    return TextContent(type="text", text=str(result))
+```
+
+### 6.2 API Call Pattern
+
+```python
+from mcp_kr_legislation.apis.client import LegislationClient
+from mcp_kr_legislation.config import legislation_config
+
+client = LegislationClient(config=legislation_config)
+result = client.search(
+    target="law",
+    query="개인정보보호법",
+    display=20
+)
+```
+
+### 6.3 Error Handling
+
+```python
+try:
+    result = with_context(
+        None,
+        "tool_name",
+        lambda context: context.law_api.search(query)
+    )
+    return TextContent(type="text", text=str(result))
+except Exception as e:
+    logger.error(f"Tool execution failed: {e}")
+    return TextContent(
+        type="text",
+        text=f"오류 발생: {str(e)}"
+    )
+```
+
+---
+
+## 7. Prohibited Actions
+
+### 7.1 Hardcoding (CRITICAL)
+
+```
+❌ Hardcoded OC values (always use config)
+❌ Hardcoded API URLs (use config values)
+❌ Hardcoded field names in responses
+❌ Hardcoded prompts in LLM calls
+✅ Configuration-driven, parameterized approaches
+✅ Helper functions that support multiple formats
+```
+
+**Example**:
+```python
+# ❌ Wrong: Hardcoded OC
+oc = "lchangoo"
+
+# ✅ Correct: From config
+oc = legislation_config.oc
+```
+
+### 7.2 Infinite New Code Creation
+
+```
+❌ Creating new functions when similar exists
+❌ Duplicating existing utility functions
+✅ Maximally reusing existing code
+✅ Extending existing functions
+```
+
+### 7.3 Skipping Tests
+
+```
+❌ Marking "complete" without running tests
+❌ Not testing actual API calls
+✅ Actually executing and verifying functionality
+✅ Testing with real API endpoints
+```
+
+### 7.4 Missing Error Handling
+
+```
+❌ API calls without try/except
+❌ No timeout handling
+✅ Timeout handling, HTTP error handling, exception wrapping
+```
+
+### 7.5 Modifying Working Code Without Asking
+
+```
+❌ Changing existing working tools without user approval
+✅ Ask user before modifying working functionality
+✅ Document why changes are needed
+```
+
+### 7.6 Architecture Bypass (CRITICAL)
+
+**NEVER bypass established architecture.**
+
+```
+❌ Direct API calls bypassing client
+❌ Hardcoding values instead of using config
+❌ Creating duplicate cache systems
+✅ Follow established patterns
+✅ Use existing infrastructure
+✅ Report issues instead of workarounds
+```
+
+---
+
+## 8. Communication
+
+### 8.1 Language
+
+- **User Interaction**: Korean (한국어)
+- **Code Comments**: English
+- **Documentation**: Korean/English (mixed)
+- **Commit Messages**: English
+
+### 8.2 Response Style
+
+**DO**:
+- Be concise, no unnecessary explanation
+- State what was changed, not how it works
+- Report test results critically (not optimistically)
+- Admit uncertainty when present
+
+**DON'T**:
+- Add explanatory padding
+- Repeat what user already knows
+- Over-explain code changes
+- Use emojis unless user does
+
+### 8.3 Critical Analysis Mindset
+
+**ALWAYS**:
+- Analyze results critically, not positively
+- Question if test truly passed
+- Look for edge cases
+- Report what's NOT working, not just what IS
+
+**Example**:
+```
+❌ "Implementation complete. Everything works."
+✅ "기능 구현 완료. 단, 에러 케이스 테스트 필요: 빈 입력, 타임아웃."
+```
+
+---
+
+## 9. User Preferences (Learned)
+
+### 9.1 Communication
+- Communicate in Korean
+- Be concise, no unnecessary explanation
+- Report only what changed
+
+### 9.2 Development
+- Critical analysis over positive interpretation
+- Test before marking complete
+- Ask before modifying working code
+- Think deeply before suggesting changes
+
+### 9.3 Prohibited
+- Hardcoding values (especially OC, API URLs)
+- Creating infinite new functions
+- Skipping tests
+- Over-engineering simple tasks
+- Modifying working code without approval
+
+---
+
+**Last Updated**: 2025-12-31  
+**Version**: 1.0

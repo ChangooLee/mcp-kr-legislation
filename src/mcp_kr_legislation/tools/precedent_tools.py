@@ -105,22 +105,26 @@ def _format_precedent_search_results(data: dict, target: str, search_query: str,
                         break
             
             # ID 정보 추가 (상세조회용) - 타겟별 올바른 ID 키 사용
+            # 주의: 안건번호/사건번호와 일련번호는 다름! 상세조회는 일련번호를 사용해야 함
             if target == "prec":
                 # 판례는 판례일련번호를 사용해야 함 (검색의 id는 순번일 뿐)
                 for id_key in ['판례일련번호', '판례정보일련번호', 'mstSeq']:
                     if id_key in item and item[id_key]:
+                        result_lines.append(f"   ★ 상세조회용 ID: {item[id_key]}")
                         result_lines.append(f"   상세조회: get_precedent_detail(case_id=\"{item[id_key]}\")")
                         break
             elif target == "expc":
-                # 해석례는 해석례일련번호 사용
-                for id_key in ['해석례일련번호', '법령해석일련번호', 'mstSeq']:
+                # 해석례는 법령해석례일련번호 사용 (안건번호 아님!)
+                for id_key in ['법령해석례일련번호', '해석례일련번호', 'mstSeq']:
                     if id_key in item and item[id_key]:
+                        result_lines.append(f"   ★ 상세조회용 ID: {item[id_key]} (※안건번호와 다름)")
                         result_lines.append(f"   상세조회: get_legal_interpretation_detail(interpretation_id=\"{item[id_key]}\")")
                         break
             elif target == "decc":
                 # 행정심판례는 행정심판례일련번호 사용
                 for id_key in ['행정심판례일련번호', '심판례일련번호', 'mstSeq']:
                     if id_key in item and item[id_key]:
+                        result_lines.append(f"   ★ 상세조회용 ID: {item[id_key]}")
                         result_lines.append(f"   상세조회: get_administrative_trial_detail(trial_id=\"{item[id_key]}\")")
                         break
             else:
@@ -351,7 +355,7 @@ def get_administrative_trial_detail(trial_id: Union[str, int]) -> TextContent:
     """행정심판례 본문 조회"""
     params = {"target": "decc", "ID": str(trial_id)}
     try:
-        data = _make_legislation_request("decc", params)
+        data = _make_legislation_request("decc", params, is_detail=True)
         url = _generate_api_url("decc", params)
         result = _format_precedent_search_results(data, "decc", f"행정심판례ID:{trial_id}", 1)
         return TextContent(type="text", text=result)
@@ -370,9 +374,9 @@ def get_precedent_detail(case_id: Union[str, int]) -> TextContent:
     params = {"ID": str(case_id)}
     
     try:
-        # 기본 JSON 시도
-        data = _make_legislation_request("prec", params)
-        url = _generate_api_url("prec", params)
+        # 기본 JSON 시도 (is_detail=True로 lawService.do 사용)
+        data = _make_legislation_request("prec", params, is_detail=True)
+        url = _generate_api_url("prec", params, is_detail=True)
         
         # JSON 응답 확인
         if isinstance(data, dict) and data:
@@ -384,7 +388,8 @@ def get_precedent_detail(case_id: Union[str, int]) -> TextContent:
             html_params = {"OC": oc, "target": "prec", "ID": str(case_id)}
             
             url = f"{legislation_config.service_base_url}?{urlencode(html_params)}"
-            response = requests.get(url, timeout=15)
+            headers = {"Referer": "https://open.law.go.kr/"}
+            response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()
             
             # HTML 응답 포맷팅
@@ -397,7 +402,8 @@ def get_precedent_detail(case_id: Union[str, int]) -> TextContent:
             html_params = {"OC": oc, "target": "prec", "ID": str(case_id)}
             
             url = f"{legislation_config.service_base_url}?{urlencode(html_params)}"
-            response = requests.get(url, timeout=15)
+            headers = {"Referer": "https://open.law.go.kr/"}
+            response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()
             
             return _format_html_precedent_response(response.text, str(case_id), url)
@@ -431,12 +437,13 @@ def get_constitutional_court_detail(decision_id: Union[str, int]) -> TextContent
 매개변수:
 - interpretation_id: 해석례ID - search_legal_interpretation 도구의 결과에서 'ID' 필드값 사용
 
-사용 예시: get_legal_interpretation_detail(interpretation_id="123456")""")
+사용 예시: get_legal_interpretation_detail(interpretation_id="327301")
+참고: interpretation_id는 검색 결과의 '법령해석례일련번호' 필드값을 사용하세요. (안건번호 아님)""")
 def get_legal_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """법령해석례 본문 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("expc", params)
+        data = _make_legislation_request("expc", params, is_detail=True)
         url = _generate_api_url("expc", params)
         result = _format_precedent_search_results(data, "expc", f"법령해석례ID:{interpretation_id}", 1)
         return TextContent(type="text", text=result)

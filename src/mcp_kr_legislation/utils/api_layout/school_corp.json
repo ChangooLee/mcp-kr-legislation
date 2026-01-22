@@ -1,0 +1,178 @@
+{
+  "category": "학칙ㆍ공단ㆍ공공기관",
+  "category_en": "school_corp",
+  "updated_at": "2026-01-22",
+  "api_count": 2,
+  "apis": [
+    {
+      "id": "1",
+      "title": "학칙ㆍ공단ㆍ공공기관 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=school(or",
+      "target": "school(or",
+      "api_type": "목록조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (대학 : school / 지방공사공단 : public / 공공기관 : pi)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "nw",
+          "type": "int",
+          "description": "(1: 현행, 2: 연혁, 기본값: 현행)"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 1 : 규정명(default) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "학칙공단 종류별 검색 1 : 학칙 / 2 : 학교규정 / 3 : 학교지침 / 4 : 학교시행세칙 / 5 : 공단규정, 공공기관규정"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "제정·개정 구분 200401 : 제정 / 200402 : 전부개정 / 200403 : 일부개정 / 200404 : 폐지 200405 : 일괄개정 / 200406 : 일괄폐지 / 200407 : 폐지제정 200408 : 정정 / 200409 : 타법개정 / 200410 : 타법폐지"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "발령일자 검색"
+        },
+        {
+          "name": "prmlYd",
+          "type": "string",
+          "description": "발령일자 범위 검색"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "발령번호 검색"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 lasc : 학칙공단명 오름차순(default) ldes : 학칙공단명 내림차순 dasc : 발령일자 오름차순 ddes : 발령일자 내림차순 nasc : 발령번호 오름차순 ndes : 발령번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=school&query=학교&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=school&query=학교&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawSearch.do?OC=test&target=school&query=학교&type=JSON"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "학칙ㆍ공단ㆍ공공기관 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=school(or",
+      "target": "school(or",
+      "api_type": "본문조회",
+      "sub_category": "본문",
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (대학 : school / 지방공사공단 : public / 공공기관 : pi)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "학칙공단 일련번호"
+        },
+        {
+          "name": "LID",
+          "type": "char",
+          "description": "학칙공단 ID"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "학칙공단명 조회하고자 하는 정확한 학칙공단명을 입력"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&LID=2055825&type=HTML"
+        },
+        {
+          "format": "HTML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&ID=2200000075994&type=HTML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&LID=2055825&type=XML"
+        },
+        {
+          "format": "XML",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&ID=2200000075994&type=XML"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&LID=2055825&type=JSON"
+        },
+        {
+          "format": "JSON",
+          "url": "http://www.law.go.kr/DRF/lawService.do?OC=test&target=school&ID=2200000075994&type=JSON"
+        }
+      ]
+    }
+  ]
+}

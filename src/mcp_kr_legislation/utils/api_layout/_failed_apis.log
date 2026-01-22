@@ -1,0 +1,23 @@
+# 크롤링 실패 API 목록
+# 생성일: 2026-01-22
+# 총 19개
+
+row=1, col=2, title='현행법령(시행일) 목록 조회 (국가법령정보센터 기준)', category='법령'
+row=1, col=3, title='현행법령(시행일) 본문 조회 (국가법령정보센터 기준)', category='법령'
+row=4, col=3, title='현행법령(시행일) 본문 조항호목 조회 (국가법령정보센터 기준)', category='법령'
+row=33, col=2, title='방송미디어통신위원회 결정문 목록 조회', category='위원회 결정문'
+row=33, col=3, title='방송미디어통신위원회 결정문 본문 조회', category='위원회 결정문'
+row=34, col=2, title='산업재해보상보험재심사위원회 결정문 목록 조회', category='위원회 결정문'
+row=34, col=3, title='산업재해보상보험재심사위원회 결정문 본문 조회', category='위원회 결정문'
+row=81, col=2, title='과학기술정보통신부 법령해석 목록', category='중앙부처 1차 해석'
+row=81, col=3, title='과학기술정보통신부 법령해석 본문', category='중앙부처 1차 해석'
+row=110, col=2, title='행정중심복합도시건설청 법령해석 목록', category='중앙부처 1차 해석'
+row=110, col=3, title='행정중심복합도시건설청 법령해석 본문', category='중앙부처 1차 해석'
+row=111, col=2, title='조세심판원 특별행정심판례 목록 조회', category='특별행정심판'
+row=111, col=3, title='조세심판원 특별행정심판례 본문 조회', category='특별행정심판'
+row=112, col=2, title='해양안전심판원 특별행정심판례 목록 조회', category='특별행정심판'
+row=112, col=3, title='해양안전심판원 특별행정심판례 본문 조회', category='특별행정심판'
+row=113, col=2, title='국민권익위원회 특별행정심판례 목록 조회', category='특별행정심판'
+row=113, col=3, title='국민권익위원회 특별행정심판례 본문 조회', category='특별행정심판'
+row=114, col=2, title='인사혁신처 소청심사위원회 특별행정심판재결례 목록 조회', category='특별행정심판'
+row=114, col=3, title='인사혁신처 소청심사위원회 특별행정심판재결례 본문 조회', category='특별행정심판'

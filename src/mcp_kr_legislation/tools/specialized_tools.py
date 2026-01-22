@@ -177,9 +177,9 @@ def search_tax_tribunal(query: Optional[str] = None, display: int = 20, page: in
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("taxTibunal", params)
-        url = _generate_api_url("taxTibunal", params)
-        result = _format_search_results(data, "taxTibunal", search_query, min(display, 100))
+        data = _make_legislation_request("ttSpecialDecc", params)
+        url = _generate_api_url("ttSpecialDecc", params)
+        result = _format_search_results(data, "ttSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"조세심판원 검색 중 오류: {str(e)}")
@@ -200,9 +200,125 @@ def search_maritime_safety_tribunal(query: Optional[str] = None, display: int = 
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("marSafeTibunal", params)
-        url = _generate_api_url("marSafeTibunal", params)
-        result = _format_search_results(data, "marSafeTibunal", search_query, min(display, 100))
+        data = _make_legislation_request("kmstSpecialDecc", params)
+        url = _generate_api_url("kmstSpecialDecc", params)
+        result = _format_search_results(data, "kmstSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"해양안전심판원 검색 중 오류: {str(e)}") 
+        return TextContent(type="text", text=f"해양안전심판원 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_tax_tribunal_detail", description="""조세심판원 특별행정심판례 상세내용을 조회합니다.
+
+매개변수:
+- tribunal_id: 심판례ID
+
+사용 예시: get_tax_tribunal_detail(tribunal_id="1018160")""")
+def get_tax_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
+    """조세심판원 특별행정심판례 상세 조회"""
+    params = {"ID": str(tribunal_id)}
+    try:
+        data = _make_legislation_request("ttSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "ttSpecialDecc", str(tribunal_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"조세심판원 상세조회 중 오류: {str(e)}")
+
+@mcp.tool(name="get_maritime_safety_tribunal_detail", description="""해양안전심판원 특별행정심판례 상세내용을 조회합니다.
+
+매개변수:
+- tribunal_id: 심판례ID
+
+사용 예시: get_maritime_safety_tribunal_detail(tribunal_id="2")""")
+def get_maritime_safety_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
+    """해양안전심판원 특별행정심판례 상세 조회"""
+    params = {"ID": str(tribunal_id)}
+    try:
+        data = _make_legislation_request("kmstSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "kmstSpecialDecc", str(tribunal_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"해양안전심판원 상세조회 중 오류: {str(e)}")
+
+# ===========================================
+# 추가 특별행정심판 도구들 (2026-01-21 추가)
+# ===========================================
+
+@mcp.tool(name="search_acrc_special_tribunal", description="""국민권익위원회 특별행정심판재결례를 검색합니다.
+
+매개변수:
+- query: 검색어 (선택) - 키워드
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_acrc_special_tribunal("자동차"), search_acrc_special_tribunal("면허", display=50)""")
+def search_acrc_special_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """국민권익위원회 특별행정심판재결례 검색"""
+    params = {"display": min(display, 100), "page": page}
+    if query and query.strip():
+        params["query"] = query.strip()
+        search_query = query.strip()
+    else:
+        search_query = "전체"
+    
+    try:
+        data = _make_legislation_request("acrSpecialDecc", params)
+        result = _format_search_results(data, "acrSpecialDecc", search_query, min(display, 100))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"국민권익위원회 특별행정심판 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_acrc_special_tribunal_detail", description="""국민권익위원회 특별행정심판재결례 상세내용을 조회합니다.
+
+매개변수:
+- tribunal_id: 재결례ID
+
+사용 예시: get_acrc_special_tribunal_detail(tribunal_id="123456")""")
+def get_acrc_special_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
+    """국민권익위원회 특별행정심판재결례 상세 조회"""
+    params = {"ID": str(tribunal_id)}
+    try:
+        data = _make_legislation_request("acrSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "acrSpecialDecc", str(tribunal_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"국민권익위원회 특별행정심판 상세조회 중 오류: {str(e)}")
+
+@mcp.tool(name="search_mpm_appeal_tribunal", description="""인사혁신처 소청심사위원회 특별행정심판재결례를 검색합니다.
+
+매개변수:
+- query: 검색어 (선택) - 키워드
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_mpm_appeal_tribunal("징계"), search_mpm_appeal_tribunal("해임", display=50)""")
+def search_mpm_appeal_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """인사혁신처 소청심사위원회 특별행정심판재결례 검색"""
+    params = {"display": min(display, 100), "page": page}
+    if query and query.strip():
+        params["query"] = query.strip()
+        search_query = query.strip()
+    else:
+        search_query = "전체"
+    
+    try:
+        data = _make_legislation_request("adapSpecialDecc", params)
+        result = _format_search_results(data, "adapSpecialDecc", search_query, min(display, 100))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_mpm_appeal_tribunal_detail", description="""인사혁신처 소청심사위원회 특별행정심판재결례 상세내용을 조회합니다.
+
+매개변수:
+- tribunal_id: 재결례ID
+
+사용 예시: get_mpm_appeal_tribunal_detail(tribunal_id="123456")""")
+def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
+    """인사혁신처 소청심사위원회 특별행정심판재결례 상세 조회"""
+    params = {"ID": str(tribunal_id)}
+    try:
+        data = _make_legislation_request("adapSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "adapSpecialDecc", str(tribunal_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 상세조회 중 오류: {str(e)}") 

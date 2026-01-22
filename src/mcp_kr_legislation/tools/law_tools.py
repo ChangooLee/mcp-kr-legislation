@@ -165,8 +165,9 @@ def _make_legislation_request(target: str, params: dict, is_detail: bool = False
         if target == "elaw":
             logger.info(f"영문법령 API 요청 URL: {url}")
         
-        # 요청 실행
-        response = requests.get(url, timeout=timeout)
+        # 요청 실행 - Referer 헤더 필수 (일부 API에서 404 방지)
+        headers = {"Referer": "https://open.law.go.kr/"}
+        response = requests.get(url, headers=headers, timeout=timeout)
         response.raise_for_status()
         
         # 응답 내용 확인 (영문 법령의 경우)
@@ -2099,7 +2100,8 @@ def search_law_articles(
             }
             
             url = f"{legislation_config.search_base_url}?{urlencode(params)}"
-            response = requests.get(url, timeout=30)
+            headers = {"Referer": "https://open.law.go.kr/"}
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             
             data = response.json()
@@ -2501,7 +2503,11 @@ def _format_law_articles(data: dict, law_id: str, url: str = "") -> str:
 - search_old_and_new_law("근로", display=50)  # 근로 관련 법령 비교
 
 참고: 법령 개정 전후의 변경사항을 비교할 수 있는 자료를 검색합니다.""")
-def search_old_and_new_law(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+def search_old_and_new_law(
+    query: Annotated[Optional[str], "검색어 (법령명)"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1
+) -> TextContent:
     """신구법비교 검색
     
     Args:
@@ -2546,7 +2552,11 @@ def search_old_and_new_law(query: Optional[str] = None, display: int = 20, page:
 - search_three_way_comparison("건축법", display=30)
 
 참고: 상위법령-하위법령-위임조문의 3단계 관계를 비교분석하는 자료입니다.""")
-def search_three_way_comparison(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+def search_three_way_comparison(
+    query: Annotated[Optional[str], "검색어 (법령명)"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1
+) -> TextContent:
     """3단비교 검색
     
     Args:

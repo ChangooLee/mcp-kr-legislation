@@ -231,7 +231,9 @@ def _make_legislation_request(target: str, params: dict, is_detail: bool = False
         
         base_params["target"] = target
         
-        response = requests.get(url, params=base_params, timeout=15)
+        # Referer 헤더 필수 (일부 API에서 404 방지)
+        headers = {"Referer": "https://open.law.go.kr/"}
+        response = requests.get(url, params=base_params, headers=headers, timeout=15)
         response.raise_for_status()
         
         data = response.json()

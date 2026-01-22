@@ -43,6 +43,13 @@ class LegislationClient:
         self.service_base_url = self.config.service_base_url
         self.timeout = self.config.default_timeout
         
+        # API 호출에 필요한 헤더 설정 (Referer 헤더가 필수로 확인됨)
+        self.headers = {
+            "Referer": "https://open.law.go.kr/LSO/openApi/guideList.do",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+        }
+        
         logger.info(f"법제처 API 클라이언트 초기화 완료 - OC: {self.oc}")
 
     def _make_request(self, 
@@ -81,9 +88,9 @@ class LegislationClient:
         
         try:
             if method.upper() == "GET":
-                response = requests.get(url, timeout=self.timeout)
+                response = requests.get(url, headers=self.headers, timeout=self.timeout)
             elif method.upper() == "POST":
-                response = requests.post(url, data=params, timeout=self.timeout)
+                response = requests.post(url, data=params, headers=self.headers, timeout=self.timeout)
             else:
                 raise ValueError(f"지원하지 않는 HTTP 메서드: {method}")
                 
