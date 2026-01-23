@@ -7,6 +7,41 @@ description: 법제처 OPEN API를 MCP 프로젝트에 통합할 때 사용. law
 
 법제처 OPEN API를 MCP 프로젝트에 통합하는 방법입니다.
 
+---
+
+## ⚠️ 데이터 기준점 (Source of Truth)
+
+**모든 도구 개발의 기준점은 `api_layout/*.json` 파일입니다.**
+
+| 항목 | 경로 | 역할 |
+|------|------|------|
+| **API 레이아웃** | `src/mcp_kr_legislation/utils/api_layout/*.json` | **API 정의의 유일한 기준점** |
+| **공식 가이드** | https://open.law.go.kr/LSO/openApi/guideList.do | API 레이아웃의 원본 소스 |
+| **TOOL_CHECKLIST.md** | `skills/api-integration/TOOL_CHECKLIST.md` | 구현 진행 추적 (업데이트만, 근거 아님) |
+
+### 워크플로우
+
+```
+공식 가이드 → api_crawler.py → api_layout/*.json → 도구 개발 → TOOL_CHECKLIST.md 업데이트
+              (크롤링)           (기준점)          (구현)        (추적)
+```
+
+> **주의**: TOOL_CHECKLIST.md는 진행 상황을 추적하는 문서입니다.  
+> API 정보가 필요하면 반드시 `api_layout/*.json`을 참조하세요.
+
+### 도구 개발 방식 결정
+
+**`api_layout/*.json`의 `sample_urls` 필드로 개발 필요 여부를 결정합니다.**
+
+| sample_urls 상태 | 개발 방식 |
+|------------------|-----------|
+| JSON 포함 | ✅ JSON API 직접 호출하여 도구 개발 |
+| HTML만 | ❌ **도구 개발 불필요** (JSON 미지원) |
+
+> **원칙**: `sample_urls`에 JSON URL이 없으면 해당 API는 도구 개발 대상이 아닙니다.
+
+---
+
 ## API 레이아웃 (JSON)
 
 추출된 API 정보는 JSON 파일로 관리됩니다:

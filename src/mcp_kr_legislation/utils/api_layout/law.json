@@ -1793,8 +1793,117 @@
       "target": "eflaw",
       "api_type": "목록조회",
       "sub_category": "본문",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : eflaw(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 법령명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "법령명에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 법령오름차순) ldes : 법령내림차순 dasc : 공포일자 오름차순 ddes : 공포일자 내림차순 nasc : 공포번호 오름차순 ndes : 공포번호 내림차순 efasc : 시행일자 오름차순 efdes : 시행일자 내림차순"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "법령의 공포일자 검색"
+        },
+        {
+          "name": "efYd",
+          "type": "string",
+          "description": "시행일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancYd",
+          "type": "string",
+          "description": "공포일자 범위 검색(20090101~20090130)"
+        },
+        {
+          "name": "ancNo",
+          "type": "string",
+          "description": "공포번호 범위 검색(306~400)"
+        },
+        {
+          "name": "rrClsCd",
+          "type": "string",
+          "description": "법령 제개정 종류 (300201-제정 / 300202-일부개정 / 300203-전부개정 300204-폐지 / 300205-폐지제정 / 300206-일괄개정 300207-일괄폐지 / 300209-타법개정 / 300210-타법폐지 300208-기타)"
+        },
+        {
+          "name": "nb",
+          "type": "int",
+          "description": "법령의 공포번호 검색"
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "소관부처별 검색(소관부처코드 제공)"
+        },
+        {
+          "name": "knd",
+          "type": "string",
+          "description": "법령종류(코드제공)"
+        },
+        {
+          "name": "lsChapNo",
+          "type": "string",
+          "description": "법령분류 (01-제1편 / 02-제2편 / 03-제3편... 44-제44편)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=eflaw&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=eflaw&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=eflaw&type=HTML"
+        }
+      ]
     },
     {
       "id": "25",
@@ -1803,8 +1912,72 @@
       "target": "eflaw",
       "api_type": "본문조회",
       "sub_category": "본문",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : eflaw(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "JO",
+          "type": "int",
+          "description": "조번호 생략(기본값) : 모든 조를 표시함 6자리숫자 : 조번호(4자리)+조가지번호(2자리) (000200 : 2조, 001002 : 10조의 2)"
+        },
+        {
+          "name": "LANG",
+          "type": "char",
+          "description": "원문/한글 여부 생략(기본값) : 한글 (KO : 한글, ORI : 원문)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&type=HTML"
+        }
+      ]
     },
     {
       "id": "26",
@@ -1813,8 +1986,72 @@
       "target": "eflawjosub",
       "api_type": "본문조회",
       "sub_category": "조항호목",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : eflawjosub(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char",
+          "description": "법령 ID (ID 또는 MST 중 하나는 반드시 입력)"
+        },
+        {
+          "name": "MST",
+          "type": "char",
+          "description": "법령 마스터 번호 - 법령테이블의 lsi_seq 값을 의미함"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령의 법령명(법령명 입력시 해당 법령 링크)"
+        },
+        {
+          "name": "LD",
+          "type": "int",
+          "description": "법령의 공포일자"
+        },
+        {
+          "name": "LN",
+          "type": "int",
+          "description": "법령의 공포번호"
+        },
+        {
+          "name": "JO",
+          "type": "int",
+          "description": "조번호 생략(기본값) : 모든 조를 표시함 6자리숫자 : 조번호(4자리)+조가지번호(2자리) (000200 : 2조, 001002 : 10조의 2)"
+        },
+        {
+          "name": "LANG",
+          "type": "char",
+          "description": "원문/한글 여부 생략(기본값) : 한글 (KO : 한글, ORI : 원문)"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflawjosub&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflawjosub&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflawjosub&type=HTML"
+        }
+      ]
     }
   ]
 }

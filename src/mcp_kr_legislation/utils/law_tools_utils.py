@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 def format_search_law_results(data: Dict[str, Any], query: str) -> str:
     """
     search_law 도구 전용 검색 결과 포맷팅 함수
+    - 정확 매치 우선 정렬 적용
     """
     try:
         result = f"**'{query}' 검색 결과**"
@@ -39,9 +40,32 @@ def format_search_law_results(data: Dict[str, Any], query: str) -> str:
         if not isinstance(target_data, list):
             target_data = [target_data] if target_data else []
         
-        max_results = min(len(target_data), 20)  # 최대 20개만 표시
+        # 정확 매치 우선 정렬
+        query_normalized = query.replace(" ", "").lower()
         
-        for i, item in enumerate(target_data[:max_results], 1):
+        def sort_key(item):
+            if not isinstance(item, dict):
+                return (3, "")
+            title = item.get('법령명한글', '') or item.get('법령명', '') or ''
+            title_normalized = title.replace(" ", "").lower()
+            
+            # 1순위: 정확 매치
+            if title_normalized == query_normalized:
+                return (0, title)
+            # 2순위: 검색어로 시작
+            if title_normalized.startswith(query_normalized):
+                return (1, title)
+            # 3순위: 검색어 포함
+            if query_normalized in title_normalized:
+                return (2, title)
+            # 4순위: 기타
+            return (3, title)
+        
+        sorted_data = sorted(target_data, key=sort_key)
+        
+        max_results = min(len(sorted_data), 20)  # 최대 20개만 표시
+        
+        for i, item in enumerate(sorted_data[:max_results], 1):
             if not isinstance(item, dict):
                 continue
             
@@ -330,6 +354,7 @@ def get_available_articles(article_units: List[Dict], limit: int = 10) -> List[s
 def format_article_content(found_article: Dict, law_name: str, article_key: str) -> str:
     """
     get_law_article_by_key 도구 전용 조문 내용 포맷팅 함수
+    - 항/호/목 번호 중복 출력 방지
     """
     try:
         content = found_article.get("조문내용", "")
@@ -360,7 +385,6 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
         if isinstance(hangs, list) and hangs:
             for hang in hangs:
                 if isinstance(hang, dict):
-                    hang_num = hang.get("항번호", "")
                     hang_content = hang.get("항내용", "")
                     if hang_content:
                         # 리스트인 경우 문자열로 변환
@@ -371,15 +395,15 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
                         if isinstance(hang_content, str):
                             clean_hang = re.sub(r'<[^>]+>', '', hang_content)
                             clean_hang = clean_hang.strip()
+                        # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
                         if clean_hang:
-                            result += f"① {hang_num} {clean_hang}\n\n"
+                            result += f"{clean_hang}\n\n"
                     
                     # 호 처리
                     hos = hang.get("호", [])
                     if isinstance(hos, list) and hos:
                         for ho in hos:
                             if isinstance(ho, dict):
-                                ho_num = ho.get("호번호", "")
                                 ho_content = ho.get("호내용", "")
                                 if ho_content:
                                     # 리스트인 경우 문자열로 변환
@@ -390,15 +414,15 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
                                     if isinstance(ho_content, str):
                                         clean_ho = re.sub(r'<[^>]+>', '', ho_content)
                                         clean_ho = clean_ho.strip()
+                                    # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
                                     if clean_ho:
-                                        result += f"  {ho_num}. {clean_ho}\n"
+                                        result += f"  {clean_ho}\n"
                                 
                                 # 목 처리
                                 moks = ho.get("목", [])
                                 if isinstance(moks, list) and moks:
                                     for mok in moks:
                                         if isinstance(mok, dict):
-                                            mok_num = mok.get("목번호", "")
                                             mok_content = mok.get("목내용", "")
                                             if mok_content:
                                                 # 리스트인 경우 문자열로 변환
@@ -409,8 +433,9 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
                                                 if isinstance(mok_content, str):
                                                     clean_mok = re.sub(r'<[^>]+>', '', mok_content)
                                                     clean_mok = clean_mok.strip()
+                                                # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
                                                 if clean_mok:
-                                                    result += f"    {mok_num}) {clean_mok}\n"
+                                                    result += f"    {clean_mok}\n"
                         result += "\n"
         
         # 추가 정보

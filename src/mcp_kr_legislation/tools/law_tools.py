@@ -723,7 +723,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             if 'LawSearch' in data:
                 available_keys = list(data['LawSearch'].keys())
                 total_cnt = data['LawSearch'].get('totalCnt', 0)
-                return f"'{search_query}'에 대한 검색 결과 파싱 실패.\n\n🔍 **디버깅 정보:**\n- 총 {total_cnt}건 검색됨\n- 사용 가능한 키: {available_keys}\n- 타겟: {target}\n\n**해결방법:** _format_search_results 함수의 타겟 처리 로직을 확인하세요."
+                return f"'{search_query}'에 대한 검색 결과 파싱 실패.\n\n**디버깅 정보:**\n- 총 {total_cnt}건 검색됨\n- 사용 가능한 키: {available_keys}\n- 타겟: {target}\n\n**해결방법:** _format_search_results 함수의 타겟 처리 로직을 확인하세요."
             else:
                 return f"'{search_query}'에 대한 검색 결과가 없습니다."
         
@@ -731,6 +731,32 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
         if not isinstance(target_data, list):
             logger.error(f"슬라이싱 전 예상치 못한 타입: {type(target_data)} (값: {str(target_data)[:100]}...)")
             return f"'{search_query}' 검색 결과 처리 중 오류가 발생했습니다."
+        
+        # 법령 검색인 경우 정확 매치 우선 정렬
+        if target in ["law", "elaw", "eflaw"]:
+            query_normalized = search_query.replace(" ", "").lower()
+            
+            def sort_key(item):
+                if not isinstance(item, dict):
+                    return (3, "")
+                title = item.get('법령명한글', '') or item.get('법령명', '') or item.get('법령명영문', '') or ''
+                title_normalized = title.replace(" ", "").lower()
+                # HTML 태그 제거 후 비교
+                title_normalized = re.sub(r'<[^>]+>', '', title_normalized)
+                
+                # 1순위: 정확 매치
+                if title_normalized == query_normalized:
+                    return (0, title)
+                # 2순위: 검색어로 시작
+                if title_normalized.startswith(query_normalized):
+                    return (1, title)
+                # 3순위: 검색어 포함
+                if query_normalized in title_normalized:
+                    return (2, title)
+                # 4순위: 기타
+                return (3, title)
+            
+            target_data = sorted(target_data, key=sort_key)
         
         # 결과 개수 제한
         limited_data = target_data[:max_results]
@@ -772,9 +798,12 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 영문 법령인 경우 영문명을 먼저 표시
             elif target == "elaw" and '법령명영문' in item and item['법령명영문']:
                 title = item['법령명영문']
+                # HTML 태그 제거 (검색 결과에 <strong> 등이 포함될 수 있음)
+                title = re.sub(r'<[^>]+>', '', title)
                 # 한글명도 함께 표시
                 if '법령명한글' in item and item['법령명한글']:
-                    title += f" ({item['법령명한글']})"
+                    korean_title = re.sub(r'<[^>]+>', '', item['법령명한글'])
+                    title += f" ({korean_title})"
             else:
                 title = None
                 for key in title_keys:
@@ -782,13 +811,19 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         title = str(item[key]).strip()
                         break
             
+            # delHst 타겟은 법령명이 없으므로 별도 처리
+            if not title and target == "delHst":
+                구분 = item.get('구분명', '법령')
+                일련번호 = item.get('일련번호', '')
+                title = f"삭제된 {구분} (일련번호: {일련번호})"
+            
             # 디버깅: 실제 키 이름들 확인
             if not title:
                 # 응답에서 사용 가능한 모든 키 확인
                 available_keys = list(item.keys()) if isinstance(item, dict) else []
                 logger.info(f"사용 가능한 키들: {available_keys}")
-                # 법령명으로 보이는 키들 찾기
-                potential_title_keys = [k for k in available_keys if '법령' in str(k) or '명' in str(k) or 'title' in str(k).lower()]
+                # 법령명으로 보이는 키들 찾기 (구분명 제외)
+                potential_title_keys = [k for k in available_keys if ('법령' in str(k) or 'title' in str(k).lower()) and k != '구분명']
                 if potential_title_keys:
                     title = str(item.get(potential_title_keys[0], '')).strip()
             
@@ -799,14 +834,17 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             
             # 상세 정보 추가 (실제 API 응답 키 이름들)
             detail_fields = {
-                '법령ID': ['법령ID', 'ID', 'id', 'lawId', 'mstSeq'],
-                '법령일련번호': ['법령일련번호', 'MST', 'mst', 'lawMst', '법령MST'],
+                '법령ID': ['법령ID', 'ID', 'lawId', 'mstSeq'],  # 'id' 제외 (순번과 혼동 방지)
+                '법령일련번호': ['법령일련번호', 'MST', 'mst', 'lawMst', '법령MST', '일련번호'],  # delHst용 일련번호 추가
                 '신구법일련번호': ['신구법일련번호', '신구법MST'],  # 행정규칙 신구법비교용
                 '행정규칙일련번호': ['행정규칙일련번호', '행정규칙MST'],  # 행정규칙용
                 '조약일련번호': ['조약일련번호', '조약MST'],  # 조약용
                 '자치법규일련번호': ['자치법규일련번호', '자치법규MST'],  # 자치법규용
+                '법령약칭명': ['법령약칭명', '약칭명', 'abbreviation'],  # 법령 약칭용
                 '공포일자': ['공포일자', 'date', 'announce_date', '공포일', 'promulgateDate', '공포년월일'],
                 '시행일자': ['시행일자', 'ef_date', 'effective_date', '시행일', 'enforceDate', '시행년월일'], 
+                '삭제일자': ['삭제일자'],  # delHst용
+                '구분명': ['구분명'],  # delHst용
                 '소관부처명': ['소관부처명', 'ministry', 'department', '소관부처', 'ministryNm', '주무부처'],
                 '법령구분명': ['법령구분명', 'type', 'law_type', '법령구분', 'lawType', '법령종류'],
                 '제개정구분명': ['제개정구분명', 'revision', '제개정구분', 'revisionType', '개정구분']
@@ -837,29 +875,26 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         raw_value = None
                 
                 if raw_value:
-                        
-                        # 소관부처명 중복 처리
-                        if display_name == '소관부처명':
-                            if isinstance(raw_value, list):
-                                # 리스트인 경우 중복 제거 후 첫 번째 항목만 사용
-                                unique_values = list(dict.fromkeys(raw_value))  # 순서 유지하며 중복 제거
-                                value = str(unique_values[0]).strip() if unique_values else ""
-                            elif isinstance(raw_value, str):
-                                # 문자열인 경우 콤마로 분할 후 중복 제거
-                                if ',' in raw_value:
-                                    parts = [p.strip() for p in raw_value.split(',') if p.strip()]
-                                    unique_parts = list(dict.fromkeys(parts))  # 순서 유지하며 중복 제거
-                                    value = unique_parts[0] if unique_parts else ""
-                                else:
-                                    value = str(raw_value).strip()
+                    # 소관부처명 중복 처리
+                    if display_name == '소관부처명':
+                        if isinstance(raw_value, list):
+                            # 리스트인 경우 중복 제거 후 첫 번째 항목만 사용
+                            unique_values = list(dict.fromkeys(raw_value))  # 순서 유지하며 중복 제거
+                            value = str(unique_values[0]).strip() if unique_values else ""
+                        elif isinstance(raw_value, str):
+                            # 문자열인 경우 콤마로 분할 후 중복 제거
+                            if ',' in raw_value:
+                                parts = [p.strip() for p in raw_value.split(',') if p.strip()]
+                                unique_parts = list(dict.fromkeys(parts))  # 순서 유지하며 중복 제거
+                                value = unique_parts[0] if unique_parts else ""
                             else:
                                 value = str(raw_value).strip()
                         else:
-                            # 다른 필드는 기존 방식대로
                             value = str(raw_value).strip()
-                        
-                        if value:
-                            break
+                    else:
+                        # 다른 필드는 기존 방식대로
+                        value = str(raw_value).strip()
+                
                 if value:
                     result += f"   {display_name}: {value}\n"
             
@@ -888,7 +923,18 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         break
             
             # 상세조회 가이드 (타겟별 특별 처리)
-            if target == "admrulOldAndNew":
+            if target == "oldAndNew":
+                # 신구법비교는 신구법일련번호 사용 (id는 순번일 뿐)
+                comparison_mst = None
+                for key in ['신구법일련번호', '신구법MST', 'MST']:
+                    if key in item and item[key]:
+                        comparison_mst = item[key]
+                        break
+                if comparison_mst:
+                    result += f"   상세조회: get_old_and_new_law_detail(mst=\"{comparison_mst}\")\n"
+                else:
+                    result += f"   참고: 상세조회용 일련번호를 확인할 수 없습니다.\n"
+            elif target == "admrulOldAndNew":
                 # 행정규칙 신구법비교는 신구법일련번호 사용
                 comparison_id = None
                 for key in ['신구법일련번호', '신구법MST']:
@@ -932,6 +978,11 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{ordinance_id}\")\n"
                 else:
                     result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{law_id}\")\n"
+            elif target == "delHst":
+                # 삭제된 법령 데이터는 상세조회 불가 (삭제되었으므로)
+                del_seq = item.get('일련번호', '')
+                if del_seq:
+                    result += f"   참고: 삭제된 법령입니다. 일련번호 {del_seq}로 복원 필요 시 법제처에 문의하세요.\n"
             elif mst:
                 result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             elif law_id:
@@ -1116,7 +1167,7 @@ def _format_effective_law_articles(data: dict, law_id: str, article_no: Optional
                 
                 # 조문 변경 여부
                 if article.get('조문변경여부'):
-                    result += f"📝 **변경여부:** {article.get('조문변경여부')}\n\n"
+                    result += f"**변경여부:** {article.get('조문변경여부')}\n\n"
                 
                 # 조문 상세 내용을 위한 안내
                 result += f"**상세 내용 보기:**\n"
@@ -1286,36 +1337,25 @@ def _safe_format_law_detail(data: dict, search_term: str, url: str) -> str:
 
 @mcp.tool(
     name="search_law",
-    description="""구체적인 법령명을 알고 있을 때 사용하는 정밀 검색 도구입니다.
+    description="""법령을 검색합니다. 가장 기본적인 법령 검색 도구입니다.
 
-언제 사용:
-- 정확한 법령명을 알고 있을 때 (예: "은행법", "소득세법", "개인정보보호법")
-- search_law_unified로 찾은 구체적인 법령명을 상세 검색할 때
+[중요] query 입력 가이드:
+- 올바른 예: "은행법", "소득세법", "개인정보 보호법", "금융"
+- 잘못된 예: "은행법에서 대출 규제 조항을 찾아줘" (문장 형태 금지)
+- 키워드만 입력하세요. 문장을 입력하면 검색이 실패합니다.
 
-언제 사용 안함:
-- 일반적인 키워드 검색 시 → search_law_unified 사용
-- 법령명을 모를 때 → search_law_unified 사용
-    
 매개변수:
-- query: 법령명 (필수) - 정확한 법령명
-- search: 검색범위 (1=법령명으로만, 2=본문내용 포함)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 옵션
+- query: 법령명 또는 키워드만 입력 (문장 금지)
+- search: 1=법령명 검색(기본), 2=본문 검색
+- display: 결과 개수 (기본 20, 최대 100)
 
-반환정보: 법령명, 법령ID, 법령일련번호(MST), 공포일자, 시행일자, 소관부처, 제개정구분
+반환정보: 법령명, MST(법령일련번호), 공포일자, 시행일자
 
-특별 기능:
-1. 일반 키워드 매핑: "금융", "세무", "개인정보", "은행" → 관련 법령 자동 검색
-2. 법령명 자동 보정: "법" 추가, 공백 제거 등
-3. 실패 시 본문검색 자동 전환 (하지만 결과가 부정확할 수 있음)
-
-권장 워크플로우:
-1단계: search_law_unified("금융") → 관련 법령 목록 확인
-2단계: search_law("은행법") → 특정 법령 정밀 검색
-
-사용 예시: search_law("은행법"), search_law("소득세법"), search_law("개인정보보호법")""",
-    tags={"법령검색", "법률", "대통령령", "시행령", "시행규칙", "현행법", "법조문", "제정", "개정", "폐지", "정밀검색"}
+사용 예시:
+- search_law("은행법")
+- search_law("개인정보")
+- search_law("세금", search=2)  # 본문 검색""",
+    tags={"법령검색", "법률", "대통령령", "시행령", "현행법"}
 )
 def search_law(
     query: Annotated[Optional[str], "검색어 (법령명)"] = None,
@@ -1538,34 +1578,24 @@ def search_law(
 
 @mcp.tool(
     name="search_english_law", 
-    description="""구체적인 영문 법령명을 알고 있을 때 사용하는 영문법령 정밀 검색 도구입니다.
+    description="""영문 법령을 검색합니다.
 
-언제 사용:
-- 정확한 영문 법령명을 알고 있을 때 (예: "Civil Act", "Commercial Act", "Banking Act")
-- search_law_unified로 찾은 구체적인 영문 법령명을 상세 검색할 때
-
-언제 사용 안함:
-- 일반적인 키워드 검색 시 → search_law_unified(target="elaw") 사용
-- 영문 법령명을 모를 때 → search_law_unified(target="elaw") 사용
+[중요] query 입력 가이드:
+- 올바른 예: "Banking Act", "Civil", "Tax"
+- 잘못된 예: "Find the English version of banking law" (문장 금지)
+- 영문 키워드만 입력하세요.
 
 매개변수:
-- query: 영문 법령명 (필수) - 정확한 영문 법령명
-- search: 검색범위 (1=법령명으로만, 2=본문내용 포함)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 옵션
-- law_type: 법령종류 (L=법률, P=대통령령, M=총리령부령)
-- promulgate_date: 공포일자 (YYYYMMDD)
-- enforce_date: 시행일자 (YYYYMMDD)
+- query: 영문 법령명 또는 키워드만 (문장 금지)
+- display: 결과 개수 (기본 20)
 
-반환정보: 영문법령명, 한글법령명, 법령ID, 법령일련번호(MST), 공포일자, 시행일자, 소관부처
+반환정보: 영문법령명, 한글법령명, MST
 
-권장 워크플로우:
-1단계: search_law_unified("Banking", target="elaw") → 관련 영문법령 목록 확인
-2단계: search_english_law("Banking Act") → 특정 영문법령 정밀 검색
-
-사용 예시: search_english_law("Civil Act"), search_english_law("Commercial Act"), search_english_law("Labor Standards Act")""",
-    tags={"영문법령", "영어번역", "English", "국제법무", "외국인", "번역", "Civil Act", "Commercial Act", "한국법"}
+사용 예시:
+- search_english_law("Banking Act")
+- search_english_law("Tax")
+- search_english_law("Personal Information")""",
+    tags={"영문법령", "English", "번역"}
 )
 def search_english_law(
     query: Annotated[Optional[str], "검색어 (영문 법령명)"] = None,
@@ -2151,12 +2181,17 @@ def _format_law_system_diagram_results(data: dict, search_term: str) -> str:
         # 다양한 응답 구조 처리
         diagram_data = []
         
-        # 1. LawSearch 구조 확인
-        if 'LawSearch' in data:
+        # 1. LsStmdSearch 구조 확인 (실제 API 응답 구조)
+        if 'LsStmdSearch' in data:
+            law_search = data['LsStmdSearch']
+            diagram_data = law_search.get('law', [])
+        
+        # 2. LawSearch 구조 확인 (레거시 지원)
+        elif 'LawSearch' in data:
             law_search = data['LawSearch']
             
             # 가능한 키들 확인
-            possible_keys = ['lsStmd', 'law', 'systemDiagram', 'diagram']
+            possible_keys = ['law', 'lsStmd', 'systemDiagram', 'diagram']
             for key in possible_keys:
                 if key in law_search:
                     diagram_data = law_search[key]
@@ -2172,11 +2207,11 @@ def _format_law_system_diagram_results(data: dict, search_term: str) -> str:
                         diagram_data = [value]
                         break
         
-        # 2. 직접 구조 확인
+        # 3. 직접 구조 확인
         elif 'lsStmd' in data:
             diagram_data = data['lsStmd']
-        elif 'systemDiagram' in data:
-            diagram_data = data['systemDiagram']
+        elif 'law' in data:
+            diagram_data = data['law']
         else:
             # 응답 구조 분석
             for key, value in data.items():
@@ -2537,6 +2572,82 @@ def search_old_and_new_law(
         logger.error(f"신구법비교 검색 중 오류: {e}")
         return TextContent(type="text", text=f"신구법비교 검색 중 오류가 발생했습니다: {str(e)}")
 
+@mcp.tool(name="get_old_and_new_law_detail", description="""신구법비교 본문을 조회합니다.
+
+매개변수:
+- mst: 법령일련번호 (search_old_and_new_law 결과에서 획득)
+
+반환정보: 신조문/구조문 대조표, 변경사항
+
+사용 예시:
+- get_old_and_new_law_detail("122682")  # 특정 법령의 신구법 비교
+
+참고: search_old_and_new_law로 먼저 목록을 검색한 후 법령일련번호를 사용하세요.""")
+def get_old_and_new_law_detail(
+    mst: Annotated[str, "법령일련번호 (MST)"],
+) -> TextContent:
+    """신구법비교 본문 조회"""
+    try:
+        params = {"MST": str(mst)}
+        data = _make_legislation_request("oldAndNew", params, is_detail=True)
+        
+        if not data:
+            return TextContent(type="text", text=f"법령일련번호 {mst}에 해당하는 신구법비교 정보를 찾을 수 없습니다.")
+        
+        # 응답 포맷팅
+        result = _format_old_and_new_detail(data, mst)
+        return TextContent(type="text", text=result)
+        
+    except Exception as e:
+        logger.error(f"신구법비교 본문 조회 중 오류: {e}")
+        return TextContent(type="text", text=f"신구법비교 본문 조회 중 오류가 발생했습니다: {str(e)}")
+
+def _format_old_and_new_detail(data: dict, mst: str) -> str:
+    """신구법비교 본문 포맷팅"""
+    lines = [f"# 신구법비교 상세 (MST: {mst})\n"]
+    
+    service_data = data.get("OldAndNewService", {})
+    if not service_data:
+        return f"MST {mst}에 해당하는 신구법비교 정보가 없습니다."
+    
+    # 신조문 목록
+    new_articles = service_data.get("신조문목록", {}).get("조문", [])
+    if isinstance(new_articles, dict):
+        new_articles = [new_articles]
+    
+    # 구조문 목록
+    old_articles = service_data.get("구조문목록", {}).get("조문", [])
+    if isinstance(old_articles, dict):
+        old_articles = [old_articles]
+    
+    lines.append(f"## 조문 비교 (신: {len(new_articles)}개, 구: {len(old_articles)}개)\n")
+    
+    # 신조문
+    if new_articles:
+        lines.append("### 신조문")
+        for i, article in enumerate(new_articles[:20], 1):  # 최대 20개
+            content = article.get("content", "")
+            # HTML 태그 제거
+            import re
+            content = re.sub(r'<[^>]+>', '', content)
+            lines.append(f"{i}. {content[:200]}{'...' if len(content) > 200 else ''}")
+        if len(new_articles) > 20:
+            lines.append(f"... 외 {len(new_articles) - 20}개")
+        lines.append("")
+    
+    # 구조문
+    if old_articles:
+        lines.append("### 구조문")
+        for i, article in enumerate(old_articles[:20], 1):
+            content = article.get("content", "")
+            import re
+            content = re.sub(r'<[^>]+>', '', content)
+            lines.append(f"{i}. {content[:200]}{'...' if len(content) > 200 else ''}")
+        if len(old_articles) > 20:
+            lines.append(f"... 외 {len(old_articles) - 20}개")
+    
+    return "\n".join(lines)
+
 @mcp.tool(name="search_three_way_comparison", description="""3단비교 목록을 검색합니다.
 
 매개변수:
@@ -2567,7 +2678,6 @@ def search_three_way_comparison(
     try:
         # 기본 파라미터 설정
         params = {
-            "target": "thirdComparison",
             "display": min(display, 100),
             "page": page
         }
@@ -2576,7 +2686,7 @@ def search_three_way_comparison(
         if query and query.strip():
             params["query"] = query.strip()
         
-        # API 요청
+        # API 요청 - target: thdCmp (3단비교)
         data = _make_legislation_request("thdCmp", params)
         search_term = query or "3단비교"
         result = _format_search_results(data, "thdCmp", search_term)
@@ -2585,6 +2695,97 @@ def search_three_way_comparison(
     except Exception as e:
         logger.error(f"3단비교 검색 중 오류: {e}")
         return TextContent(type="text", text=f"3단비교 검색 중 오류가 발생했습니다: {str(e)}")
+
+@mcp.tool(name="get_three_way_comparison_detail", description="""3단비교 본문을 조회합니다.
+
+매개변수:
+- mst: 법령일련번호 (search_three_way_comparison 결과에서 획득)
+- knd: 비교종류 (1=위임조문, 2=인용조문, 기본값: 1)
+
+반환정보: 상위법령-하위법령-조문의 3단 비교 내용
+
+사용 예시:
+- get_three_way_comparison_detail("222549")  # 위임조문 비교
+- get_three_way_comparison_detail("222549", knd=2)  # 인용조문 비교
+
+참고: search_three_way_comparison으로 먼저 목록을 검색한 후 법령일련번호를 사용하세요.""")
+def get_three_way_comparison_detail(
+    mst: Annotated[str, "법령일련번호 (MST)"],
+    knd: Annotated[int, "비교종류 (1=위임조문, 2=인용조문)"] = 1,
+) -> TextContent:
+    """3단비교 본문 조회"""
+    try:
+        params = {"MST": str(mst), "knd": knd}
+        data = _make_legislation_request("thdCmp", params, is_detail=True)
+        
+        if not data:
+            return TextContent(type="text", text=f"법령일련번호 {mst}에 해당하는 3단비교 정보를 찾을 수 없습니다.")
+        
+        # 응답 포맷팅
+        result = _format_three_way_comparison_detail(data, mst, knd)
+        return TextContent(type="text", text=result)
+        
+    except Exception as e:
+        logger.error(f"3단비교 본문 조회 중 오류: {e}")
+        return TextContent(type="text", text=f"3단비교 본문 조회 중 오류가 발생했습니다: {str(e)}")
+
+def _format_three_way_comparison_detail(data: dict, mst: str, knd: int) -> str:
+    """3단비교 본문 포맷팅"""
+    knd_name = "위임조문" if knd == 1 else "인용조문"
+    lines = [f"# 3단비교 상세 - {knd_name} (MST: {mst})\n"]
+    
+    # 응답 구조 확인 (LspttnThdCmpLawXService)
+    service_data = data.get("LspttnThdCmpLawXService", {})
+    if not service_data:
+        return f"MST {mst}에 해당하는 3단비교 정보가 없습니다."
+    
+    # 위임조문삼단비교 또는 인용조문삼단비교
+    comparison_key = "위임조문삼단비교" if knd == 1 else "인용조문삼단비교"
+    comparison_data = service_data.get(comparison_key, {})
+    
+    # 법률조문
+    law_articles = comparison_data.get("법률조문", [])
+    if isinstance(law_articles, dict):
+        law_articles = [law_articles]
+    
+    if law_articles:
+        lines.append(f"## 법률조문 ({len(law_articles)}개)\n")
+        for i, article in enumerate(law_articles[:30], 1):
+            title = article.get("조제목", "")
+            content = article.get("조내용", "")
+            no = article.get("조번호", "")
+            if title:
+                lines.append(f"### {title}")
+            elif no:
+                lines.append(f"### 제{int(no)}조")
+            if content:
+                lines.append(f"{content[:300]}{'...' if len(content) > 300 else ''}")
+            lines.append("")
+        if len(law_articles) > 30:
+            lines.append(f"... 외 {len(law_articles) - 30}개 조문")
+    
+    # 시행령조문
+    decree_articles = comparison_data.get("시행령조문", [])
+    if isinstance(decree_articles, dict):
+        decree_articles = [decree_articles]
+    
+    if decree_articles:
+        lines.append(f"\n## 시행령조문 ({len(decree_articles)}개)\n")
+        for i, article in enumerate(decree_articles[:20], 1):
+            title = article.get("조제목", "")
+            content = article.get("조내용", "")
+            no = article.get("조번호", "")
+            if title:
+                lines.append(f"### {title}")
+            elif no:
+                lines.append(f"### 제{int(no)}조")
+            if content:
+                lines.append(f"{content[:200]}{'...' if len(content) > 200 else ''}")
+            lines.append("")
+        if len(decree_articles) > 20:
+            lines.append(f"... 외 {len(decree_articles) - 20}개 조문")
+    
+    return "\n".join(lines)
 
 @mcp.tool(name="search_deleted_history", description="""삭제 이력을 검색합니다.
 
@@ -2612,7 +2813,6 @@ def search_deleted_history(query: Optional[str] = None, display: int = 20, page:
     try:
         # 기본 파라미터 설정
         params = {
-            "target": "deletedHistory",
             "display": min(display, 100),
             "page": page
         }
@@ -2621,10 +2821,10 @@ def search_deleted_history(query: Optional[str] = None, display: int = 20, page:
         if query and query.strip():
             params["query"] = query.strip()
         
-        # API 요청
-        data = _make_legislation_request("datDelHstGuide", params)
+        # API 요청 - 올바른 target: delHst
+        data = _make_legislation_request("delHst", params)
         search_term = query or "삭제 이력"
-        result = _format_search_results(data, "deletedHistory", search_term)
+        result = _format_search_results(data, "delHst", search_term)
         return TextContent(type="text", text=result)
         
     except Exception as e:
@@ -2657,7 +2857,6 @@ def search_one_view(query: Optional[str] = None, display: int = 20, page: int = 
     try:
         # 기본 파라미터 설정
         params = {
-            "target": "oneView",
             "display": min(display, 100),
             "page": page
         }
@@ -2666,15 +2865,92 @@ def search_one_view(query: Optional[str] = None, display: int = 20, page: int = 
         if query and query.strip():
             params["query"] = query.strip()
         
-        # API 요청
-        data = _make_legislation_request("oneViewListGuide", params)
+        # API 요청 - 올바른 target: oneview
+        data = _make_legislation_request("oneview", params)
         search_term = query or "한눈보기"
-        result = _format_search_results(data, "oneView", search_term)
+        result = _format_search_results(data, "oneview", search_term)
         return TextContent(type="text", text=result)
         
     except Exception as e:
         logger.error(f"한눈보기 검색 중 오류: {e}")
         return TextContent(type="text", text=f"한눈보기 검색 중 오류가 발생했습니다: {str(e)}")
+
+@mcp.tool(name="get_one_view_detail", description="""한눈보기 본문(전체 목록)을 조회합니다.
+
+매개변수:
+- display: 결과 개수 (최대 100, 기본값: 50)
+
+반환정보: 법령별 한눈보기 이미지 링크, 조문 정보
+
+사용 예시:
+- get_one_view_detail()  # 전체 한눈보기 목록
+- get_one_view_detail(display=100)  # 더 많은 결과
+
+참고: 복잡한 법령의 핵심 내용을 시각적으로 정리한 자료입니다.""")
+def get_one_view_detail(
+    display: Annotated[int, "결과 개수 (최대 100)"] = 50,
+) -> TextContent:
+    """한눈보기 본문 조회"""
+    try:
+        params = {"display": min(display, 100)}
+        data = _make_legislation_request("oneview", params, is_detail=True)
+        
+        if not data:
+            return TextContent(type="text", text="한눈보기 정보를 찾을 수 없습니다.")
+        
+        # 응답 포맷팅
+        result = _format_one_view_detail(data)
+        return TextContent(type="text", text=result)
+        
+    except Exception as e:
+        logger.error(f"한눈보기 본문 조회 중 오류: {e}")
+        return TextContent(type="text", text=f"한눈보기 본문 조회 중 오류가 발생했습니다: {str(e)}")
+
+def _format_one_view_detail(data: dict) -> str:
+    """한눈보기 본문 포맷팅"""
+    lines = ["# 한눈보기 상세\n"]
+    
+    items_data = data.get("items", {})
+    items = items_data.get("item", [])
+    
+    if isinstance(items, dict):
+        items = [items]
+    
+    if not items:
+        return "한눈보기 정보가 없습니다."
+    
+    lines.append(f"총 {len(items)}건\n")
+    
+    # 법령별로 그룹화
+    by_law = {}
+    for item in items:
+        law_name = item.get("법령명", "기타")
+        if law_name not in by_law:
+            by_law[law_name] = []
+        by_law[law_name].append(item)
+    
+    for law_name, law_items in list(by_law.items())[:20]:  # 최대 20개 법령
+        lines.append(f"## {law_name} ({len(law_items)}건)\n")
+        for item in law_items[:5]:  # 법령당 최대 5건
+            title = item.get("조제목", item.get("콘텐츠제목", ""))
+            link = item.get("링크URL", "")
+            article_no = item.get("조번호", "")
+            
+            if title:
+                lines.append(f"- **{title}**")
+            if article_no:
+                lines.append(f"  - 조문번호: 제{int(article_no)}조")
+            if link:
+                lines.append(f"  - [한눈보기 보기]({link})")
+            lines.append("")
+        if len(law_items) > 5:
+            lines.append(f"  ... 외 {len(law_items) - 5}건")
+            lines.append("")
+    
+    if len(by_law) > 20:
+        lines.append(f"\n... 외 {len(by_law) - 20}개 법령")
+    
+    return "\n".join(lines)
 
 @mcp.tool(name="search_law_system_diagram", description="""법령 체계도를 검색합니다.
 
@@ -2986,10 +3262,13 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
                             related_name = law.get('법령명한글', law.get('법령명', ''))
                             if related_name and law_name.replace("법", "") in related_name:
                                 if "시행령" in related_name or "시행규칙" in related_name:
+                                    # 실제 API 응답 키 사용
+                                    mst_value = law.get('법령일련번호', law.get('MST', ''))
+                                    id_value = law.get('법령ID', law.get('ID', ''))
                                     related_laws.append({
                                         "법령명": related_name,
-                                        "MST": law.get('MST', ''),
-                                        "ID": law.get('ID', '')
+                                        "MST": mst_value,
+                                        "ID": id_value
                                     })
                     
                     if related_laws:
@@ -3069,7 +3348,7 @@ def _format_system_diagram_summary(diagram_data: dict, mst_id: str) -> str:
         # 기본정보
         basic_info = diagram_data.get('기본정보', {})
         if basic_info:
-            result += "**📋 기본정보**\n"
+            result += "**기본정보**\n"
             result += f"- 법령명: {basic_info.get('법령명', '정보없음')}\n"
             result += f"- 법령ID: {basic_info.get('법령ID', '정보없음')}\n"
             result += f"- 법종구분: {basic_info.get('법종구분', {}).get('content', '정보없음')}\n"
@@ -3091,7 +3370,7 @@ def _format_system_diagram_summary(diagram_data: dict, mst_id: str) -> str:
         hierarchy_laws = diagram_data.get('상하위법', [])
         if hierarchy_laws:
             count = len(hierarchy_laws) if isinstance(hierarchy_laws, list) else 1
-            result += f"**📊 상하위법**: {count}건\n"
+            result += f"**상하위법**: {count}건\n"
             if isinstance(hierarchy_laws, list) and hierarchy_laws:
                 result += f"- 첫 번째: {hierarchy_laws[0].get('법령명', '정보없음')}\n"
                 if count > 1:
@@ -3100,12 +3379,12 @@ def _format_system_diagram_summary(diagram_data: dict, mst_id: str) -> str:
         
         # 데이터 크기 정보
         data_size = len(str(diagram_data))
-        result += f"**💾 데이터 정보**\n"
+        result += f"**데이터 정보**\n"
         result += f"- 전체 데이터 크기: {data_size:,} bytes\n"
         result += f"- 캐시됨: 재조회시 빠른 응답\n\n"
         
         # 전체 조회 안내
-        result += f"**🔍 상세 조회**\n"
+        result += f"**상세 조회**\n"
         result += f"- 전체 데이터: `get_law_system_diagram_full(mst_id=\"{mst_id}\")`\n"
         result += f"- 법제처 직접: http://www.law.go.kr/LSW/lsStmdInfoP.do?lsiSeq={mst_id}\n"
         
@@ -3702,7 +3981,7 @@ def _format_law_history_detail(data: dict, history_id: str) -> str:
             if '개정구분' in history_info:
                 result += f"🔄 **개정구분**: {history_info['개정구분']}\n"
             if '개정내용' in history_info:
-                result += f"📝 **개정내용**: {history_info['개정내용']}\n"
+                result += f"**개정내용**: {history_info['개정내용']}\n"
             
             return result
         else:
@@ -4194,7 +4473,6 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
     try:
         # 기본 파라미터 설정
         params = {
-            "target": "ordinanceLawLink",
             "display": min(display, 100),
             "page": page
         }
@@ -4206,9 +4484,9 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
         else:
             search_query = "자치법규-법령 연계정보"
         
-        # API 요청
-        data = _make_legislation_request("ordinLsConListGuide", params)
-        result = _format_search_results(data, "ordinanceLawLink", search_query)
+        # API 요청 - 올바른 target: lnkLs (법령 기준 자치법규 연계)
+        data = _make_legislation_request("lnkLs", params)
+        result = _format_search_results(data, "lnkLs", search_query)
         return TextContent(type="text", text=result)
         
     except Exception as e:
@@ -4217,43 +4495,78 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
 
 @mcp.tool(name="search_related_law", description="""관련법령을 검색합니다.
 
-매개변수:
-- query: 검색어 (선택) - 법령명 또는 키워드
-- display: 결과 개수 (최대 100, 기본값: 20)
-- page: 페이지 번호 (기본값: 1)
+[중요] query 입력 가이드:
+- 올바른 예: "민법", "상법", "개인정보"
+- 잘못된 예: "민법과 관련된 법령을 찾아줘" (문장 금지)
+- 법령명 또는 키워드만 입력하세요.
 
-반환정보: 기준법령명, 관련법령명, 관계유형, 관련조항
+매개변수:
+- query: 법령명만 입력 (필수, 문장 금지)
+- display: 결과 개수 (기본 20)
+
+반환정보: 기준법령명, 관련법령명, 관계유형
 
 사용 예시:
-- search_related_law()  # 전체 관련법령 목록
-- search_related_law("개인정보보호법")  # 개인정보보호법의 관련법령
-- search_related_law("소득세법", display=50)  # 소득세법 관련법령 많이 보기
-
-참고: 특정 법령과 연관된 다른 법령들을 찾아 법체계를 이해할 때 유용합니다.""")
-def search_related_law(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """관련법령 검색
+- search_related_law("민법")
+- search_related_law("상법")""")
+def search_related_law(query: str, display: int = 20, page: int = 1) -> TextContent:
+    """관련법령 검색 (캐시 지원)
     
     Args:
-        query: 검색어 (법령명)
+        query: 검색어 (법령명) - 필수
         display: 결과 개수
         page: 페이지 번호
     """
     try:
+        # 검색어 필수 체크
+        if not query or not query.strip():
+            return TextContent(type="text", text="""**관련법령 검색**
+
+⚠️ **검색어가 필요합니다**
+
+관련법령을 검색하려면 법령명 또는 키워드를 입력해주세요.
+
+**사용 예시**:
+- search_related_law("개인정보보호법")
+- search_related_law("소득세법")
+- search_related_law("민법")
+
+**참고**: 전체 관련법령 목록(5,300건 이상)은 응답 시간이 매우 길어 검색어 지정을 권장합니다.""")
+        
+        search_query = query.strip()
+        
+        # 캐시 확인
+        try:
+            from ..utils.legislation_utils import load_from_cache, save_to_cache, get_cache_key
+            cache_key = get_cache_key(f"lsRlt_{search_query}_{display}_{page}", "related_law")
+            cached_data = load_from_cache(cache_key)
+            if cached_data:
+                logger.info(f"관련법령 캐시 히트: {search_query}")
+                result = _format_search_results(cached_data, "lsRlt", search_query)
+                return TextContent(type="text", text=result + "\n\n(캐시된 결과)")
+        except ImportError:
+            logger.warning("캐시 모듈 로드 실패, API 직접 호출")
+            cached_data = None
+            cache_key = None
+        
         # 기본 파라미터 설정
         params = {
+            "query": search_query,
             "display": min(display, 100),
             "page": page
         }
         
-        # 검색어가 있는 경우 추가
-        if query and query.strip():
-            search_query = query.strip()
-            params["query"] = search_query
-        else:
-            search_query = "관련법령"
+        # API 요청 (타임아웃 60초)
+        data = _make_legislation_request("lsRlt", params, timeout=60)
         
-        # API 요청
-        data = _make_legislation_request("lsRlt", params)
+        # 캐시 저장 (결과가 있는 경우)
+        if data and cache_key:
+            try:
+                save_to_cache(cache_key, data)
+                logger.info(f"관련법령 캐시 저장: {search_query}")
+            except Exception as cache_err:
+                logger.warning(f"캐시 저장 실패: {cache_err}")
+        
         result = _format_search_results(data, "lsRlt", search_query)
         return TextContent(type="text", text=result)
         
@@ -4320,7 +4633,6 @@ def search_law_appendix(
     try:
         # 기본 파라미터 설정
         params = {
-            "target": "lawAppendix",
             "search": search,
             "display": min(display, 100),
             "page": page
@@ -4345,7 +4657,7 @@ def search_law_appendix(
             if value is not None:
                 params[key] = value
         
-        # API 요청
+        # API 요청 - target: licbyl (법령 별표서식)
         data = _make_legislation_request("licbyl", params)
         result = _format_search_results(data, "licbyl", search_query)
         return TextContent(type="text", text=result)
@@ -4469,19 +4781,21 @@ def search_law_unified(
     name="get_law_detail",
     description="""법령 상세 정보를 조회합니다.
 
+[중요] mst 입력 가이드:
+- search_law 결과의 MST(법령일련번호) 값만 입력
+- 올바른 예: "248929", "270351"
+- 잘못된 예: "은행법", "248929번 법령" (법령명이나 문장 금지)
+
 매개변수:
-- mst: 법령일련번호 (필수) - search_law 도구의 결과에서 'MST' 또는 '법령일련번호' 필드값 사용
+- mst: 숫자로 된 법령일련번호만 입력
 
-반환정보:
-- 기본정보: 법령명, 공포일자, 시행일자, 소관부처
-- 조문인덱스: 전체 조문 목록 (최대 50개까지 표시, 각 조문 150자 미리보기 포함)
-- 제개정이유: 법령의 목적과 배경
+반환정보: 법령명, 공포일자, 시행일자, 조문 목록
 
-사용 예시:
-- get_law_detail(mst="248613")  # 개인정보보호법
-- get_law_detail(mst="248929")  # 은행법
+사용 흐름:
+1. search_law("은행법") → MST 확인 (예: 248929)
+2. get_law_detail(mst="248929") → 상세 조회
 
-참고: 특정 조문의 전체 내용은 get_law_article_by_key 도구를 사용하세요."""
+참고: 특정 조문은 get_law_article_by_key 사용"""
 )
 def get_law_detail(mst: str) -> TextContent:
     """법령 상세 정보 조회"""
@@ -4521,41 +4835,23 @@ def get_law_detail(mst: str) -> TextContent:
     name="get_law_article_by_key",
     description="""특정 조문의 전체 내용을 조회합니다.
 
-매개변수:
-- mst: 법령일련번호 (필수) - search_law 도구의 결과에서 'MST' 또는 '법령일련번호' 필드값 사용
-- target: API 타겟 (필수) - 일반적으로 "law" 사용
-- article_key: 조문 키 (필수) - 조문 번호
-  - 형식: "제1조", "제50조", "1", "50" 모두 가능
+[중요] 파라미터 입력 가이드:
+- mst: 숫자로 된 법령일련번호만 (예: "248929")
+- target: "law" 고정
+- article_key: "제15조" 또는 "15" 형식만 (문장 금지)
 
-반환정보: 조문번호, 조문제목, 조문내용, 항/호/목 세부구조
+잘못된 예:
+- article_key="동의 관련 조항" (문장 금지)
+- article_key="개인정보 수집 조문" (설명 금지)
 
-주요 법령의 중요 조문:
-◆ 은행법:
-  - 제34조: 여신한도 (대출 한도 규정)
-  - 제35조: 대주주와의 거래 제한
-  - 제52조: 경영지도 (금융감독)
-  
-◆ 소득세법:
-  - 제12조: 거주자 (과세대상)
-  - 제16조: 이자소득 (금융소득)
-  - 제86조: 근로소득공제
-  
-◆ 개인정보보호법:
-  - 제15조: 개인정보의 수집·이용
-  - 제17조: 개인정보의 제공
-  - 제29조: 안전성 확보조치
-  
-◆ 자본시장법:
-  - 제8조: 투자매매업 인가
-  - 제23조: 투자권유 규제
+사용 흐름:
+1. search_law("은행법") → MST 확인
+2. get_law_detail(mst="248929") → 조문 목록 확인
+3. get_law_article_by_key(mst="248929", target="law", article_key="제15조")
 
 사용 예시:
-- get_law_article_by_key(mst="248613", target="law", article_key="제15조")  # 개인정보보호법 수집이용 조문
-- get_law_article_by_key(mst="001635", target="law", article_key="제34조")  # 은행법 여신한도 조문
-- get_law_article_by_key(mst="001234", target="law", article_key="제86조")  # 소득세법 근로소득공제 조문
-- get_law_article_by_key(mst="248613", target="law", article_key="15")  # 개인정보보호법 (숫자만도 가능)
-
-참고: 캐시된 데이터를 사용하므로 빠른 응답이 가능합니다."""
+- get_law_article_by_key(mst="248929", target="law", article_key="제34조")
+- get_law_article_by_key(mst="270351", target="law", article_key="15")"""
 )
 def get_law_article_by_key(
     mst: str,
@@ -4817,7 +5113,7 @@ def compare_law_versions(law_name: str) -> TextContent:
         result += f"• 제개정구분: {current_law.get('제개정구분명')}\n\n"
         
         # 시행일법령 목록
-        result += "**📅 시행일법령 이력:**\n"
+        result += "**시행일법령 이력:**\n"
         for i, eflaw in enumerate(eflaw_items[:3], 1):
             status = eflaw.get('현행연혁코드', '')
             result += f"\n{i}. "
@@ -4988,7 +5284,7 @@ def _normalize_article_number(article_no: str) -> str:
         return article_no
 
 def _get_article_content(mst: str, article_no: str, target: str) -> str:
-    """특정 조문의 내용을 조회"""
+    """특정 조문의 내용을 조회 - law_tools_utils 유틸리티 재사용"""
     try:
         # 캐시 확인
         cache_key = get_cache_key(f"{target}_{mst}", "full")
@@ -5005,10 +5301,7 @@ def _get_article_content(mst: str, article_no: str, target: str) -> str:
         if not cached_data:
             return "조회할 수 없습니다"
         
-        # 조문 번호 정규화
-        normalized_article = _normalize_article_number(article_no)
-        
-        # get_law_article_by_key와 동일한 로직으로 조문 찾기
+        # 법령 데이터 구조 추출
         law_data = None
         if '법령' in cached_data:
             law_data = cached_data['법령']
@@ -5020,91 +5313,74 @@ def _get_article_content(mst: str, article_no: str, target: str) -> str:
         if not law_data:
             return "조회할 수 없습니다"
         
-        # 조문 구조 탐색
-        articles_data = None
+        # 조문단위 배열 추출
+        articles_data = []
+        if isinstance(law_data, dict):
+            articles_section = law_data.get('조문', {})
+            if isinstance(articles_section, dict) and '조문단위' in articles_section:
+                articles_data = articles_section.get('조문단위', [])
+            elif '조문단위' in law_data:
+                articles_data = law_data.get('조문단위', [])
         
-        # 조문단위 구조 확인
-        if '조문' in law_data and '조문단위' in law_data['조문']:
-            articles_data = law_data['조문']['조문단위']
-        elif '조문단위' in law_data:
-            articles_data = law_data['조문단위']
-        elif 'JoSection' in law_data and 'Jo' in law_data['JoSection']:
-            articles_data = law_data['JoSection']['Jo']
+        if not isinstance(articles_data, list):
+            articles_data = [articles_data] if articles_data else []
         
         if not articles_data:
             return "조문 구조를 찾을 수 없습니다"
         
-        # 리스트가 아니면 리스트로 변환
-        if not isinstance(articles_data, list):
-            articles_data = [articles_data]
+        # 조문 번호 정규화 (유틸리티 함수 사용)
+        article_num = normalize_article_key(article_no)
         
-        # 조문 검색
-        # 조문 번호를 다양한 형태로 준비
-        article_num_raw = article_no.replace('제', '').replace('조', '')  # "15"
-        article_num_int = int(article_num_raw) if article_num_raw.isdigit() else 0  # 15
+        # 조문 찾기 (유틸리티 함수 사용)
+        found_article = find_article_in_data(articles_data, article_num)
         
-        # 실제 조문 내용을 가진 조문 찾기 (조문키가 XXXX01 형태인 것)
-        target_jo_key = f"{article_num_raw.zfill(4)}01"  # "1501" -> "150101"
+        if not found_article:
+            return "해당 조문을 찾을 수 없습니다"
         
-        for article in articles_data:
-            if not isinstance(article, dict):
-                continue
+        # 조문 내용 추출 및 포맷팅
+        content_fields = ['조문내용', 'joContent', '내용', 'content', 'joCts']
+        content = ""
+        
+        for field in content_fields:
+            if field in found_article and found_article[field]:
+                content = found_article[field]
+                break
+        
+        # 조문내용이 짧으면 (제목만 있는 경우) 항 데이터에서 내용 추출
+        content_str = str(content) if content else ""
+        if len(content_str) < 100:
+            # 항 데이터 추출
+            hang_data = found_article.get('항', [])
+            if hang_data:
+                if not isinstance(hang_data, list):
+                    hang_data = [hang_data]
                 
-            # 조문 번호 확인
-            article_numbers = [
-                article.get('조문번호'),
-                article.get('joNo'), 
-                article.get('articleNo'),
-                article.get('조번호')
-            ]
-            
-            # 조문키 확인 (실제 조문 내용이 있는지)
-            조문키 = article.get('조문키', '')
-            
-            # 다양한 형태로 비교
-            found_match = False
-            for num in article_numbers:
-                if num is not None:
-                    # 숫자 형태로 비교 (15 == 15)
-                    if isinstance(num, int) and num == article_num_int:
-                        found_match = True
-                    # 문자열 형태로 비교 ("15" == "15")
-                    elif str(num) == article_num_raw:
-                        found_match = True
-                    # 6자리 형태로 비교 ("001500" == "001500")
-                    elif str(num).zfill(6) == normalized_article:
-                        found_match = True
-                        
-            if found_match:
-                # 조문 내용 추출
-                content_fields = ['조문내용', 'joContent', '내용', 'content', 'joCts']
+                hang_contents = []
+                for hang in hang_data:
+                    if isinstance(hang, dict):
+                        hang_content = hang.get('항내용', hang.get('content', ''))
+                        if hang_content:
+                            hang_contents.append(str(hang_content))
                 
-                for field in content_fields:
-                    if field in article and article[field]:
-                        content = article[field]
-                        
-                        # 리스트인 경우 조인
-                        if isinstance(content, list):
-                            content = '\n'.join(str(item) for item in content if item)
-                        
-                        # HTML 태그 제거
-                        import re
-                        content = re.sub(r'<[^>]+>', '', str(content))
-                        content = content.strip()
-                        
-                        # 실제 조문 내용인지 확인
-                        if content:
-                            # 조문키가 실제 조문을 나타내는 경우 (XXXX01 형태) - 우선순위 높음
-                            if 조문키 and 조문키.endswith('01'):
-                                return content
-                            # 조문 제목이 포함된 실제 조문 내용
-                            elif f'제{article_num_raw}조(' in content:
-                                return content
-                            # 장/절 제목이 아닌 실제 내용 (제X장, 제X절로 시작하지 않음)
-                            elif not (content.startswith('제') and ('장' in content[:10] or '절' in content[:10])):
-                                return content
+                if hang_contents:
+                    # 조문 제목 + 항 내용 결합
+                    content = content_str + "\n" + "\n".join(hang_contents)
         
-        return "해당 조문을 찾을 수 없습니다"
+        if not content:
+            return "조문 내용이 없습니다"
+        
+        # 리스트인 경우 조인
+        if isinstance(content, list):
+            content = '\n'.join(str(item) for item in content if item)
+        
+        # HTML 태그 제거
+        content = clean_html_tags(str(content))
+        content = content.strip()
+        
+        if not content:
+            return "조문 내용이 비어있습니다"
+        
+        return content
         
     except Exception as e:
         logger.error(f"조문 내용 조회 중 오류: {e}")
@@ -5145,7 +5421,7 @@ def _analyze_article_changes(current_content: str, previous_content: str, law_na
         elif current_len < previous_len * 0.8:
             result += "📉 **내용 축소**: 조문 내용이 간소화되었습니다.\n"
         else:
-            result += "📝 **내용 수정**: 조문의 표현이나 세부 내용이 변경되었습니다.\n"
+            result += "**내용 수정**: 조문의 표현이나 세부 내용이 변경되었습니다.\n"
         
         # 금융·세무·개인정보보호 키워드 분석
         domain_keywords = {
@@ -5297,7 +5573,7 @@ def search_financial_laws(
         if not search_results:
             result += "**검색 결과 없음**: 지정된 조건에 맞는 금융법령을 찾을 수 없습니다.\n"
             result += "다른 키워드나 조건을 시도해보세요.\n\n"
-            result += "🔍 **추천 검색어**: 은행, 자본시장, 보험, 금융소비자, 여신, 투자\n"
+            result += "**추천 검색어**: 은행, 자본시장, 보험, 금융소비자, 여신, 투자\n"
             return TextContent(type="text", text=result)
         
         result += f"**검색 통계**: {len(search_results)}건 발견\n\n"
@@ -5432,7 +5708,7 @@ def search_tax_laws(
         if not search_results:
             result += "**검색 결과 없음**: 지정된 조건에 맞는 세무법령을 찾을 수 없습니다.\n"
             result += "다른 키워드나 조건을 시도해보세요.\n\n"
-            result += "🔍 **추천 검색어**: 소득세, 법인세, 부가가치세, 상속세, 공제, 신고\n"
+            result += "**추천 검색어**: 소득세, 법인세, 부가가치세, 상속세, 공제, 신고\n"
             return TextContent(type="text", text=result)
         
         result += f"**검색 통계**: {len(search_results)}건 발견\n\n"
@@ -5569,7 +5845,7 @@ def search_privacy_laws(
         if not search_results:
             result += "**검색 결과 없음**: 지정된 조건에 맞는 개인정보보호법령을 찾을 수 없습니다.\n"
             result += "다른 키워드나 조건을 시도해보세요.\n\n"
-            result += "🔍 **추천 검색어**: 개인정보, 수집, 이용, 제공, 동의, 안전조치\n"
+            result += "**추천 검색어**: 개인정보, 수집, 이용, 제공, 동의, 안전조치\n"
             return TextContent(type="text", text=result)
         
         result += f"**검색 통계**: {len(search_results)}건 발견\n\n"

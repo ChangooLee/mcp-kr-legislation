@@ -161,19 +161,19 @@ import importlib
 tool_modules = [
     "law_tools",
     "optimized_law_tools",  # 캐싱 최적화된 도구들
-    "legislation_tools", 
+    "legislation_tools",
     "additional_service_tools",
-    "administrative_rule_tools", 
+    "administrative_rule_tools",
     "ai_tools",
     "committee_tools",
     "custom_tools",
     "legal_term_tools",
     "linkage_tools",
     "ministry_interpretation_tools",
-    "ministry_interpretation_tools_extended",  # 확장된 중앙부처해석 도구들
+    "ministry_interpretation_tools_extended",
     "misc_tools",
     "precedent_tools",
-    "specialized_tools"
+    "specialized_tools",
 ]
 
 logger.info(f"🔧 도구 모듈 로딩 시작... (총 {len(tool_modules)}개)")

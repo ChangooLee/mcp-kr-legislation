@@ -1206,8 +1206,77 @@
       "target": "kcc",
       "api_type": "목록조회",
       "sub_category": "방송통신위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (국가인권위원회 : nhrck)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 1 : 사건명 (default) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (IE 조회시 UTF-8 인코딩 필수)"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 lasc : 사건명 오름차순 (default) ldes : 사건명 내림차순 nasc : 의결번호 오름차순 ndes : 의결번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(사건명, 사건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kcc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kcc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kcc&type=HTML"
+        }
+      ]
     },
     {
       "id": "22",
@@ -1216,8 +1285,52 @@
       "target": "kcc",
       "api_type": "본문조회",
       "sub_category": "방송통신위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (국가인권위원회 : nhrck)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "결정문 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "char",
+          "description": "결정문명"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(사건명, 사건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kcc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kcc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kcc&type=HTML"
+        }
+      ]
     },
     {
       "id": "23",
@@ -1226,8 +1339,77 @@
       "target": "iaciac",
       "api_type": "목록조회",
       "sub_category": "산업재해보상보험재심사위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID (g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (국가인권위원회 : nhrck)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 1 : 사건명 (default) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (IE 조회시 UTF-8 인코딩 필수)"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색 (ga,na,da…,etc)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 lasc : 사건명 오름차순 (default) ldes : 사건명 내림차순 nasc : 의결번호 오름차순 ndes : 의결번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(사건명, 사건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=iaciac&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=iaciac&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=iaciac&type=HTML"
+        }
+      ]
     },
     {
       "id": "24",
@@ -1236,8 +1418,52 @@
       "target": "iaciac",
       "api_type": "본문조회",
       "sub_category": "산업재해보상보험재심사위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string(필수)",
+          "description": "서비스 대상 (국가인권위원회 : nhrck)"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "결정문 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "char",
+          "description": "결정문명"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(사건명, 사건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=iaciac&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=iaciac&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=iaciac&type=HTML"
+        }
+      ]
     }
   ]
 }

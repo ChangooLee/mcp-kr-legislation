@@ -608,8 +608,32 @@ def run(headless: bool = True) -> None:
         # 이미 추출된 title 목록
         existing_titles = {api.title for api in buckets[category_en]}
         
+        # 동일 카테고리에서 파라미터 템플릿 찾기 (같은 api_type 우선)
+        def find_param_template(target_api_type: str) -> Tuple[List[Parameter], List[SampleUrl]]:
+            """동일 카테고리의 다른 API에서 파라미터 템플릿 복사"""
+            for existing_api in buckets[category_en]:
+                if existing_api.parameters and existing_api.api_type == target_api_type:
+                    return existing_api.parameters, existing_api.sample_urls
+            # api_type 무관하게 파라미터 있는 것 찾기
+            for existing_api in buckets[category_en]:
+                if existing_api.parameters:
+                    return existing_api.parameters, existing_api.sample_urls
+            return [], []
+        
         for sup in supplement_list:
             if sup["title"] not in existing_titles:
+                # 파라미터 템플릿 찾기
+                template_params, template_samples = find_param_template(sup["api_type"])
+                
+                # target 값에 맞게 샘플 URL 생성
+                generated_samples = []
+                if sup["target"]:
+                    base_url = sup["request_url"].split("?")[0] if sup["request_url"] else ""
+                    if base_url:
+                        for fmt in ["JSON", "XML", "HTML"]:
+                            sample_url = f"{base_url}?OC=test&target={sup['target']}&type={fmt}"
+                            generated_samples.append(SampleUrl(format=fmt, url=sample_url))
+                
                 api_item = ApiItem(
                     id="__TEMP__",
                     title=sup["title"],
@@ -617,12 +641,14 @@ def run(headless: bool = True) -> None:
                     target=sup["target"],
                     api_type=sup["api_type"],
                     sub_category=sup["sub_category"],
-                    parameters=[],
-                    sample_urls=[],
+                    parameters=template_params if template_params else [],
+                    sample_urls=generated_samples if generated_samples else template_samples,
                 )
                 buckets[category_en].append(api_item)
                 supplemented_count += 1
-                print(f"[SUPPLEMENT] {category_en}: {sup['title']}")
+                param_status = f"params={len(template_params)}" if template_params else "params=0"
+                sample_status = f"samples={len(generated_samples)}" if generated_samples else "samples=0"
+                print(f"[SUPPLEMENT] {category_en}: {sup['title']} ({param_status}, {sample_status})")
 
     # 디버그 요약 출력
     total_extracted = sum(len(v) for v in buckets.values())

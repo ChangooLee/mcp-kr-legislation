@@ -5559,8 +5559,97 @@
       "target": "msitCgmExpc",
       "api_type": "목록조회",
       "sub_category": "과학기술정보통신부",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : ntsCgmExpc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 법령해석명, 2: 본문검색)"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"세금\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "inq",
+          "type": "int",
+          "description": "질의기관코드"
+        },
+        {
+          "name": "rpl",
+          "type": "int",
+          "description": "해석기관코드"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "itmno",
+          "type": "int",
+          "description": "안건번호 * 안건번호 변수 적용 시 query 요청변수는 무시됩니다."
+        },
+        {
+          "name": "explYd",
+          "type": "string",
+          "description": "해석일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 법령해석명 오름차순) ldes 법령해석명 내림차순 dasc : 해석일자 오름차순 ddes : 해석일자 내림차순 nasc : 안건번호 오름차순 ndes : 안건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(안건명, 안건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=msitCgmExpc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=msitCgmExpc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=msitCgmExpc&type=HTML"
+        }
+      ]
     },
     {
       "id": "74",
@@ -5569,8 +5658,52 @@
       "target": "msitCgmExpc",
       "api_type": "본문조회",
       "sub_category": "과학기술정보통신부",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : kcsCgmExpc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "int(필수)",
+          "description": "법령해석일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령해석명"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(안건명, 해석일자, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=msitCgmExpc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=msitCgmExpc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=msitCgmExpc&type=HTML"
+        }
+      ]
     },
     {
       "id": "75",
@@ -5579,8 +5712,97 @@
       "target": "naaccCgmExpc",
       "api_type": "목록조회",
       "sub_category": "행정중심복합도시건설청",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : ntsCgmExpc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 법령해석명, 2: 본문검색)"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"세금\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "inq",
+          "type": "int",
+          "description": "질의기관코드"
+        },
+        {
+          "name": "rpl",
+          "type": "int",
+          "description": "해석기관코드"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "itmno",
+          "type": "int",
+          "description": "안건번호 * 안건번호 변수 적용 시 query 요청변수는 무시됩니다."
+        },
+        {
+          "name": "explYd",
+          "type": "string",
+          "description": "해석일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 법령해석명 오름차순) ldes 법령해석명 내림차순 dasc : 해석일자 오름차순 ddes : 해석일자 내림차순 nasc : 안건번호 오름차순 ndes : 안건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(안건명, 안건번호, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=naaccCgmExpc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=naaccCgmExpc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=naaccCgmExpc&type=HTML"
+        }
+      ]
     },
     {
       "id": "76",
@@ -5589,8 +5811,52 @@
       "target": "naaccCgmExpc",
       "api_type": "본문조회",
       "sub_category": "행정중심복합도시건설청",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : kcsCgmExpc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "int(필수)",
+          "description": "법령해석일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "법령해석명"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "응답항목 옵션(안건명, 해석일자, ...) * 빈 값일 경우 전체 항목 표출 * 출력 형태 HTML일 경우 적용 불가능"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=naaccCgmExpc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=naaccCgmExpc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=naaccCgmExpc&type=HTML"
+        }
+      ]
     }
   ]
 }

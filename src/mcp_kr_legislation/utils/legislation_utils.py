@@ -142,15 +142,27 @@ def extract_law_summary(law_data: Dict[str, Any]) -> Dict[str, Any]:
     for article in actual_articles[:50]:  # 10개에서 50개로 확대
         article_no = article.get("조문번호", "")
         article_title = article.get("조문제목", "")
-        article_content = article.get("조문내용", "")[:100] + "..." if article.get("조문내용", "") else ""
+        article_content = article.get("조문내용", "")
         
-        preview = f"제{article_no}조"
+        # HTML 태그 제거 및 정리
+        import re
+        if article_content:
+            article_content = re.sub(r'<[^>]+>', '', article_content)
+            # 조문 번호/제목 중복 제거 (조문내용에 "제N조(제목)" 형태가 포함된 경우)
+            article_content = re.sub(r'^제\d+조(?:의\d+)?(?:\([^)]*\))?\s*', '', article_content)
+            article_content = article_content.strip()[:100]
+            if len(article.get("조문내용", "")) > 100:
+                article_content += "..."
+        
+        # 미리보기: 제목 + 내용 (조문번호는 format_law_summary에서 추가됨)
         if article_title:
-            preview += f"({article_title})"
-        preview += f": {article_content}"
+            preview = f"({article_title}) {article_content}"
+        else:
+            preview = article_content
         
         articles_preview.append({
             "조문번호": article_no,
+            "조문제목": article_title,
             "미리보기": preview
         })
     
@@ -302,8 +314,9 @@ def format_law_summary(summary_data: Dict[str, Any], search_term: str = "") -> s
                 
                 for i, article_info in enumerate(articles_preview, 1):
                     if isinstance(article_info, dict):
-                        article_no = article_info.get("조문번호", f"조문{i}")
-                        preview_text = article_info.get("미리보기", str(article_info))
+                        article_no = article_info.get("조문번호", f"{i}")
+                        preview_text = article_info.get("미리보기", "")
+                        # 조문번호 + 미리보기 (중복 방지)
                         result += f"**제{article_no}조**: {preview_text}\n\n"
                     else:
                         result += f"**조문{i}**: {str(article_info)}\n\n"

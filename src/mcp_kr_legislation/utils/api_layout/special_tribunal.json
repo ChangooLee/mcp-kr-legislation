@@ -11,8 +11,92 @@
       "target": "ttSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "조세심판원",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 행정심판례명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "cls",
+          "type": "string",
+          "description": "재결례유형 (출력 결과 필드에 있는 재결구분코드)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "의결일자"
+        },
+        {
+          "name": "dpaYd",
+          "type": "string",
+          "description": "처분일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "rslYd",
+          "type": "string",
+          "description": "의결일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 재결례명 오름차순) ldes 재결례명 내림차순 dasc : 의결일자 오름차순 ddes : 의결일자 내림차순 nasc : 사건번호 오름차순 ndes : 사건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=ttSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=ttSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=ttSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "2",
@@ -21,8 +105,47 @@
       "target": "ttSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "조세심판원",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "행정심판례 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "행정심판례명"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=ttSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=ttSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=ttSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "3",
@@ -31,8 +154,92 @@
       "target": "kmstSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "해양안전심판원",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 행정심판례명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "cls",
+          "type": "string",
+          "description": "재결례유형 (출력 결과 필드에 있는 재결구분코드)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "의결일자"
+        },
+        {
+          "name": "dpaYd",
+          "type": "string",
+          "description": "처분일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "rslYd",
+          "type": "string",
+          "description": "의결일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 재결례명 오름차순) ldes 재결례명 내림차순 dasc : 의결일자 오름차순 ddes : 의결일자 내림차순 nasc : 사건번호 오름차순 ndes : 사건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kmstSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kmstSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=kmstSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "4",
@@ -41,8 +248,47 @@
       "target": "kmstSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "해양안전심판원",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "행정심판례 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "행정심판례명"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kmstSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kmstSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=kmstSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "5",
@@ -51,8 +297,92 @@
       "target": "acrcSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "국민권익위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 행정심판례명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "cls",
+          "type": "string",
+          "description": "재결례유형 (출력 결과 필드에 있는 재결구분코드)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "의결일자"
+        },
+        {
+          "name": "dpaYd",
+          "type": "string",
+          "description": "처분일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "rslYd",
+          "type": "string",
+          "description": "의결일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 재결례명 오름차순) ldes 재결례명 내림차순 dasc : 의결일자 오름차순 ddes : 의결일자 내림차순 nasc : 사건번호 오름차순 ndes : 사건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "6",
@@ -61,8 +391,47 @@
       "target": "acrcSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "국민권익위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "행정심판례 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "행정심판례명"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "7",
@@ -71,8 +440,92 @@
       "target": "mpmSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "인사혁신처 소청심사위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "search",
+          "type": "int",
+          "description": "검색범위 (기본 : 1 행정심판례명) 2 : 본문검색"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "검색범위에서 검색을 원하는 질의 (정확한 검색을 위한 문자열 검색 query=\"자동차\")"
+        },
+        {
+          "name": "display",
+          "type": "int",
+          "description": "검색된 결과 개수 (default=20 max=100)"
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "description": "검색 결과 페이지 (default=1)"
+        },
+        {
+          "name": "cls",
+          "type": "string",
+          "description": "재결례유형 (출력 결과 필드에 있는 재결구분코드)"
+        },
+        {
+          "name": "gana",
+          "type": "string",
+          "description": "사전식 검색(ga,na,da…,etc)"
+        },
+        {
+          "name": "date",
+          "type": "int",
+          "description": "의결일자"
+        },
+        {
+          "name": "dpaYd",
+          "type": "string",
+          "description": "처분일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "rslYd",
+          "type": "string",
+          "description": "의결일자 검색(20090101~20090130)"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "정렬옵션 (기본 : lasc 재결례명 오름차순) ldes 재결례명 내림차순 dasc : 의결일자 오름차순 ddes : 의결일자 내림차순 nasc : 사건번호 오름차순 ndes : 사건번호 내림차순"
+        },
+        {
+          "name": "popYn",
+          "type": "string",
+          "description": "상세화면 팝업창 여부(팝업창으로 띄우고 싶을 때만 'popYn=Y')"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=HTML"
+        }
+      ]
     },
     {
       "id": "8",
@@ -81,8 +534,47 @@
       "target": "mpmSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "인사혁신처 소청심사위원회",
-      "parameters": [],
-      "sample_urls": []
+      "parameters": [
+        {
+          "name": "OC",
+          "type": "string(필수)",
+          "description": "사용자 이메일의 ID(g4c@korea.kr일경우 OC값=g4c)"
+        },
+        {
+          "name": "target",
+          "type": "string : decc(필수)",
+          "description": "서비스 대상"
+        },
+        {
+          "name": "type",
+          "type": "char(필수)",
+          "description": "출력 형태 : HTML/XML/JSON"
+        },
+        {
+          "name": "ID",
+          "type": "char(필수)",
+          "description": "행정심판례 일련번호"
+        },
+        {
+          "name": "LM",
+          "type": "string",
+          "description": "행정심판례명"
+        }
+      ],
+      "sample_urls": [
+        {
+          "format": "JSON",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=JSON"
+        },
+        {
+          "format": "XML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=XML"
+        },
+        {
+          "format": "HTML",
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=HTML"
+        }
+      ]
     }
   ]
 }
