@@ -102,53 +102,69 @@ def search_daily_legal_term_link(query: Optional[str] = None, display: int = 20,
 
 @mcp.tool(name="search_legal_term_article_link", description="""법령용어-조문 연계 정보를 검색합니다.
 
-참고: 이 API는 HTML만 지원합니다. JSON 응답을 원하시면 search_legal_term 도구를 사용하세요.
+[중요] 이 API는 JSON 응답을 지원하지 않습니다. HTML 링크를 반환합니다.
 
 매개변수:
 - term_id: 법령용어 ID (필수) - search_legal_term 결과에서 얻을 수 있음
 
-사용 예시: search_legal_term_article_link("12345")""")
+사용 예시: search_legal_term_article_link("12345")
+
+대안: search_legal_term 도구로 법령용어 정보를 직접 조회하세요.""")
 def search_legal_term_article_link(term_id: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """법령용어-조문 연계 검색 (HTML만 지원)"""
+    """법령용어-조문 연계 검색 (HTML 전용 - JSON 미지원)"""
     if not term_id or not str(term_id).strip():
         return TextContent(type="text", text="법령용어 ID를 입력해주세요. search_legal_term 도구로 먼저 법령용어를 검색하세요.")
     
     term_id_str = str(term_id).strip()
-    params = {"ID": term_id_str, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("lstrmRlt", params)
-        # HTML 응답 처리
-        if isinstance(data, dict) and data.get("status") == "html":
-            return TextContent(type="text", text=f"법령용어-조문 연계 API는 HTML만 지원합니다.\n\n직접 확인: http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=lstrmRlt&type=HTML&ID={term_id_str}")
-        result = _format_search_results(data, "lstrmRlt", term_id_str)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"법령용어-조문 연계 검색 중 오류: {str(e)}")
+    
+    # JSON API가 빈 응답을 반환하므로 HTML 링크 제공
+    html_url = f"http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=lstrmRltJo&type=HTML&ID={term_id_str}"
+    
+    return TextContent(type="text", text=f"""**법령용어-조문 연계 정보**
+
+이 API는 JSON을 지원하지 않습니다.
+
+**HTML 링크로 확인**:
+{html_url}
+
+**대안**:
+- `search_legal_term` 도구로 법령용어 상세 정보를 조회하세요.
+- `get_legal_term_detail(term_id="{term_id_str}")` 도구를 사용하세요.""")
 
 @mcp.tool(name="search_article_legal_term_link", description="""조문-법령용어 연계 정보를 검색합니다.
 
-참고: 이 API는 HTML만 지원합니다.
+[중요] 이 API는 JSON 응답을 지원하지 않습니다. HTML 링크를 반환합니다.
 
 매개변수:
-- article_id: 조문 ID (필수)
+- mst: 법령일련번호 (필수) - search_law 결과에서 획득
+- jo: 조문번호 (선택) - 6자리 형식 예: "000100" (제1조)
 
-사용 예시: search_article_legal_term_link("12345")""")
-def search_article_legal_term_link(article_id: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """조문-법령용어 연계 검색 (HTML만 지원)"""
-    if not article_id or not str(article_id).strip():
-        return TextContent(type="text", text="조문 ID를 입력해주세요.")
+사용 예시: search_article_legal_term_link(mst="248613", jo="000100")
+
+대안: get_law_article_detail 도구로 조문 내용을 직접 조회하세요.""")
+def search_article_legal_term_link(mst: Optional[str] = None, jo: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """조문-법령용어 연계 검색 (HTML 전용 - JSON 미지원)"""
+    if not mst or not str(mst).strip():
+        return TextContent(type="text", text="법령일련번호(mst)를 입력해주세요. search_law 도구로 먼저 법령을 검색하세요.")
     
-    article_id_str = str(article_id).strip()
-    params = {"ID": article_id_str, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("joRltLstrm", params)
-        # HTML 응답 처리
-        if isinstance(data, dict) and data.get("status") == "html":
-            return TextContent(type="text", text=f"조문-법령용어 연계 API는 HTML만 지원합니다.\n\n직접 확인: http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=joRltLstrm&type=HTML&ID={article_id_str}")
-        result = _format_search_results(data, "joRltLstrm", article_id_str)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"조문-법령용어 연계 검색 중 오류: {str(e)}")
+    mst_str = str(mst).strip()
+    jo_str = str(jo).strip() if jo else ""
+    
+    # JSON API가 빈 응답을 반환하므로 HTML 링크 제공
+    html_url = f"http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=joRltLstrm&type=HTML&MST={mst_str}"
+    if jo_str:
+        html_url += f"&JO={jo_str}"
+    
+    return TextContent(type="text", text=f"""**조문-법령용어 연계 정보**
+
+이 API는 JSON을 지원하지 않습니다.
+
+**HTML 링크로 확인**:
+{html_url}
+
+**대안**:
+- `get_law_article_detail(mst="{mst_str}", jo="{jo_str or '000100'}")` 도구로 조문 내용을 조회하세요.
+- `search_legal_term` 도구로 법령용어를 검색하세요.""")
 
 @mcp.tool(name="get_legal_term_detail", description="""법령용어 상세내용을 조회합니다. 특정 법령용어의 정의와 설명을 제공합니다.
 

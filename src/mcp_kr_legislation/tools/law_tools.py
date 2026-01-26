@@ -2700,22 +2700,22 @@ def search_three_way_comparison(
 
 매개변수:
 - mst: 법령일련번호 (search_three_way_comparison 결과에서 획득)
-- knd: 비교종류 (1=위임조문, 2=인용조문, 기본값: 1)
+- knd: 비교종류 (1=인용조문, 2=위임조문, 기본값: 1)
 
 반환정보: 상위법령-하위법령-조문의 3단 비교 내용
 
 사용 예시:
-- get_three_way_comparison_detail("222549")  # 위임조문 비교
-- get_three_way_comparison_detail("222549", knd=2)  # 인용조문 비교
+- get_three_way_comparison_detail("222549", knd=1)  # 인용조문 비교
+- get_three_way_comparison_detail("222549", knd=2)  # 위임조문 비교
 
 참고: search_three_way_comparison으로 먼저 목록을 검색한 후 법령일련번호를 사용하세요.""")
 def get_three_way_comparison_detail(
     mst: Annotated[str, "법령일련번호 (MST)"],
-    knd: Annotated[int, "비교종류 (1=위임조문, 2=인용조문)"] = 1,
+    knd: Annotated[int, "비교종류 (1=인용조문, 2=위임조문)"] = 1,
 ) -> TextContent:
     """3단비교 본문 조회"""
     try:
-        params = {"MST": str(mst), "knd": knd}
+        params = {"MST": str(mst), "knd": str(knd)}
         data = _make_legislation_request("thdCmp", params, is_detail=True)
         
         if not data:
@@ -2731,7 +2731,7 @@ def get_three_way_comparison_detail(
 
 def _format_three_way_comparison_detail(data: dict, mst: str, knd: int) -> str:
     """3단비교 본문 포맷팅"""
-    knd_name = "위임조문" if knd == 1 else "인용조문"
+    knd_name = "인용조문" if knd == 1 else "위임조문"
     lines = [f"# 3단비교 상세 - {knd_name} (MST: {mst})\n"]
     
     # 응답 구조 확인 (LspttnThdCmpLawXService)
@@ -2739,8 +2739,8 @@ def _format_three_way_comparison_detail(data: dict, mst: str, knd: int) -> str:
     if not service_data:
         return f"MST {mst}에 해당하는 3단비교 정보가 없습니다."
     
-    # 위임조문삼단비교 또는 인용조문삼단비교
-    comparison_key = "위임조문삼단비교" if knd == 1 else "인용조문삼단비교"
+    # 인용조문삼단비교 또는 위임조문삼단비교
+    comparison_key = "인용조문삼단비교" if knd == 1 else "위임조문삼단비교"
     comparison_data = service_data.get(comparison_key, {})
     
     # 법률조문
@@ -2875,24 +2875,28 @@ def search_one_view(query: Optional[str] = None, display: int = 20, page: int = 
         logger.error(f"한눈보기 검색 중 오류: {e}")
         return TextContent(type="text", text=f"한눈보기 검색 중 오류가 발생했습니다: {str(e)}")
 
-@mcp.tool(name="get_one_view_detail", description="""한눈보기 본문(전체 목록)을 조회합니다.
+@mcp.tool(name="get_one_view_detail", description="""한눈보기 본문을 조회합니다.
 
 매개변수:
-- display: 결과 개수 (최대 100, 기본값: 50)
-
-반환정보: 법령별 한눈보기 이미지 링크, 조문 정보
+- mst: 법령일련번호 (선택) - 특정 법령 한눈보기 조회 시 사용
+- display: 결과 개수 (최대 100, 기본값: 50) - mst 미지정시 전체 목록
 
 사용 예시:
+- get_one_view_detail(mst="268283")  # 특정 법령 한눈보기
 - get_one_view_detail()  # 전체 한눈보기 목록
-- get_one_view_detail(display=100)  # 더 많은 결과
 
-참고: 복잡한 법령의 핵심 내용을 시각적으로 정리한 자료입니다.""")
+참고: search_one_view로 먼저 목록 검색 후 MST 확인하여 사용하세요.""")
 def get_one_view_detail(
+    mst: Annotated[str, "법령일련번호 (선택)"] = "",
     display: Annotated[int, "결과 개수 (최대 100)"] = 50,
 ) -> TextContent:
     """한눈보기 본문 조회"""
     try:
-        params = {"display": min(display, 100)}
+        params = {}
+        if mst:
+            params["MST"] = str(mst)
+        else:
+            params["display"] = min(display, 100)
         data = _make_legislation_request("oneview", params, is_detail=True)
         
         if not data:
@@ -3187,32 +3191,34 @@ def get_law_system_diagram_full(mst_id: Union[str, int]) -> TextContent:
 @mcp.tool(name="get_delegated_law", description="""위임법령을 조회합니다.
 
 매개변수:
-- law_id: 법령일련번호(MST) - search_law 도구의 결과에서 'MST' 필드값 사용 (MST 우선, ID는 MST가 없을 때만)
+- law_id: 법령ID (6자리, 예: 000900) - search_law 결과의 '법령ID' 필드값 사용
 
-사용 예시: get_delegated_law(law_id="248613")""")
+사용 예시: get_delegated_law(law_id="000900")
+
+참고: 법령ID는 MST(법령일련번호)와 다릅니다. search_law 결과에서 '법령ID' 필드를 확인하세요.""")
 def get_delegated_law(law_id: Union[str, int]) -> TextContent:
     """위임법령 조회
     
     Args:
-        law_id: 법령ID 또는 법령일련번호
+        law_id: 법령ID (6자리)
     """
     if not law_id:
-        return TextContent(type="text", text="법령ID를 입력해주세요.")
+        return TextContent(type="text", text="법령ID를 입력해주세요. (예: 000900)")
     
     try:
-        mst_str = str(law_id)
+        id_str = str(law_id)
         
-        # 여러 API 접근 방법 시도
+        # ID 파라미터로 직접 조회 (API 문서 기준)
         api_attempts = [
+            {"target": "lsDelegated", "param": "ID", "endpoint": "detail"},
             {"target": "lsDelegated", "param": "MST", "endpoint": "detail"},
             {"target": "law", "param": "MST", "endpoint": "detail"},  # 전체 법령에서 위임정보 추출
-            {"target": "lsDelegated", "param": "ID", "endpoint": "detail"}   # ID로 시도
         ]
         
         for attempt in api_attempts:
             try:
                 params = {
-                    attempt["param"]: mst_str,
+                    attempt["param"]: id_str,
                     "type": "JSON"
                 }
                 
@@ -3223,7 +3229,7 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
                 
                 # 유의미한 위임법령 데이터가 있는지 확인
                 if data and _has_delegated_law_content(data):
-                    result = _format_delegated_law(data, mst_str, attempt["target"])
+                    result = _format_delegated_law(data, id_str, attempt["target"])
                     return TextContent(type="text", text=result)
                     
             except Exception as e:
@@ -3233,7 +3239,7 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
         # 모든 시도 실패시 관련법령 검색으로 대안 제시
         try:
             # 해당 법령명을 찾아서 관련 법령 검색 시도
-            detail_params = {"MST": mst_str}
+            detail_params = {"ID": id_str}
             detail_data = _make_legislation_request("law", detail_params, is_detail=True)
             
             law_name = ""
@@ -4085,31 +4091,57 @@ def search_law_change_history(change_date: str, org: Optional[str] = None, displ
         logger.error(f"법령 변경이력 검색 중 오류: {e}")
         return TextContent(type="text", text=f"법령 변경이력 검색 중 오류가 발생했습니다: {str(e)}")
 
-@mcp.tool(name="get_law_appendix_detail", description="""법령 별표서식 상세내용을 조회합니다.
+@mcp.tool(name="get_law_appendix_detail", description="""법령 별표서식 상세정보를 조회합니다.
 
 매개변수:
-- appendix_id: 별표서식ID - search_law_appendix 도구의 결과에서 'ID' 필드값 사용
+- appendix_id: 별표일련번호 - search_law_appendix 결과의 '별표일련번호' 필드값 사용
 
-사용 예시: get_law_appendix_detail(appendix_id="123456")""")
+사용 예시: get_law_appendix_detail(appendix_id="16483259")
+
+참고: 별표서식 상세는 HTML만 지원됩니다. PDF/이미지 파일 링크를 제공합니다.""")
 def get_law_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
     """법령 별표서식 상세내용 조회
     
     Args:
-        appendix_id: 별표서식ID
+        appendix_id: 별표일련번호
     """
     if not appendix_id:
-        return TextContent(type="text", text="별표서식ID를 입력해주세요.")
+        return TextContent(type="text", text="별표일련번호를 입력해주세요. (예: 16483259)")
     
     try:
-        # API 요청 파라미터
-        params = {"target": "lawAppendix", "MST": str(appendix_id)}
-        url = _generate_api_url("lsBylInfoGuide", params)
+        # 목록에서 해당 별표 정보 찾기
+        params = {"display": 100}
+        data = _make_legislation_request("licbyl", params, is_detail=False)
         
-        # API 요청
-        data = _make_legislation_request("lsBylInfoGuide", params)
-        result = _safe_format_law_detail(data, str(appendix_id), url)
+        if "licBylSearch" in data and "licbyl" in data["licBylSearch"]:
+            items = data["licBylSearch"]["licbyl"]
+            if isinstance(items, dict):
+                items = [items]
+            
+            for item in items:
+                if str(item.get("별표일련번호", "")) == str(appendix_id):
+                    result = f"""**별표서식 상세**
+
+**별표명**: {item.get('별표명', '')}
+**별표종류**: {item.get('별표종류', '')}
+**별표번호**: {item.get('별표번호', '')}
+
+**관련법령**: {item.get('관련법령명', '')}
+**관련법령ID**: {item.get('관련법령ID', '')}
+**공포일자**: {item.get('공포일자', '')}
+
+**파일 링크**:
+- 서식파일: http://www.law.go.kr{item.get('별표서식파일링크', '')}
+- PDF파일: http://www.law.go.kr{item.get('별표서식PDF파일링크', '')}
+
+**상세페이지**: http://www.law.go.kr{item.get('별표법령상세링크', '')}
+
+참고: 별표서식 상세는 HTML만 지원됩니다. 위 링크를 통해 확인하세요."""
+                    return TextContent(type="text", text=result)
+            
+            return TextContent(type="text", text=f"별표일련번호 {appendix_id}에 해당하는 별표서식을 찾을 수 없습니다.")
         
-        return TextContent(type="text", text=result)
+        return TextContent(type="text", text="별표서식 정보를 조회할 수 없습니다.")
         
     except Exception as e:
         logger.error(f"법령 별표서식 상세조회 중 오류: {e}")
@@ -4447,26 +4479,25 @@ def search_law_ordinance_link(query: Optional[str] = None, display: int = 20, pa
 
 
 
-@mcp.tool(name="search_ordinance_law_link", description="""자치법규 기준 법령 연계 정보를 검색합니다.
+@mcp.tool(name="search_ordinance_law_link", description="""자치법규와 연계된 법령 목록을 검색합니다 (법령 기준).
 
 매개변수:
-- query: 검색어 (선택) - 자치법규명 또는 키워드
+- query: 검색어 (선택) - 법령명 키워드
 - display: 결과 개수 (최대 100, 기본값: 20)
 - page: 페이지 번호 (기본값: 1)
 
-반환정보: 자치법규명, 자치법규ID, 연계된 법령명, 법령ID, 지자체명, 연계유형
+반환정보: 법령ID, 법령명, 법령구분, 시행일자, 공포일자
 
 사용 예시:
-- search_ordinance_law_link()  # 전체 자치법규-법령 연계
-- search_ordinance_law_link("서울특별시")  # 서울시 조례의 상위 법령
-- search_ordinance_law_link("주차장 조례")  # 특정 조례의 근거 법령
+- search_ordinance_law_link()  # 전체 목록
+- search_ordinance_law_link("자동차")  # 자동차 관련 법령의 자치법규 연계
 
-참고: 특정 자치법규가 어떤 상위 법령에 근거하는지 파악할 때 사용합니다.""")
+참고: 법령과 자치법규의 연계 현황을 파악할 때 사용합니다.""")
 def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """자치법규 기준 법령 연계 정보 검색
+    """법령 기준 자치법규 연계 목록 검색
     
     Args:
-        query: 검색어 (자치법규명)
+        query: 검색어 (법령명)
         display: 결과 개수
         page: 페이지 번호
     """
@@ -4482,9 +4513,9 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
             search_query = query.strip()
             params["query"] = search_query
         else:
-            search_query = "자치법규-법령 연계정보"
+            search_query = "법령-자치법규 연계"
         
-        # API 요청 - 올바른 target: lnkLs (법령 기준 자치법규 연계)
+        # API 요청 - target: lnkLs (법령 기준 자치법규 연계)
         data = _make_legislation_request("lnkLs", params)
         result = _format_search_results(data, "lnkLs", search_query)
         return TextContent(type="text", text=result)
