@@ -160,6 +160,8 @@ mcp = FastMCP(
 import importlib
 tool_modules = [
     "law_tools",
+    "law_comparison_tools",  # 비교/이력/연계 도구들
+    "law_specialized_tools",  # 금융/세무/개인정보 특수 검색 도구들
     "optimized_law_tools",  # 캐싱 최적화된 도구들
     "legislation_tools",
     "additional_service_tools",

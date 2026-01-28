@@ -73,8 +73,29 @@ def format_search_law_results(data: Dict[str, Any], query: str) -> str:
             title = item.get('법령명한글', '') or item.get('법령명', '') or '제목 없음'
             result += f"**{i}. {title}**\n"
             
-            # MST 추출 및 상세조회 링크
+            # 메타데이터 추가
             mst = item.get('법령일련번호', '') or item.get('MST', '')
+            law_id = item.get('법령ID', '')
+            promulgate_date = item.get('공포일자', '')
+            enforce_date = item.get('시행일자', '')
+            ministry = item.get('소관부처명', '')
+            law_type = item.get('법령구분명', '')
+            revision = item.get('제개정구분명', '')
+            
+            if law_id:
+                result += f"   법령ID: {law_id}\n"
+            if mst:
+                result += f"   법령일련번호: {mst}\n"
+            if promulgate_date:
+                result += f"   공포일자: {promulgate_date}\n"
+            if enforce_date:
+                result += f"   시행일자: {enforce_date}\n"
+            if ministry:
+                result += f"   소관부처명: {ministry}\n"
+            if law_type:
+                result += f"   법령구분명: {law_type}\n"
+            if revision:
+                result += f"   제개정구분명: {revision}\n"
             if mst:
                 result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             
@@ -193,23 +214,72 @@ def extract_law_summary_from_detail(data: Dict[str, Any]) -> Dict[str, Any]:
                 if article_no:
                     key = f"제{article_no}조"
                     if article_title:
-                        key += f": {key}({article_title})"
+                        key += f"({article_title})"
                     
-                    # 조문 내용 미리보기 (150자)
+                    # 항/호/목 개수 계산
+                    hangs = article.get("항", [])
+                    if isinstance(hangs, dict):
+                        hangs = [hangs]
+                    elif not isinstance(hangs, list):
+                        hangs = []
+                    
+                    hang_count = len(hangs)
+                    ho_count = 0
+                    mok_count = 0
+                    
+                    for hang in hangs:
+                        if isinstance(hang, dict):
+                            hos = hang.get("호", [])
+                            if isinstance(hos, dict):
+                                hos = [hos]
+                            elif not isinstance(hos, list):
+                                hos = []
+                            ho_count += len(hos)
+                            
+                            for ho in hos:
+                                if isinstance(ho, dict):
+                                    moks = ho.get("목", [])
+                                    if isinstance(moks, dict):
+                                        moks = [moks]
+                                    elif not isinstance(moks, list):
+                                        moks = []
+                                    mok_count += len(moks)
+                    
+                    # 구조 정보 문자열 생성
+                    structure_info = ""
+                    if hang_count > 0 or ho_count > 0:
+                        parts = []
+                        if hang_count > 0:
+                            parts.append(f"{hang_count}개 항")
+                        if ho_count > 0:
+                            parts.append(f"{ho_count}개 호")
+                        if mok_count > 0:
+                            parts.append(f"{mok_count}개 목")
+                        structure_info = f" [{', '.join(parts)}]"
+                    
+                    # 조문 내용 미리보기 (100자로 축소, 구조 정보 추가)
                     preview = ""
                     if article_content:
                         if isinstance(article_content, str):
                             clean_content = re.sub(r'<[^>]+>', '', article_content)
-                            preview = clean_content[:150].strip()
+                            preview = clean_content[:100].strip()
                         elif isinstance(article_content, list):
                             content_str = ' '.join(str(item) for item in article_content if item)
                             clean_content = re.sub(r'<[^>]+>', '', content_str)
-                            preview = clean_content[:150].strip()
+                            preview = clean_content[:100].strip()
                     
-                    summary_text = f"{key} {preview}"
+                    summary_text = f"{key}{structure_info}"
+                    if preview:
+                        summary_text += f" - {preview}..."
+                    
                     article_index.append({
                         'key': key,
-                        'summary': summary_text
+                        'summary': summary_text,
+                        'structure': {
+                            '항': hang_count,
+                            '호': ho_count,
+                            '목': mok_count
+                        } if (hang_count + ho_count + mok_count) > 0 else None
                     })
                     article_count += 1
         
@@ -355,9 +425,9 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
     """
     get_law_article_by_key 도구 전용 조문 내용 포맷팅 함수
     - 항/호/목 번호 중복 출력 방지
+    - format_article_body 공통 함수 사용
     """
     try:
-        content = found_article.get("조문내용", "")
         article_no = found_article.get("조문번호", "")
         article_title = found_article.get("조문제목", "")
         key = f"제{article_no}조" if article_no else article_key
@@ -367,76 +437,8 @@ def format_article_content(found_article: Dict, law_name: str, article_key: str)
             result += f"({article_title})"
         result += "\n\n"
         
-        # 조문 내용 추출
-        article_content = content
-        if article_content:
-            # 리스트인 경우 문자열로 변환
-            if isinstance(article_content, list):
-                article_content = ' '.join(str(item) for item in article_content if item)
-            
-            # 문자열인지 확인 후 처리
-            if isinstance(article_content, str) and article_content.strip():
-                # HTML 태그 제거
-                clean_content = re.sub(r'<[^>]+>', '', article_content)
-                result += clean_content + "\n\n"
-        
-        # 항, 호, 목 구조 처리
-        hangs = found_article.get("항", [])
-        if isinstance(hangs, list) and hangs:
-            for hang in hangs:
-                if isinstance(hang, dict):
-                    hang_content = hang.get("항내용", "")
-                    if hang_content:
-                        # 리스트인 경우 문자열로 변환
-                        if isinstance(hang_content, list):
-                            hang_content = ' '.join(str(item) for item in hang_content if item)
-                        
-                        # 문자열인지 확인 후 HTML 태그 제거
-                        if isinstance(hang_content, str):
-                            clean_hang = re.sub(r'<[^>]+>', '', hang_content)
-                            clean_hang = clean_hang.strip()
-                        # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
-                        if clean_hang:
-                            result += f"{clean_hang}\n\n"
-                    
-                    # 호 처리
-                    hos = hang.get("호", [])
-                    if isinstance(hos, list) and hos:
-                        for ho in hos:
-                            if isinstance(ho, dict):
-                                ho_content = ho.get("호내용", "")
-                                if ho_content:
-                                    # 리스트인 경우 문자열로 변환
-                                    if isinstance(ho_content, list):
-                                        ho_content = ' '.join(str(item) for item in ho_content if item)
-                                    
-                                    # 문자열인지 확인 후 HTML 태그 제거
-                                    if isinstance(ho_content, str):
-                                        clean_ho = re.sub(r'<[^>]+>', '', ho_content)
-                                        clean_ho = clean_ho.strip()
-                                    # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
-                                    if clean_ho:
-                                        result += f"  {clean_ho}\n"
-                                
-                                # 목 처리
-                                moks = ho.get("목", [])
-                                if isinstance(moks, list) and moks:
-                                    for mok in moks:
-                                        if isinstance(mok, dict):
-                                            mok_content = mok.get("목내용", "")
-                                            if mok_content:
-                                                # 리스트인 경우 문자열로 변환
-                                                if isinstance(mok_content, list):
-                                                    mok_content = ' '.join(str(item) for item in mok_content if item)
-                                                
-                                                # 문자열인지 확인 후 HTML 태그 제거
-                                                if isinstance(mok_content, str):
-                                                    clean_mok = re.sub(r'<[^>]+>', '', mok_content)
-                                                    clean_mok = clean_mok.strip()
-                                                # 내용만 출력 (번호는 내용에 이미 포함되어 있음)
-                                                if clean_mok:
-                                                    result += f"    {clean_mok}\n"
-                        result += "\n"
+        # 공통 함수로 본문 포맷팅
+        result += format_article_body(found_article, include_details=True)
         
         # 추가 정보
         if found_article.get("조문시행일자"):
@@ -463,6 +465,108 @@ def clean_html_tags(text: str) -> str:
         return str(text) if text else ""
     
     return re.sub(r'<[^>]+>', '', text).strip()
+
+
+def format_article_body(article: Dict, include_details: bool = True) -> str:
+    """
+    조문 본문(항/호/목) 포맷팅 공통 함수
+    
+    Args:
+        article: 조문 데이터 딕셔너리
+        include_details: True면 항/호/목 전체 포함, False면 조문 내용만
+    
+    Returns:
+        포맷팅된 조문 본문 문자열
+    """
+    result = ""
+    
+    # 조문 내용 추출
+    article_content = article.get("조문내용", "")
+    if article_content:
+        # 리스트인 경우 문자열로 변환
+        if isinstance(article_content, list):
+            article_content = ' '.join(str(item) for item in article_content if item)
+        
+        # 문자열인지 확인 후 처리
+        if isinstance(article_content, str) and article_content.strip():
+            clean_content = clean_html_tags(article_content)
+            result += clean_content + "\n\n"
+    
+    if not include_details:
+        return result
+    
+    # 항, 호, 목 구조 처리
+    hangs = article.get("항", [])
+    # dict인 경우 리스트로 변환
+    if isinstance(hangs, dict):
+        hangs = [hangs]
+    elif not isinstance(hangs, list):
+        hangs = []
+    
+    if hangs:
+        for hang in hangs:
+            if isinstance(hang, dict):
+                # 항 내용 처리
+                hang_content = hang.get("항내용", "")
+                if hang_content:
+                    # 리스트인 경우 문자열로 변환
+                    if isinstance(hang_content, list):
+                        hang_content = ' '.join(str(item) for item in hang_content if item)
+                    
+                    # 문자열인지 확인 후 HTML 태그 제거
+                    if isinstance(hang_content, str):
+                        clean_hang = clean_html_tags(hang_content)
+                        if clean_hang:
+                            result += f"{clean_hang}\n\n"
+                
+                # 호 처리 (항내용 유무와 무관하게 처리)
+                hos = hang.get("호", [])
+                # dict인 경우 리스트로 변환
+                if isinstance(hos, dict):
+                    hos = [hos]
+                elif not isinstance(hos, list):
+                    hos = []
+                
+                if hos:
+                    for ho in hos:
+                        if isinstance(ho, dict):
+                            ho_content = ho.get("호내용", "")
+                            if ho_content:
+                                # 리스트인 경우 문자열로 변환
+                                if isinstance(ho_content, list):
+                                    ho_content = ' '.join(str(item) for item in ho_content if item)
+                                
+                                # 문자열인지 확인 후 HTML 태그 제거
+                                if isinstance(ho_content, str):
+                                    clean_ho = clean_html_tags(ho_content)
+                                    if clean_ho:
+                                        result += f"  {clean_ho}\n"
+                            
+                            # 목 처리
+                            moks = ho.get("목", [])
+                            # dict인 경우 리스트로 변환
+                            if isinstance(moks, dict):
+                                moks = [moks]
+                            elif not isinstance(moks, list):
+                                moks = []
+                            
+                            if moks:
+                                for mok in moks:
+                                    if isinstance(mok, dict):
+                                        mok_content = mok.get("목내용", "")
+                                        if mok_content:
+                                            # 리스트인 경우 문자열로 변환
+                                            if isinstance(mok_content, list):
+                                                mok_content = ' '.join(str(item) for item in mok_content if item)
+                                            
+                                            # 문자열인지 확인 후 HTML 태그 제거
+                                            if isinstance(mok_content, str):
+                                                clean_mok = clean_html_tags(mok_content)
+                                                if clean_mok:
+                                                    result += f"    {clean_mok}\n"
+                    result += "\n"
+    
+    return result
 
 
 def safe_get_nested_value(data: Dict, keys: List[str], default: Any = "") -> Any:

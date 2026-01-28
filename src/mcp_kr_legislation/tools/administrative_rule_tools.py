@@ -47,14 +47,140 @@ def search_administrative_rule(query: Optional[str] = None, search: int = 2, dis
 @mcp.tool(name="get_administrative_rule_detail", description="행정규칙 상세내용을 조회합니다. 특정 행정규칙의 본문을 제공합니다.")
 def get_administrative_rule_detail(rule_id: Union[str, int]) -> TextContent:
     """행정규칙 본문 조회"""
-    params = {"target": "admrul", "ID": str(rule_id)}
     try:
+        params = {"target": "admrul", "ID": str(rule_id)}
         data = _make_legislation_request("admrul", params, is_detail=True)
-        url = _generate_api_url("admrul", params)
-        result = _format_search_results(data, "admrul", f"행정규칙ID:{rule_id}", 50)
+        
+        if not data:
+            return TextContent(type="text", text=f"행정규칙 ID {rule_id}에 해당하는 정보를 찾을 수 없습니다.")
+        
+        # 행정규칙 상세 포맷팅
+        result = _format_administrative_rule_detail(data, str(rule_id))
         return TextContent(type="text", text=result)
+        
     except Exception as e:
+        logger.error(f"행정규칙 상세 조회 중 오류: {e}")
         return TextContent(type="text", text=f"행정규칙 상세 조회 중 오류: {str(e)}")
+
+
+def _format_administrative_rule_detail(data: dict, rule_id: str) -> str:
+    """행정규칙 상세 정보 포맷팅"""
+    result = f"**행정규칙 상세 정보** (ID: {rule_id})\n"
+    result += "=" * 60 + "\n\n"
+    
+    # AdmRulService 확인
+    if 'AdmRulService' not in data:
+        return f"행정규칙 정보를 찾을 수 없습니다. (ID: {rule_id})"
+    
+    service = data['AdmRulService']
+    
+    # 기본 정보
+    if '행정규칙기본정보' in service:
+        basic_info = service['행정규칙기본정보']
+        result += "**기본 정보**\n"
+        
+        if '행정규칙명' in basic_info:
+            result += f"**행정규칙명**: {basic_info['행정규칙명']}\n"
+        if '행정규칙종류' in basic_info:
+            result += f"**종류**: {basic_info['행정규칙종류']}\n"
+        if '소관부처명' in basic_info:
+            result += f"**소관부처**: {basic_info['소관부처명']}\n"
+        if '발령일자' in basic_info:
+            result += f"**발령일자**: {basic_info['발령일자']}\n"
+        if '시행일자' in basic_info:
+            result += f"**시행일자**: {basic_info['시행일자']}\n"
+        if '발령번호' in basic_info:
+            result += f"**발령번호**: {basic_info['발령번호']}\n"
+        if '행정규칙일련번호' in basic_info:
+            result += f"**일련번호**: {basic_info['행정규칙일련번호']}\n"
+        
+        result += "\n" + "=" * 60 + "\n\n"
+    
+    # 조문 내용
+    if '조문내용' in service and service['조문내용']:
+        jo_content = service['조문내용']
+        result += "**조문 내용**\n\n"
+        
+        from .law_tools import clean_html_tags
+        
+        # 조문내용이 리스트인 경우 (각 항목이 조문 문자열)
+        if isinstance(jo_content, list):
+            for i, jo_text in enumerate(jo_content, 1):
+                if isinstance(jo_text, str) and jo_text.strip():
+                    content_clean = clean_html_tags(jo_text)
+                    result += f"{content_clean}\n\n"
+        # 조문내용이 문자열인 경우
+        elif isinstance(jo_content, str):
+            content_clean = clean_html_tags(jo_content)
+            result += f"{content_clean}\n\n"
+        # 조문내용이 딕셔너리인 경우
+        elif isinstance(jo_content, dict):
+            # 조문 구조 파싱
+            if '조' in jo_content:
+                jo_list = jo_content['조']
+                if not isinstance(jo_list, list):
+                    jo_list = [jo_list]
+                
+                for jo in jo_list:
+                    if isinstance(jo, dict):
+                        jo_title = jo.get('조제목', '')
+                        jo_content_text = jo.get('조내용', '')
+                        if jo_title:
+                            result += f"**{jo_title}**\n"
+                        if jo_content_text:
+                            content_clean = clean_html_tags(jo_content_text)
+                            result += f"{content_clean}\n\n"
+        
+        result += "\n"
+    
+    # 제개정이유
+    if '제개정이유' in service and service['제개정이유']:
+        reason = service['제개정이유']
+        if isinstance(reason, str) and reason.strip():
+            from .law_tools import clean_html_tags
+            reason_clean = clean_html_tags(reason)
+            result += "**제개정이유**\n"
+            result += f"{reason_clean}\n\n"
+    
+    # 부칙
+    if '부칙' in service and service['부칙']:
+        부칙_data = service['부칙']
+        from .law_tools import clean_html_tags
+        
+        if isinstance(부칙_data, dict):
+            부칙내용 = 부칙_data.get('부칙내용', '')
+            if 부칙내용:
+                result += "**부칙**\n"
+                # 부칙내용이 리스트인 경우
+                if isinstance(부칙내용, list):
+                    for 부칙_text in 부칙내용:
+                        if isinstance(부칙_text, str) and 부칙_text.strip():
+                            부칙_clean = clean_html_tags(부칙_text)
+                            result += f"{부칙_clean}\n\n"
+                # 부칙내용이 문자열인 경우
+                elif isinstance(부칙내용, str) and 부칙내용.strip():
+                    부칙_clean = clean_html_tags(부칙내용)
+                    result += f"{부칙_clean}\n\n"
+        elif isinstance(부칙_data, str) and 부칙_data.strip():
+            부칙_clean = clean_html_tags(부칙_data)
+            result += "**부칙**\n"
+            result += f"{부칙_clean}\n\n"
+        elif isinstance(부칙_data, list):
+            result += "**부칙**\n"
+            for 부칙_text in 부칙_data:
+                if isinstance(부칙_text, str) and 부칙_text.strip():
+                    부칙_clean = clean_html_tags(부칙_text)
+                    result += f"{부칙_clean}\n\n"
+    
+    # 별표
+    if '별표' in service and service['별표']:
+        result += "**별표**: 있음\n\n"
+    
+    # 첨부파일
+    if '첨부파일' in service and service['첨부파일']:
+        result += "**첨부파일**: 있음\n\n"
+    
+    return result
 
 @mcp.tool(name="search_administrative_rule_comparison", description="행정규칙 신구법 비교를 검색합니다. 행정규칙의 개정 전후 비교 정보를 제공합니다.")
 def search_administrative_rule_comparison(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
