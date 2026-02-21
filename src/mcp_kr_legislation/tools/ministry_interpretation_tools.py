@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 from .law_tools import (
     _make_legislation_request,
     _generate_api_url,
-    _format_search_results
+    _format_search_results,
+    get_cache_key,
+    load_from_cache,
+    save_to_cache,
 )
 
 # ===========================================
@@ -346,15 +349,26 @@ def search_korail_interpretation(query: Optional[str] = None, display: int = 20,
 
 사용 예시: search_nts_interpretation("소득세"), search_nts_interpretation("부가가치세", display=50)""")
 def search_nts_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """국세청 법령해석 검색"""
+    """국세청 법령해석 검색 (대용량 13만건+ 캐시 적용)"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
-    
+
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
+    params_for_key = {"query": search_query, "display": params["display"], "page": params["page"]}
+    cache_key = get_cache_key("nts_search_" + json.dumps(params_for_key, sort_keys=True), "list")
     try:
+        cached_data = load_from_cache(cache_key)
+        if cached_data and isinstance(cached_data, dict) and "CgmExpc" in cached_data:
+            result = _format_search_results(cached_data, "ntsCgmExpc", search_query)
+            return TextContent(type="text", text=result)
         data = _make_legislation_request("ntsCgmExpc", params)
         result = _format_search_results(data, "ntsCgmExpc", search_query)
+        if data:
+            try:
+                save_to_cache(cache_key, data)
+            except Exception as cache_err:
+                logger.debug("search_nts_interpretation cache save skip: %s", cache_err)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국세청 법령해석 검색 중 오류: {str(e)}")

@@ -50,7 +50,7 @@
     {
       "id": "improve-cache-nts",
       "type": "improvement",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
       "target": "ntsCgmExpc",
       "tool_name": "search_nts_interpretation",
@@ -254,9 +254,21 @@
       "status": "pass",
       "response_size_bytes": 1200,
       "notes": "couseAdmrul+lj=jo vcode=A0000000000601 검증"
+    },
+    "ministry_nts": {
+      "tested_at": "2026-02-21",
+      "status": "pass",
+      "notes": "search_nts_interpretation cache applied"
     }
   },
   "session_history": [
+    {
+      "date": "2026-02-21",
+      "tasks_completed": ["improve-cache-nts"],
+      "tasks_failed": [],
+      "issues_found": [],
+      "commit_hash": null
+    },
     {
       "date": "2026-02-21",
       "tasks_completed": ["dev-couseAdmrul-articles"],
