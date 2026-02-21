@@ -21,7 +21,10 @@ logger = logging.getLogger(__name__)
 # 유틸리티 함수들 import
 from .law_tools import (
     _make_legislation_request,
-    _generate_api_url
+    _generate_api_url,
+    get_cache_key,
+    load_from_cache,
+    save_to_cache,
 )
 
 def _format_precedent_search_results(data: dict, target: str, search_query: str, max_results: int = 50) -> str:
@@ -288,11 +291,22 @@ def search_precedent(
         params["nb"] = case_number
     if data_source:
         params["datSrcNm"] = data_source
-    
+
+    params_for_key = {k: v for k, v in params.items() if k != "OC"}
+    cache_key = get_cache_key("prec_search_" + json.dumps(params_for_key, sort_keys=True), "list")
+    cached_data = load_from_cache(cache_key)
+    if cached_data and isinstance(cached_data, dict) and "PrecSearch" in cached_data:
+        result = _format_precedent_search_results(cached_data, "prec", search_query, display)
+        return TextContent(type="text", text=result)
+
     try:
         data = _make_legislation_request("prec", params)
-        url = _generate_api_url("prec", params)
+        _generate_api_url("prec", params)
         result = _format_precedent_search_results(data, "prec", search_query, display)
+        try:
+            save_to_cache(cache_key, data)
+        except Exception as cache_err:
+            logger.debug("search_precedent cache save skip: %s", cache_err)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"판례 검색 중 오류: {str(e)}")

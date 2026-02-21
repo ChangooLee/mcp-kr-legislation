@@ -228,7 +228,7 @@ def _make_legislation_request(target: str, params: dict, is_detail: bool = False
             data = response.json()
         except json.JSONDecodeError as e:
             # 특정 타겟들에 대한 상세한 오류 처리
-            if target in ["elaw", "ordinance", "ordinanceApp"]:
+            if target in ["elaw", "ordinance", "ordinbyl"]:
                 logger.error(f"{target} JSON 파싱 오류: {str(e)}")
                 logger.error(f"응답 내용 (처음 500자): {response.text[:500]}")
                 return {"error": f"{target} API JSON 파싱 실패: {str(e)}"}
@@ -653,7 +653,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 안전장치: 리스트가 아닌 경우 빈 리스트로 변환 (수정됨)
             if not isinstance(target_data, list):
                 target_data = []
-        elif target == "lnkLsOrd" and 'OrdinSearch' in data:
+        elif target == "lnkOrd" and 'OrdinSearch' in data:
             # 법령-자치법규 연계는 OrdinSearch 루트키와 law 데이터키 사용
             search_data = data['OrdinSearch']
             target_data = search_data.get('law', [])
@@ -674,7 +674,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 단일 객체를 배열로 변환
             target_data = [law_data] if law_data else []
         # 다양한 응답 구조 처리 (특정 타겟들 제외)
-        elif 'LawSearch' in data and target not in ["thdCmp", "licbyl", "trty", "lsRlt", "ordinfd", "ordin", "admrul", "admrulOldAndNew", "lnkLsOrd", "prec", "expc", "decc", "couseLs"]:
+        elif 'LawSearch' in data and target not in ["thdCmp", "licbyl", "trty", "lsRlt", "ordinfd", "ordin", "admrul", "admrulOldAndNew", "lnkOrd", "prec", "expc", "decc", "couseLs"]:
             # 기본 검색 구조
             if target == "elaw":
                 # 영문 법령은 'law' 키 사용
@@ -1030,7 +1030,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   상세조회: get_treaty_detail(treaty_id=\"{treaty_id}\")\n"
                 else:
                     result += f"   상세조회: get_treaty_detail(treaty_id=\"{law_id}\")\n"
-            elif target == "lnkLsOrd":
+            elif target == "lnkOrd":
                 # 연계 자치법규는 자치법규일련번호 사용
                 ordinance_id = None
                 for key in ['자치법규일련번호', '자치법규MST']:
@@ -3862,6 +3862,31 @@ def get_effective_law_articles(
         error_msg += f'get_effective_law_articles(mst="{mst}", article_no="15")\n'
         error_msg += "```"
         return TextContent(type="text", text=error_msg)
+
+@mcp.tool(name="search_effective_law_articles_raw", description="""공포일 기준 시행일법령의 조항호목 메타데이터를 직접 조회합니다. 조문번호, 조문제목 등 목차 수준의 정보를 반환합니다.
+
+참고: 상세 조문 내용이 필요하면 get_effective_law_articles를 사용하세요.
+
+매개변수:
+- mst: 법령일련번호(MST) (필수)
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_effective_law_articles_raw(mst="248613")""")
+def search_effective_law_articles_raw(
+    mst: Annotated[Union[str, int], "법령일련번호(MST)"],
+    display: int = 100,
+    page: int = 1
+) -> TextContent:
+    """시행일법령 조항호목 메타데이터 직접 조회 (eflawjosub target)"""
+    try:
+        params = {"MST": str(mst), "display": min(display, 100), "page": page}
+        data = _make_legislation_request("eflawjosub", params)
+        result = _format_search_results(data, "eflawjosub", str(mst))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"시행일법령 조항호목 조회 중 오류: {str(e)}")
+
 
 def format_article_detail(article: Dict[str, Any]) -> str:
     """조문 상세 포맷팅"""

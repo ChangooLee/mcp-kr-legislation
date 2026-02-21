@@ -164,50 +164,6 @@ def search_moe_interpretation(query: Optional[str] = None, display: int = 20, pa
     except Exception as e:
         return TextContent(type="text", text=f"교육부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_korea_interpretation", description="""한국 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_korea_interpretation("행정"), search_korea_interpretation("정책", display=50)""")
-def search_korea_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """한국 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("koreaCgmExpc", params)
-        result = _format_search_results(data, "koreaCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"한국 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mssp_interpretation", description="""보훈처 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mssp_interpretation("보훈"), search_mssp_interpretation("유공자", display=50)""")
-def search_mssp_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """보훈처 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("msspCgmExpc", params)
-        result = _format_search_results(data, "msspCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"보훈처 법령해석 검색 중 오류: {str(e)}")
-
 @mcp.tool(name="search_mote_interpretation", description="""산업통상자원부 법령해석을 검색합니다.
 
 매개변수:
@@ -317,28 +273,6 @@ def search_nfa_interpretation(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"산림청 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_korail_interpretation", description="""한국철도공사 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_korail_interpretation("철도"), search_korail_interpretation("운송", display=50)""")
-def search_korail_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """한국철도공사 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("korailCgmExpc", params)
-        result = _format_search_results(data, "korailCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"한국철도공사 법령해석 검색 중 오류: {str(e)}")
 
 @mcp.tool(name="search_nts_interpretation", description="""국세청 법령해석을 검색합니다.
 

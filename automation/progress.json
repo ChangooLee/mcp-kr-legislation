@@ -1,130 +1,259 @@
 {
   "last_updated": "2026-02-21",
   "last_session_id": null,
-  "schema_version": "1.0",
+  "schema_version": "2.0",
+  "official_api_stats": {
+    "source": "https://open.law.go.kr/LSO/openApi/guideList.do",
+    "total_apis": 191,
+    "mobile_apis": 16,
+    "non_mobile_apis": 175,
+    "api_layout_targets": 99,
+    "note": "175건 비모바일 API = 99개 고유 target (목록/본문이 같은 target 사용)"
+  },
   "summary": {
-    "total_apis": 173,
-    "json_ok": 136,
-    "warnings": 24,
-    "html_only": 13,
-    "needs_development": 0,
-    "note": "aiRltLs(지능형연관법령)는 불필요 도구로 판단하여 제외",
-    "last_test_run": "2026-02-21",
-    "total_tools_registered": 183
+    "total_unique_targets": 99,
+    "tool_covered_targets": 99,
+    "coverage_percent": 100.0,
+    "api_layout_files": 17,
+    "categories": {
+      "law": {
+        "targets": 22,
+        "apis": 26
+      },
+      "admin_rule": {
+        "targets": 2,
+        "apis": 4
+      },
+      "local_ordinance": {
+        "targets": 3,
+        "apis": 3
+      },
+      "precedent": {
+        "targets": 1,
+        "apis": 2
+      },
+      "constitutional_court": {
+        "targets": 1,
+        "apis": 2
+      },
+      "legal_interpretation": {
+        "targets": 1,
+        "apis": 2
+      },
+      "administrative_appeal": {
+        "targets": 1,
+        "apis": 2
+      },
+      "committee": {
+        "targets": 12,
+        "apis": 24
+      },
+      "treaty": {
+        "targets": 1,
+        "apis": 2
+      },
+      "appendix": {
+        "targets": 3,
+        "apis": 3
+      },
+      "school_corp": {
+        "targets": 1,
+        "apis": 2
+      },
+      "legal_term": {
+        "targets": 1,
+        "apis": 2
+      },
+      "custom": {
+        "targets": 3,
+        "apis": 6
+      },
+      "knowledge_base": {
+        "targets": 9,
+        "apis": 9
+      },
+      "ministry_interpretation": {
+        "targets": 38,
+        "apis": 76
+      },
+      "special_tribunal": {
+        "targets": 4,
+        "apis": 8
+      },
+      "pre_consulting": {
+        "targets": 1,
+        "apis": 2,
+        "note": "API 미오픈 상태 (2026-02-21)"
+      }
+    },
+    "last_test_run": "2026-02-21"
+  },
+  "changes_made": {
+    "date": "2026-02-21",
+    "target_fixes": [
+      {
+        "old": "acrSpecialDecc",
+        "new": "acrcSpecialDecc",
+        "file": "specialized_tools.py"
+      },
+      {
+        "old": "adapSpecialDecc",
+        "new": "mpmSpecialDecc",
+        "file": "specialized_tools.py"
+      },
+      {
+        "old": "khaCgmExpc",
+        "new": "khsCgmExpc",
+        "file": "ministry_interpretation_tools_extended.py"
+      },
+      {
+        "old": "knpaCgmExpc",
+        "new": "npaCgmExpc",
+        "file": "ministry_interpretation_tools_extended.py"
+      },
+      {
+        "old": "ordinanceApp",
+        "new": "ordinbyl",
+        "file": "administrative_rule_tools.py, law_tools.py"
+      },
+      {
+        "old": "lnkLsOrd",
+        "new": "lnkOrd",
+        "file": "administrative_rule_tools.py, law_tools.py"
+      },
+      {
+        "old": "schreg",
+        "new": "school",
+        "file": "specialized_tools.py"
+      },
+      {
+        "old": "locgongreg",
+        "new": "public",
+        "file": "specialized_tools.py"
+      },
+      {
+        "old": "pubitreg",
+        "new": "pi",
+        "file": "specialized_tools.py"
+      },
+      {
+        "old": "dlytrmGuide",
+        "new": "dlytrm",
+        "file": "linkage_tools.py"
+      },
+      {
+        "old": "dlytrmRltGuide",
+        "new": "dlytrmRlt",
+        "file": "linkage_tools.py"
+      },
+      {
+        "old": "ordinBylInfoGuide",
+        "new": "ordinbyl",
+        "file": "misc_tools.py"
+      }
+    ],
+    "phantom_tools_removed": [
+      {
+        "target": "koreaCgmExpc",
+        "tool": "search_korea_interpretation",
+        "reason": "API 미존재 (빈 응답)"
+      },
+      {
+        "target": "msspCgmExpc",
+        "tool": "search_mssp_interpretation",
+        "reason": "API 미존재 (빈 응답)"
+      },
+      {
+        "target": "korailCgmExpc",
+        "tool": "search_korail_interpretation",
+        "reason": "API 미존재 (빈 응답)"
+      },
+      {
+        "target": "cousePrec",
+        "tool": "search_custom_precedent",
+        "reason": "API 미존재 (빈 응답)"
+      }
+    ],
+    "tools_added": [
+      {
+        "target": "msitCgmExpc",
+        "tool": "search_msit_interpretation",
+        "file": "ministry_interpretation_tools_extended.py"
+      },
+      {
+        "target": "okaCgmExpc",
+        "tool": "search_oka_interpretation",
+        "file": "ministry_interpretation_tools_extended.py"
+      },
+      {
+        "target": "admbyl",
+        "tool": "search_admin_rule_appendix",
+        "file": "law_comparison_tools.py"
+      },
+      {
+        "target": "drlaw",
+        "tool": "search_law_ordinance_status",
+        "file": "law_comparison_tools.py"
+      },
+      {
+        "target": "baiPvcs",
+        "tool": "search_bai_preconsulting",
+        "file": "specialized_tools.py"
+      },
+      {
+        "target": "aiSearch",
+        "tool": "search_intelligent_law",
+        "file": "legal_term_tools.py"
+      },
+      {
+        "target": "aiRltLs",
+        "tool": "search_intelligent_related_law",
+        "file": "legal_term_tools.py"
+      },
+      {
+        "target": "lsHistory",
+        "tool": "search_law_amendment_history",
+        "file": "law_comparison_tools.py"
+      },
+      {
+        "target": "eflawjosub",
+        "tool": "search_effective_law_articles_raw",
+        "file": "law_tools.py"
+      }
+    ],
+    "api_layout_fixes": [
+      {
+        "file": "school_corp.json",
+        "change": "target school(or → school"
+      },
+      {
+        "file": "pre_consulting.json",
+        "change": "신규 생성 (감사원 사전컨설팅의견서)"
+      }
+    ]
   },
   "tasks": [
     {
-      "id": "dev-couseAdmrul-articles",
-      "type": "development",
-      "status": "completed",
-      "priority": "low",
-      "target": "couseAdmrul",
-      "tool_name": "search_custom_administrative_rule_articles",
-      "tool_file": "custom_tools.py",
-      "description": "맞춤형 행정규칙 조문 목록 조회 도구 개발",
-      "api_layout_file": "custom.json",
-      "notes": "search_custom_administrative_rule은 이미 있음. 조문 목록 조회 추가 필요"
-    },
-    {
-      "id": "improve-cache-search-law",
-      "type": "improvement",
-      "status": "completed",
-      "priority": "high",
-      "target": "law",
-      "tool_name": "search_law",
-      "tool_file": "law_tools.py",
-      "description": "search_law에 캐시 적용 (호출 빈도 높음)",
-      "category": "needs_cache"
-    },
-    {
       "id": "improve-cache-precedent",
       "type": "improvement",
-      "status": "pending",
+      "status": "completed",
       "priority": "medium",
       "target": "prec",
-      "tool_name": "search_precedent",
-      "tool_file": "precedent_tools.py",
-      "description": "search_precedent에 캐시 적용",
-      "category": "needs_cache"
-    },
-    {
-      "id": "improve-cache-nts",
-      "type": "improvement",
-      "status": "completed",
-      "priority": "high",
-      "target": "ntsCgmExpc",
-      "tool_name": "search_nts_interpretation",
-      "tool_file": "ministry_interpretation_tools.py",
-      "description": "국세청 해석 캐시 적용 (135,765건 대용량)",
-      "category": "needs_cache"
-    },
-    {
-      "id": "improve-school-target",
-      "type": "improvement",
-      "status": "pending",
-      "priority": "medium",
-      "target": "school",
-      "tool_name": "search_university_regulation",
-      "tool_file": "specialized_tools.py",
-      "description": "학칙/공단/공공기관 target 값 명확화 (school vs pi)",
-      "category": "needs_parsing"
-    },
-    {
-      "id": "improve-zero-count-ministries",
-      "type": "improvement",
-      "status": "pending",
-      "priority": "low",
-      "target": "multiple",
-      "tool_name": "search_cha_interpretation,search_police_interpretation,search_kdca_interpretation,search_kcg_interpretation",
-      "tool_file": "ministry_interpretation_tools_extended.py",
-      "description": "0건 반환 부처 4개 - 안내 메시지 개선",
-      "category": "auto_fix"
+      "description": "search_precedent에 캐시 적용"
     },
     {
       "id": "improve-empty-result-guidance",
       "type": "improvement",
       "status": "pending",
       "priority": "medium",
-      "tool_name": "multiple",
-      "description": "빈 결과 시 대안 검색어 제시 및 관련 도구 안내 추가",
-      "category": "auto_fix"
+      "description": "빈 결과 시 대안 검색어 제시 및 관련 도구 안내 추가"
     }
   ],
   "warning_tools": [
     {
-      "tool": "get_current_law_articles",
-      "target": "lawjosub",
-      "issue": "API 파라미터 제한"
-    },
-    {
-      "tool": "search_old_and_new_law",
-      "target": "oldAndNew",
-      "issue": "ID 필요"
-    },
-    {
-      "tool": "get_old_and_new_law_detail",
-      "target": "oldAndNew",
-      "issue": "ID 필요"
-    },
-    {
-      "tool": "search_three_way_comparison",
-      "target": "thdCmp",
-      "issue": "ID 필요"
-    },
-    {
-      "tool": "get_three_way_comparison_detail",
-      "target": "thdCmp",
-      "issue": "ID 필요"
-    },
-    {
-      "tool": "search_law_nickname",
-      "target": "lsAbrv",
-      "issue": "특수 파라미터"
-    },
-    {
-      "tool": "search_deleted_law_data",
-      "target": "delHst",
-      "issue": "특수 파라미터"
+      "tool": "search_bai_preconsulting",
+      "target": "baiPvcs",
+      "issue": "API 미오픈"
     },
     {
       "tool": "search_legal_term_ai",
@@ -150,64 +279,34 @@
       "tool": "search_kcg_interpretation",
       "target": "kcgCgmExpc",
       "issue": "0건 반환"
-    },
-    {
-      "tool": "search_administrative_rule_comparison",
-      "target": "admrulOldAndNew",
-      "issue": "특수 파라미터"
-    },
-    {
-      "tool": "get_administrative_rule_comparison_detail",
-      "target": "admrulOldAndNew",
-      "issue": "특수 파라미터"
-    },
-    {
-      "tool": "search_linked_ordinance",
-      "target": "lnkOrd",
-      "issue": "특수 파라미터"
-    },
-    {
-      "tool": "search_ordinance_appendix",
-      "target": "ordinbyl",
-      "issue": "특수 파라미터"
-    },
-    {
-      "tool": "search_university_regulation",
-      "target": "school",
-      "issue": "target 불명확"
-    },
-    {
-      "tool": "get_university_regulation_detail",
-      "target": "school",
-      "issue": "target 불명확"
     }
   ],
   "test_results": {
     "law": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.2,
-      "notes": "search_law cache applied (1st attempt key)"
+      "duration_sec": 0.42
     },
     "precedent": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.16,
+      "notes": "search_precedent 캐시 적용 완료"
     },
     "constitutional_court": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.15
+      "duration_sec": 0.18
     },
     "legal_interpretation": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.17
+      "duration_sec": 0.18
     },
     "administrative_trial": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.14
+      "duration_sec": 0.16
     },
     "administrative_rule": {
       "tested_at": "2026-02-21",
@@ -217,73 +316,66 @@
     "local_ordinance": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.28
+      "duration_sec": 0.38
     },
     "legal_term": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.17
+      "duration_sec": 0.29
     },
     "treaty": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.16
+      "duration_sec": 0.18
     },
     "committee_ppc": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.29
     },
     "tax_tribunal": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.2
+      "duration_sec": 0.17
     },
     "ministry_moef": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.17
+      "duration_sec": 0.18
     },
     "english_law": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.17
-    },
-    "custom_administrative_rule_articles": {
-      "tested_at": "2026-02-21",
-      "status": "pass",
-      "response_size_bytes": 1200,
-      "notes": "couseAdmrul+lj=jo vcode=A0000000000601 검증"
-    },
-    "ministry_nts": {
-      "tested_at": "2026-02-21",
-      "status": "pass",
-      "notes": "search_nts_interpretation cache applied"
+      "duration_sec": 0.35
     }
   },
-  "session_history": [
-    {
-      "date": "2026-02-21",
-      "tasks_completed": ["improve-cache-nts"],
-      "tasks_failed": [],
-      "issues_found": [],
-      "commit_hash": "ea84fee"
-    },
-    {
-      "date": "2026-02-21",
-      "tasks_completed": ["dev-couseAdmrul-articles"],
-      "tasks_failed": [],
-      "issues_found": ["dev-aiRltLs 불필요 도구로 판단하여 제외"],
-      "commit_hash": null
-    },
-    {
-      "date": "2026-02-21",
-      "tasks_completed": ["improve-cache-search-law"],
-      "tasks_failed": [],
-      "issues_found": [],
-      "commit_hash": "63a118d"
+  "completeness_score": {
+    "total_score": 55.0,
+    "grade": "F",
+    "evaluated_at": "2026-02-21 15:22",
+    "breakdown": {
+      "api_coverage": {
+        "score": 100.0,
+        "weighted": 30.0
+      },
+      "test_health": {
+        "score": 100.0,
+        "weighted": 25.0
+      },
+      "quality_gate": {
+        "score": 0.0,
+        "weighted": 0.0
+      },
+      "task_completion": {
+        "score": 0.0,
+        "weighted": 0.0
+      },
+      "warning_resolution": {
+        "score": 0.0,
+        "weighted": 0.0
+      }
     }
-  ],
+  },
   "quality_gate_results": {
     "law": {
       "checked_at": "2026-02-21",
@@ -341,11 +433,11 @@
       "checked_at": "2026-02-21",
       "status": "warning",
       "response_size_bytes": 3045,
-      "total_count": 143161,
+      "total_count": 143182,
       "issues": [
         {
           "category": "needs_narrowing",
-          "detail": "Total count 143161 > 1000 threshold"
+          "detail": "Total count 143182 > 1000 threshold"
         }
       ]
     },

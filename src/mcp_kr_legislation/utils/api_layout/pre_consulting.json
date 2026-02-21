@@ -1,0 +1,31 @@
+{
+  "category": "사전컨설팅의견서",
+  "category_en": "pre_consulting",
+  "updated_at": "2026-02-21",
+  "api_count": 2,
+  "note": "API가 공식 가이드에 등록되었으나 엔드포인트 미오픈 상태 (2026-02-21 기준). target은 가이드ID baiPvcsListGuide/baiPvcsInfoGuide에서 추정.",
+  "apis": [
+    {
+      "id": "1",
+      "title": "감사원 사전컨설팅 의견서 목록 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=baiPvcs",
+      "target": "baiPvcs",
+      "api_type": "목록조회",
+      "sub_category": "감사원",
+      "guide_id": "baiPvcsListGuide",
+      "status": "not_live",
+      "parameters": []
+    },
+    {
+      "id": "2",
+      "title": "감사원 사전컨설팅 의견서 본문 조회 API",
+      "request_url": "http://www.law.go.kr/DRF/lawService.do?target=baiPvcs",
+      "target": "baiPvcs",
+      "api_type": "본문조회",
+      "sub_category": "감사원",
+      "guide_id": "baiPvcsInfoGuide",
+      "status": "not_live",
+      "parameters": []
+    }
+  ]
+}

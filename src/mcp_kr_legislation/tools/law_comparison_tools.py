@@ -133,6 +133,48 @@ def search_law_change_history(change_date: str, org: Optional[str] = None, displ
         return TextContent(type="text", text=f"법령 변경이력 검색 중 오류가 발생했습니다: {str(e)}")
 
 
+@mcp.tool(name="search_law_amendment_history", description="""법령의 연혁(개정이력)을 검색합니다. 특정 법령이 어떻게 제정/개정되어왔는지 연혁 목록을 확인합니다.
+
+매개변수:
+- query: 검색어 (필수) - 법령명
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_law_amendment_history("개인정보보호법"), search_law_amendment_history("민법", display=50)""")
+def search_law_amendment_history(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """법령 연혁 검색"""
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어(법령명)를 입력해주세요.")
+    try:
+        search_query = query.strip()
+        params = {"query": search_query, "display": min(display, 100), "page": page}
+        data = _make_legislation_request("lsHistory", params)
+        result = _format_search_results(data, "lsHistory", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        logger.error(f"법령 연혁 검색 중 오류: {e}")
+        return TextContent(type="text", text=f"법령 연혁 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_law_amendment_history_detail", description="""법령 연혁의 상세 본문을 조회합니다. 특정 개정 시점의 법령 내용을 확인합니다.
+
+매개변수:
+- law_id: 법령ID (필수) - search_law_amendment_history 결과에서 확인
+
+사용 예시: get_law_amendment_history_detail(law_id="000900")""")
+def get_law_amendment_history_detail(law_id: Union[str, int]) -> TextContent:
+    """법령 연혁 상세 조회"""
+    if not law_id:
+        return TextContent(type="text", text="법령ID를 입력해주세요.")
+    try:
+        params = {"ID": str(law_id)}
+        data = _make_legislation_request("lsHistory", params, is_detail=True)
+        result = _format_search_results(data, "lsHistory", str(law_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        logger.error(f"법령 연혁 상세조회 중 오류: {e}")
+        return TextContent(type="text", text=f"법령 연혁 상세조회 중 오류: {str(e)}")
+
+
 @mcp.tool(name="search_article_change_history", description="""조문의 상세 변경이력과 정책적 배경을 조회합니다.
 
 매개변수:
@@ -365,6 +407,32 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text=f"자치법규-법령 연계정보 검색 중 오류가 발생했습니다: {str(e)}")
 
 
+@mcp.tool(name="search_law_ordinance_status", description="""법령-자치법규 연계현황을 조회합니다. 특정 법령에 연계된 자치법규의 현황을 확인할 수 있습니다.
+
+매개변수:
+- query: 검색어 (선택) - 법령명 키워드
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_law_ordinance_status("도시계획"), search_law_ordinance_status("건축", display=50)""")
+def search_law_ordinance_status(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """법령-자치법규 연계현황 조회"""
+    try:
+        params = {"display": min(display, 100), "page": page}
+        if query and query.strip():
+            search_query = query.strip()
+            params["query"] = search_query
+        else:
+            search_query = "법령-자치법규 연계현황"
+
+        data = _make_legislation_request("drlaw", params)
+        result = _format_search_results(data, "drlaw", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        logger.error(f"법령-자치법규 연계현황 조회 중 오류: {e}")
+        return TextContent(type="text", text=f"법령-자치법규 연계현황 조회 중 오류: {str(e)}")
+
+
 @mcp.tool(name="search_related_law", description="""관련법령을 검색합니다.
 
 [중요] query 입력 가이드:
@@ -594,6 +662,36 @@ def get_law_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
     except Exception as e:
         logger.error(f"법령 별표서식 상세조회 중 오류: {e}")
         return TextContent(type="text", text=f"법령 별표서식 상세조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@mcp.tool(name="search_admin_rule_appendix", description="""행정규칙 별표서식을 검색합니다.
+
+매개변수:
+- query: 검색어 (선택) - 별표명 또는 서식명
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_admin_rule_appendix("신청서"), search_admin_rule_appendix("수수료", display=50)""")
+def search_admin_rule_appendix(
+    query: Optional[str] = None,
+    display: int = 20,
+    page: int = 1
+) -> TextContent:
+    """행정규칙 별표서식 검색"""
+    try:
+        params = {"display": min(display, 100), "page": page}
+        if query and query.strip():
+            search_query = query.strip()
+            params["query"] = search_query
+        else:
+            search_query = "행정규칙 별표서식"
+
+        data = _make_legislation_request("admbyl", params)
+        result = _format_search_results(data, "admbyl", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        logger.error(f"행정규칙 별표서식 검색 중 오류: {e}")
+        return TextContent(type="text", text=f"행정규칙 별표서식 검색 중 오류: {str(e)}")
 
 
 # ===========================================

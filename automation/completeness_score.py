@@ -37,21 +37,20 @@ def load_progress():
 
 
 def score_api_coverage(progress):
-    """API 구현 커버리지 (30점)."""
+    """API 구현 커버리지 (30점). 공식 비모바일 API 기준."""
     summary = progress.get("summary", {})
-    total = summary.get("total_apis", 173)
-    json_ok = summary.get("json_ok", 0)
-    needs_dev = summary.get("needs_development", 0)
+    total_targets = summary.get("total_unique_targets", 0)
+    covered_targets = summary.get("tool_covered_targets", 0)
 
-    if total == 0:
+    if total_targets == 0:
         return 0.0, "데이터 없음"
 
-    implemented_ratio = (total - needs_dev) / total
-    json_quality_ratio = json_ok / total
+    coverage = covered_targets / total_targets
+    score = coverage * 100
 
-    score = (implemented_ratio * 0.6 + json_quality_ratio * 0.4) * 100
-
-    detail = f"{total - needs_dev}/{total} 구현 ({implemented_ratio:.0%}), JSON 정상 {json_ok}/{total} ({json_quality_ratio:.0%})"
+    official = progress.get("official_api_stats", {})
+    non_mobile = official.get("non_mobile_apis", 175)
+    detail = f"{covered_targets}/{total_targets} target 커버 ({coverage:.0%}), 공식 비모바일 {non_mobile}건"
     return round(score, 1), detail
 
 

@@ -222,4 +222,51 @@ def search_legal_daily_term_link(term_id: Optional[str] = None, display: int = 2
     return TextContent(type="text", text=f"법령용어-일상용어 연계 API는 HTML만 지원합니다.\n\n직접 확인: http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=lstrmRlt&type=HTML&ID={term_id_str}")
 
 
-logger.info("법령용어 도구가 로드되었습니다! (8개 도구)")
+# ===========================================
+# 지능형 법령검색 시스템 도구들
+# ===========================================
+
+@mcp.tool(name="search_intelligent_law", description="""지능형 법령검색 시스템으로 법령을 검색합니다. AI 기반의 법령 검색 기능을 제공합니다.
+
+매개변수:
+- query: 검색어 (필수)
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_intelligent_law("개인정보 처리"), search_intelligent_law("부동산 거래", display=50)""")
+def search_intelligent_law(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """지능형 법령검색 시스템 검색"""
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+    search_query = query.strip()
+    params = {"query": search_query, "display": min(display, 100), "page": page}
+    try:
+        data = _make_legislation_request("aiSearch", params)
+        result = _format_search_results(data, "aiSearch", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"지능형 법령검색 중 오류: {str(e)}")
+
+@mcp.tool(name="search_intelligent_related_law", description="""지능형 법령검색 시스템으로 연관법령을 검색합니다. 특정 법령과 관련된 법령을 AI 기반으로 찾아줍니다.
+
+매개변수:
+- query: 검색어 (필수) - 법령명 또는 키워드
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_intelligent_related_law("개인정보보호법"), search_intelligent_related_law("건축법", display=50)""")
+def search_intelligent_related_law(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """지능형 법령검색 시스템 연관법령 검색"""
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+    search_query = query.strip()
+    params = {"query": search_query, "display": min(display, 100), "page": page}
+    try:
+        data = _make_legislation_request("aiRltLs", params)
+        result = _format_search_results(data, "aiRltLs", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"지능형 연관법령 검색 중 오류: {str(e)}")
+
+
+logger.info("법령용어 도구가 로드되었습니다! (10개 도구)")

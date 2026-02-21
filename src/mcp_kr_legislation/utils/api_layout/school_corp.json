@@ -8,7 +8,7 @@
       "id": "1",
       "title": "학칙ㆍ공단ㆍ공공기관 목록 조회 API",
       "request_url": "http://www.law.go.kr/DRF/lawSearch.do?target=school(or",
-      "target": "school(or",
+      "target": "school",
       "api_type": "목록조회",
       "sub_category": "본문",
       "parameters": [
@@ -112,7 +112,7 @@
       "id": "2",
       "title": "학칙ㆍ공단ㆍ공공기관 본문 조회 API",
       "request_url": "http://www.law.go.kr/DRF/lawService.do?target=school(or",
-      "target": "school(or",
+      "target": "school",
       "api_type": "본문조회",
       "sub_category": "본문",
       "parameters": [

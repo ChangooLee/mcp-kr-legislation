@@ -237,11 +237,11 @@ def search_ordinance_appendix(query: Optional[str] = None, display: int = 20, pa
         return TextContent(type="text", text="검색어를 입력해주세요.")
     
     search_query = query.strip()
-    params = {"target": "ordinanceApp", "query": search_query, "display": min(display, 100), "page": page}
+    params = {"target": "ordinbyl", "query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("ordinanceApp", params)
-        url = _generate_api_url("ordinanceApp", params)
-        result = _format_search_results(data, "ordinanceApp", search_query, min(display, 100))
+        data = _make_legislation_request("ordinbyl", params)
+        url = _generate_api_url("ordinbyl", params)
+        result = _format_search_results(data, "ordinbyl", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"자치법규 별표서식 검색 중 오류: {str(e)}")
@@ -255,7 +255,7 @@ def search_linked_ordinance(
     page: int = 1
 ) -> TextContent:
     """연계 자치법규 검색"""
-    params = {"target": "lnkLsOrd", "display": min(display, 100), "page": page}
+    params = {"target": "lnkOrd", "display": min(display, 100), "page": page}
     
     if query and query.strip():
         params["query"] = query.strip()
@@ -265,9 +265,9 @@ def search_linked_ordinance(
         params["OID"] = ordinance_id
     
     try:
-        data = _make_legislation_request("lnkLsOrd", params)
+        data = _make_legislation_request("lnkOrd", params)
         search_term = query or f"법령ID:{law_id}" if law_id else f"자치법규ID:{ordinance_id}" if ordinance_id else "연계 자치법규"
-        result = _format_search_results(data, "lnkLsOrd", search_term, min(display, 100))
+        result = _format_search_results(data, "lnkOrd", search_term, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"연계 자치법규 검색 중 오류: {str(e)}")

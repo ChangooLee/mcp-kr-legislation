@@ -108,9 +108,9 @@ def search_university_regulation(query: Optional[str] = None, display: int = 20,
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("schreg", params)
-        url = _generate_api_url("schreg", params)
-        result = _format_search_results(data, "schreg", search_query, min(display, 100))
+        data = _make_legislation_request("school", params)
+        url = _generate_api_url("school", params)
+        result = _format_search_results(data, "school", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"대학 학칙 검색 중 오류: {str(e)}")
@@ -131,9 +131,9 @@ def search_public_corporation_regulation(query: Optional[str] = None, display: i
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("locgongreg", params)
-        url = _generate_api_url("locgongreg", params)
-        result = _format_search_results(data, "locgongreg", search_query, min(display, 100))
+        data = _make_legislation_request("public", params)
+        url = _generate_api_url("public", params)
+        result = _format_search_results(data, "public", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"지방공사공단 규정 검색 중 오류: {str(e)}")
@@ -154,9 +154,9 @@ def search_public_institution_regulation(query: Optional[str] = None, display: i
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("pubitreg", params)
-        url = _generate_api_url("pubitreg", params)
-        result = _format_search_results(data, "pubitreg", search_query, min(display, 100))
+        data = _make_legislation_request("pi", params)
+        url = _generate_api_url("pi", params)
+        result = _format_search_results(data, "pi", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"공공기관 규정 검색 중 오류: {str(e)}")
@@ -261,8 +261,8 @@ def search_acrc_special_tribunal(query: Optional[str] = None, display: int = 20,
         search_query = "전체"
     
     try:
-        data = _make_legislation_request("acrSpecialDecc", params)
-        result = _format_search_results(data, "acrSpecialDecc", search_query, min(display, 100))
+        data = _make_legislation_request("acrcSpecialDecc", params)
+        result = _format_search_results(data, "acrcSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국민권익위원회 특별행정심판 검색 중 오류: {str(e)}")
@@ -277,8 +277,8 @@ def get_acrc_special_tribunal_detail(tribunal_id: Union[str, int]) -> TextConten
     """국민권익위원회 특별행정심판재결례 상세 조회"""
     params = {"ID": str(tribunal_id)}
     try:
-        data = _make_legislation_request("acrSpecialDecc", params, is_detail=True)
-        result = _format_search_results(data, "acrSpecialDecc", str(tribunal_id))
+        data = _make_legislation_request("acrcSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "acrcSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국민권익위원회 특별행정심판 상세조회 중 오류: {str(e)}")
@@ -301,8 +301,8 @@ def search_mpm_appeal_tribunal(query: Optional[str] = None, display: int = 20, p
         search_query = "전체"
     
     try:
-        data = _make_legislation_request("adapSpecialDecc", params)
-        result = _format_search_results(data, "adapSpecialDecc", search_query, min(display, 100))
+        data = _make_legislation_request("mpmSpecialDecc", params)
+        result = _format_search_results(data, "mpmSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"인사혁신처 소청심사위원회 검색 중 오류: {str(e)}")
@@ -317,8 +317,55 @@ def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
     """인사혁신처 소청심사위원회 특별행정심판재결례 상세 조회"""
     params = {"ID": str(tribunal_id)}
     try:
-        data = _make_legislation_request("adapSpecialDecc", params, is_detail=True)
-        result = _format_search_results(data, "adapSpecialDecc", str(tribunal_id))
+        data = _make_legislation_request("mpmSpecialDecc", params, is_detail=True)
+        result = _format_search_results(data, "mpmSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 상세조회 중 오류: {str(e)}") 
+        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 상세조회 중 오류: {str(e)}")
+
+# ===========================================
+# 사전컨설팅의견서 도구들 (감사원)
+# ===========================================
+
+@mcp.tool(name="search_bai_preconsulting", description="""감사원 사전컨설팅 의견서를 검색합니다.
+
+매개변수:
+- query: 검색어 (선택) - 키워드
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_bai_preconsulting("감사"), search_bai_preconsulting("공공기관", display=50)
+
+참고: 이 API는 2026년 기준 미오픈 상태일 수 있습니다.""")
+def search_bai_preconsulting(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """감사원 사전컨설팅 의견서 검색"""
+    params = {"display": min(display, 100), "page": page}
+    if query and query.strip():
+        params["query"] = query.strip()
+        search_query = query.strip()
+    else:
+        search_query = "전체"
+    try:
+        data = _make_legislation_request("baiPvcs", params)
+        result = _format_search_results(data, "baiPvcs", search_query, min(display, 100))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"감사원 사전컨설팅 의견서 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_bai_preconsulting_detail", description="""감사원 사전컨설팅 의견서 상세내용을 조회합니다.
+
+매개변수:
+- opinion_id: 의견서ID
+
+사용 예시: get_bai_preconsulting_detail(opinion_id="123456")
+
+참고: 이 API는 2026년 기준 미오픈 상태일 수 있습니다.""")
+def get_bai_preconsulting_detail(opinion_id: Union[str, int]) -> TextContent:
+    """감사원 사전컨설팅 의견서 상세 조회"""
+    params = {"ID": str(opinion_id)}
+    try:
+        data = _make_legislation_request("baiPvcs", params, is_detail=True)
+        result = _format_search_results(data, "baiPvcs", str(opinion_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"감사원 사전컨설팅 의견서 상세조회 중 오류: {str(e)}")

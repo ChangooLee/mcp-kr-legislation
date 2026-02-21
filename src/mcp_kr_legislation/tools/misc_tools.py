@@ -221,10 +221,10 @@ def get_ordinance_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
     try:
         # API 요청 파라미터
         params = {"target": "ordinanceAppendix", "MST": str(appendix_id)}
-        url = _generate_api_url("ordinBylInfoGuide", params)
+        url = _generate_api_url("ordinbyl", params)
         
         # API 요청
-        data = _make_legislation_request("ordinBylInfoGuide", params)
+        data = _make_legislation_request("ordinbyl", params)
         
         # 결과 포맷팅
         result = f"**자치법규 별표서식 상세 정보** (ID: {appendix_id})\n"

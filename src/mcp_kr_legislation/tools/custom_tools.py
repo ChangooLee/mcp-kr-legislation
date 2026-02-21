@@ -7,7 +7,6 @@
 - couseLs: 맞춤법령 목록
 - couseOrdin: 맞춤자치법규 목록
 - couseAdmrul: 맞춤행정규칙 목록
-- cousePrec: 맞춤판례 목록
 """
 
 import logging
@@ -223,38 +222,4 @@ def search_custom_administrative_rule_articles(vcode: Optional[str] = None, quer
         return TextContent(type="text", text=f"맞춤형 행정규칙 조문 조회 중 오류: {str(e)}")
 
 
-# ===========================================
-# 맞춤형 판례 도구들
-# ===========================================
-
-@mcp.tool(name="search_custom_precedent", description="""맞춤형 판례를 검색합니다.
-
-매개변수:
-- vcode: 분류코드 (필수)
-- query: 검색어 (선택) - 판례 관련 키워드
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_custom_precedent(vcode="P0000000000001", query="손해배상")""")
-def search_custom_precedent(vcode: Optional[str] = None, query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """맞춤형 판례 검색"""
-    if not vcode:
-        return TextContent(type="text", text="vcode(분류코드)를 입력해주세요.")
-    
-    params = {"vcode": vcode, "display": min(display, 100), "page": page}
-    
-    if query and query.strip():
-        search_query = query.strip()
-        params["query"] = search_query
-    else:
-        search_query = f"맞춤형 판례 (분류: {vcode})"
-    
-    try:
-        data = _make_legislation_request("cousePrec", params)
-        result = _format_search_results(data, "cousePrec", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"맞춤형 판례 검색 중 오류: {str(e)}")
-
-
-logger.info("맞춤형 도구가 로드되었습니다! (7개 도구)")
+logger.info("맞춤형 도구가 로드되었습니다! (6개 도구)")

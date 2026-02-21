@@ -17,7 +17,8 @@
 `automation/progress.json`을 읽고 다음을 확인:
 - `tasks` 배열에서 `status: "pending"` 항목 확인
 - `test_results`에서 마지막 테스트 결과 확인
-- `session_history`에서 이전 세션 결과 확인
+- `warning_tools`에서 경고 상태 도구 확인
+- `summary.coverage_percent`로 현재 API 커버리지 확인
 
 ### Step 2: 작업 선택 (우선순위 순)
 
@@ -81,16 +82,6 @@ print(result)
    }
    ```
 4. 발견한 이슈는 `tasks`에 새 항목 추가
-5. `session_history`에 세션 기록 추가:
-   ```json
-   {
-     "date": "2026-02-21",
-     "tasks_completed": ["task-id-1"],
-     "tasks_failed": [],
-     "issues_found": [],
-     "commit_hash": "abc1234"
-   }
-   ```
 
 ### Step 6: 테스트 및 로컬 커밋
 

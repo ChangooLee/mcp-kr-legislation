@@ -465,7 +465,7 @@ def get_kma_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     except Exception as e:
         return TextContent(type="text", text=f"기상청 법령해석 상세조회 중 오류: {str(e)}")
 
-# --- 국가유산청 (khaCgmExpc) ---
+# --- 국가유산청 (khsCgmExpc) ---
 @mcp.tool(name="search_cha_interpretation", description="""국가유산청 법령해석을 검색합니다.
 
 매개변수:
@@ -482,8 +482,8 @@ def search_cha_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("khaCgmExpc", params)
-        result = _format_search_results(data, "khaCgmExpc", search_query)
+        data = _make_legislation_request("khsCgmExpc", params)
+        result = _format_search_results(data, "khsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국가유산청 법령해석 검색 중 오류: {str(e)}")
@@ -498,8 +498,8 @@ def get_cha_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     """국가유산청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("khaCgmExpc", params, is_detail=True)
-        result = _format_search_results(data, "khaCgmExpc", str(interpretation_id))
+        data = _make_legislation_request("khsCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "khsCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국가유산청 법령해석 상세조회 중 오류: {str(e)}")
@@ -543,7 +543,7 @@ def get_rda_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     except Exception as e:
         return TextContent(type="text", text=f"농촌진흥청 법령해석 상세조회 중 오류: {str(e)}")
 
-# --- 경찰청 (knpaCgmExpc) ---
+# --- 경찰청 (npaCgmExpc) ---
 @mcp.tool(name="search_police_interpretation", description="""경찰청 법령해석을 검색합니다.
 
 매개변수:
@@ -560,8 +560,8 @@ def search_police_interpretation(query: Optional[str] = None, display: int = 20,
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("knpaCgmExpc", params)
-        result = _format_search_results(data, "knpaCgmExpc", search_query)
+        data = _make_legislation_request("npaCgmExpc", params)
+        result = _format_search_results(data, "npaCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"경찰청 법령해석 검색 중 오류: {str(e)}")
@@ -576,8 +576,8 @@ def get_police_interpretation_detail(interpretation_id: Union[str, int]) -> Text
     """경찰청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("knpaCgmExpc", params, is_detail=True)
-        result = _format_search_results(data, "knpaCgmExpc", str(interpretation_id))
+        data = _make_legislation_request("npaCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "npaCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"경찰청 법령해석 상세조회 중 오류: {str(e)}")
@@ -972,7 +972,83 @@ def get_naacc_interpretation_detail(interpretation_id: Union[str, int]) -> TextC
     except Exception as e:
         return TextContent(type="text", text=f"행정중심복합도시건설청 법령해석 상세조회 중 오류: {str(e)}")
 
+# --- 과학기술정보통신부 (msitCgmExpc) ---
+@mcp.tool(name="search_msit_interpretation", description="""과학기술정보통신부 법령해석을 검색합니다.
+
+매개변수:
+- query: 검색어 (필수)
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_msit_interpretation("정보통신"), search_msit_interpretation("과학기술", display=50)""")
+def search_msit_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """과학기술정보통신부 법령해석 검색"""
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+    search_query = query.strip()
+    params = {"query": search_query, "display": min(display, 100), "page": page}
+    try:
+        data = _make_legislation_request("msitCgmExpc", params)
+        result = _format_search_results(data, "msitCgmExpc", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"과학기술정보통신부 법령해석 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_msit_interpretation_detail", description="""과학기술정보통신부 법령해석 상세내용을 조회합니다.
+
+매개변수:
+- interpretation_id: 해석례ID
+
+사용 예시: get_msit_interpretation_detail(interpretation_id="123456")""")
+def get_msit_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """과학기술정보통신부 법령해석 상세 조회"""
+    params = {"ID": str(interpretation_id)}
+    try:
+        data = _make_legislation_request("msitCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "msitCgmExpc", str(interpretation_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"과학기술정보통신부 법령해석 상세조회 중 오류: {str(e)}")
+
+# --- 재외동포청 (okaCgmExpc) ---
+@mcp.tool(name="search_oka_interpretation", description="""재외동포청 법령해석을 검색합니다.
+
+매개변수:
+- query: 검색어 (필수)
+- display: 결과 개수 (최대 100)
+- page: 페이지 번호
+
+사용 예시: search_oka_interpretation("재외동포"), search_oka_interpretation("국적", display=50)""")
+def search_oka_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """재외동포청 법령해석 검색"""
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+    search_query = query.strip()
+    params = {"query": search_query, "display": min(display, 100), "page": page}
+    try:
+        data = _make_legislation_request("okaCgmExpc", params)
+        result = _format_search_results(data, "okaCgmExpc", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"재외동포청 법령해석 검색 중 오류: {str(e)}")
+
+@mcp.tool(name="get_oka_interpretation_detail", description="""재외동포청 법령해석 상세내용을 조회합니다.
+
+매개변수:
+- interpretation_id: 해석례ID
+
+사용 예시: get_oka_interpretation_detail(interpretation_id="123456")""")
+def get_oka_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """재외동포청 법령해석 상세 조회"""
+    params = {"ID": str(interpretation_id)}
+    try:
+        data = _make_legislation_request("okaCgmExpc", params, is_detail=True)
+        result = _format_search_results(data, "okaCgmExpc", str(interpretation_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"재외동포청 법령해석 상세조회 중 오류: {str(e)}")
+
 # ===========================================
 # 로깅
 # ===========================================
-logger.info("44개 추가 중앙부처해석 도구가 로드되었습니다! (22개 부처 x 검색/상세 도구)")
+logger.info("48개 추가 중앙부처해석 도구가 로드되었습니다! (24개 부처 x 검색/상세 도구)")
