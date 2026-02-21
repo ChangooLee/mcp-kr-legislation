@@ -10,7 +10,6 @@
 - additional_service_tools: 부가서비스 도구들 (지식베이스, FAQ, 상담 등)
 - custom_tools: 맞춤형 도구들 (자치법규, 판례)
 - legal_term_tools: 법령용어 도구들 (6개)
-- ai_tools: AI 기반 도구들 (1개)
 - ministry_interpretation_tools: 중앙부처해석 도구들 (30개+)
 - linkage_tools: 연계정보 도구들 (용어 관련)
 - misc_tools: 기타 도구들 (자치법규, 조약)
@@ -65,12 +64,6 @@ try:
     print("legal_term_tools 모듈 import 성공")
 except ImportError as e:
     print(f"legal_term_tools import 실패: {e}")
-
-try:
-    from .ai_tools import *
-    print("ai_tools 모듈 import 성공")
-except ImportError as e:
-    print(f"ai_tools import 실패: {e}")
 
 try:
     from .ministry_interpretation_tools import *

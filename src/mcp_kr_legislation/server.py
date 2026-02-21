@@ -166,7 +166,6 @@ tool_modules = [
     "legislation_tools",
     "additional_service_tools",
     "administrative_rule_tools",
-    "ai_tools",
     "committee_tools",
     "custom_tools",
     "legal_term_tools",

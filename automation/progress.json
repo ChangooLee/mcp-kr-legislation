@@ -1,21 +1,21 @@
 {
   "last_updated": "2026-02-21",
-  "last_session_id": "20260221_cycle1_manual",
+  "last_session_id": null,
   "schema_version": "1.0",
   "summary": {
     "total_apis": 173,
     "json_ok": 136,
     "warnings": 24,
     "html_only": 13,
-    "needs_development": 1,
+    "needs_development": 2,
     "last_test_run": "2026-02-21",
-    "total_tools_registered": 184
+    "total_tools_registered": 182
   },
   "tasks": [
     {
       "id": "dev-aiRltLs",
       "type": "development",
-      "status": "completed",
+      "status": "pending",
       "priority": "medium",
       "target": "aiRltLs",
       "tool_name": "search_ai_related_law",
@@ -260,18 +260,7 @@
       "duration_sec": 0.17
     }
   },
-  "session_history": [
-    {
-      "session_id": "20260221_cycle1_manual",
-      "date": "2026-02-21",
-      "tasks_completed": [
-        "dev-aiRltLs"
-      ],
-      "tasks_failed": [],
-      "issues_found": [],
-      "notes": "search_ai_related_law 도구 신규 개발, 법령조문/행정규칙조문 검색 검증 완료"
-    }
-  ],
+  "session_history": [],
   "quality_gate_results": {
     "law": {
       "checked_at": "2026-02-21",
@@ -405,33 +394,6 @@
           "detail": "Total count 11389 > 1000 threshold"
         }
       ]
-    }
-  },
-  "completeness_score": {
-    "total_score": 69.2,
-    "grade": "D",
-    "evaluated_at": "2026-02-21 13:15",
-    "breakdown": {
-      "api_coverage": {
-        "score": 91.1,
-        "weighted": 27.3
-      },
-      "test_health": {
-        "score": 100.0,
-        "weighted": 25.0
-      },
-      "quality_gate": {
-        "score": 75.0,
-        "weighted": 15.0
-      },
-      "task_completion": {
-        "score": 12.5,
-        "weighted": 1.9
-      },
-      "warning_resolution": {
-        "score": 0.0,
-        "weighted": 0.0
-      }
     }
   }
 }
