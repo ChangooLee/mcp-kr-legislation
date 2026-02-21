@@ -1561,6 +1561,29 @@ def search_law(
         # 검색 전략 개선: 키워드가 "법"으로 끝나지 않으면 자동으로 추가
         original_query = search_query
         search_attempts = []
+
+        # 1차 시도용 캐시 키 (동일 파라미터 재호출 시 캐시 히트)
+        params_for_key = {
+            "query": original_query,
+            "display": min(display, 100),
+            "page": page,
+            "search": 1,
+        }
+        optional_for_key = {
+            "sort": sort, "date": date, "efDateRange": ef_date_range,
+            "announceDateRange": announce_date_range, "announceNoRange": announce_no_range,
+            "revisionType": revision_type, "announceNo": announce_no,
+            "ministryCode": ministry_code, "lawTypeCode": law_type_code,
+            "lawChapter": law_chapter, "alphabetical": alphabetical,
+        }
+        for k, v in optional_for_key.items():
+            if v is not None:
+                params_for_key[k] = v
+        cache_key = get_cache_key("law_search_" + json.dumps(params_for_key, sort_keys=True), "list")
+        cached_data = load_from_cache(cache_key)
+        if cached_data and isinstance(cached_data, dict) and "LawSearch" in cached_data:
+            formatted_result = format_search_law_results(cached_data, original_query)
+            return TextContent(type="text", text=formatted_result)
         
         # 1차 시도: 원본 쿼리
         search_attempts.append((original_query, 1))  # 법령명 검색
@@ -1608,6 +1631,13 @@ def search_law(
             try:
                 # API 요청 - 현행법령 검색
                 data = _make_legislation_request("law", params, is_detail=False)
+                
+                # 1차 시도(원본 쿼리 법령명 검색) 결과 캐시 저장
+                if attempt_query == original_query and search_mode == 1 and data:
+                    try:
+                        save_to_cache(cache_key, data)
+                    except Exception as cache_err:
+                        logger.debug("search_law cache save skip: %s", cache_err)
                 
                 # 결과 확인
                 if 'LawSearch' in data and 'law' in data['LawSearch']:

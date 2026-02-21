@@ -28,7 +28,7 @@
     {
       "id": "improve-cache-search-law",
       "type": "improvement",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
       "target": "law",
       "tool_name": "search_law",
@@ -186,7 +186,8 @@
     "law": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.2
+      "duration_sec": 0.2,
+      "notes": "search_law cache applied (1st attempt key)"
     },
     "precedent": {
       "tested_at": "2026-02-21",
@@ -261,6 +262,13 @@
       "tasks_completed": ["dev-couseAdmrul-articles"],
       "tasks_failed": [],
       "issues_found": ["dev-aiRltLs 불필요 도구로 판단하여 제외"],
+      "commit_hash": null
+    },
+    {
+      "date": "2026-02-21",
+      "tasks_completed": ["improve-cache-search-law"],
+      "tasks_failed": [],
+      "issues_found": [],
       "commit_hash": null
     }
   ],
