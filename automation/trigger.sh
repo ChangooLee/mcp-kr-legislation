@@ -111,20 +111,42 @@ timeout "$TIMEOUT_SEC" agent -p --force --trust --approve-mcps \
     < /dev/null \
     > "$SESSION_LOG" 2>&1 || EXIT_CODE=$?
 
-# 10. 사후 테스트 게이트 - 에이전트 작업 후 main이 여전히 정상인지 확인
-log "Running post-session smoke test..."
-if ! .venv/bin/python -m pytest tests/test_tools_smoke.py -v --tb=short > "$LOG_DIR/post_test_${SESSION_ID}.log" 2>&1; then
-    log "WARNING: Post-session smoke test FAILED. Rolling back to pre-session state."
-    git reset --hard "$SNAPSHOT_HASH"
-    log "Rolled back to $SNAPSHOT_HASH"
-    EXIT_CODE=3
+# 10. 에이전트가 변경한 것이 있는지 확인
+CURRENT_HASH=$(git rev-parse HEAD)
+if [ "$CURRENT_HASH" = "$SNAPSHOT_HASH" ]; then
+    log "No changes made by agent"
+    EXIT_CODE=0
+else
+    COMMIT_COUNT=$(git rev-list "$SNAPSHOT_HASH"..HEAD --count)
+    log "Agent made $COMMIT_COUNT commit(s): $SNAPSHOT_HASH..$CURRENT_HASH"
+
+    # 11. 사후 테스트 게이트
+    log "Running post-session smoke test..."
+    if .venv/bin/python -m pytest tests/test_tools_smoke.py -v --tb=short > "$LOG_DIR/post_test_${SESSION_ID}.log" 2>&1; then
+        log "Post-session smoke test PASSED"
+
+        # 12. 테스트 통과 → push
+        log "Pushing to origin/main..."
+        if git push origin main 2>&1; then
+            log "Push successful: $CURRENT_HASH"
+        else
+            log "WARNING: Push failed (network?). Changes remain in local main."
+            EXIT_CODE=4
+        fi
+    else
+        # 테스트 실패 → 롤백
+        log "WARNING: Post-session smoke test FAILED. Rolling back."
+        git reset --hard "$SNAPSHOT_HASH"
+        log "Rolled back to $SNAPSHOT_HASH"
+        EXIT_CODE=3
+    fi
 fi
 
-# 11. 완성도 점수 기록
+# 13. 완성도 점수 기록
 log "Evaluating completeness score..."
 .venv/bin/python automation/completeness_score.py --update 2>&1 | tail -3
 
-# 12. 결과 기록
+# 14. 결과 기록
 {
     echo ""
     echo "---"
@@ -137,6 +159,7 @@ log "Evaluating completeness score..."
         0)   echo "Status: SUCCESS" ;;
         2)   echo "Status: PRE_TEST_FAILED (session aborted)" ;;
         3)   echo "Status: POST_TEST_FAILED (rolled back to $SNAPSHOT_HASH)" ;;
+        4)   echo "Status: PUSH_FAILED (local commits intact)" ;;
         124) echo "Status: TIMEOUT (${TIMEOUT_SEC}s exceeded)" ;;
         *)   echo "Status: ERROR" ;;
     esac
@@ -144,7 +167,7 @@ log "Evaluating completeness score..."
 
 log "Session completed: exit_code=$EXIT_CODE"
 
-# 13. 오래된 로그 정리 (30일 이상)
+# 15. 오래된 로그 정리 (30일 이상)
 find "$LOG_DIR" -name "*.log" -mtime +30 -delete 2>/dev/null || true
 
 exit $EXIT_CODE

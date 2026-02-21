@@ -92,9 +92,9 @@ print(result)
    }
    ```
 
-### Step 6: 안전한 커밋 및 푸시
+### Step 6: 테스트 및 로컬 커밋
 
-**반드시 아래 순서를 지킬 것. 건너뛰기 금지.**
+**push는 하지 말 것. trigger.sh가 테스트 통과 확인 후 push를 처리함.**
 
 #### 6-1. 테스트 게이트 (필수 - 실패 시 커밋 금지)
 ```bash
@@ -103,22 +103,10 @@ print(result)
 - 전체 PASSED가 아니면 **커밋하지 말 것**
 - 실패 시 수정하거나, progress.json에 이슈 기록 후 세션 종료
 
-#### 6-2. 브랜치에서 작업 (main 직접 push 금지)
+#### 6-2. 로컬 커밋만 수행
 ```bash
-BRANCH_NAME="auto/$(date +%Y%m%d)-$(head /dev/urandom | tr -dc a-z0-9 | head -c6)"
-git checkout -b "$BRANCH_NAME"
 git add -A
 git commit -m "auto: <type>: <description>"
-git push origin "$BRANCH_NAME"
-```
-
-#### 6-3. main으로 머지 (테스트 통과 후에만)
-```bash
-git checkout main
-git merge "$BRANCH_NAME" --no-edit
-git push origin main
-git branch -d "$BRANCH_NAME"
-git push origin --delete "$BRANCH_NAME"
 ```
 
 커밋 메시지 규칙:
@@ -126,14 +114,6 @@ git push origin --delete "$BRANCH_NAME"
 - `auto: fix: 도구 이름 - 버그 수정 내용`
 - `auto: improve: 도구 이름 - 개선 내용`
 - `auto: test: 회귀 테스트 실행 결과 기록`
-
-#### 6-4. 머지 실패 시 롤백
-```bash
-git merge --abort 2>/dev/null
-git checkout main
-git reset --hard origin/main
-```
-이후 progress.json에 이슈 기록 후 세션 종료.
 
 ## 재사용 우선 원칙 (CRITICAL)
 
