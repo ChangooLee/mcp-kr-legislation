@@ -8,7 +8,6 @@ MCP 도구 등록 및 기본 동작 smoke test.
 import pytest
 
 EXPECTED_TOOL_MODULES = [
-    "ai_tools",
     "law_tools",
     "law_comparison_tools",
     "law_specialized_tools",
@@ -42,7 +41,6 @@ REPRESENTATIVE_TOOLS = [
     "search_moef_interpretation",
     "search_mois_interpretation",
     "search_law_appendix",
-    "search_ai_related_law",
 ]
 
 

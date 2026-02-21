@@ -673,14 +673,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             law_data = search_data.get('법령', {})
             # 단일 객체를 배열로 변환
             target_data = [law_data] if law_data else []
-        elif target == "aiRltLs" and 'aiRltLsSearch' in data:
-            # 지능형 법령검색 연관법령 API
-            search_data = data['aiRltLsSearch']
-            target_data = search_data.get('법령조문', [])
-            if not isinstance(target_data, list):
-                target_data = []
         # 다양한 응답 구조 처리 (특정 타겟들 제외)
-        elif 'LawSearch' in data and target not in ["thdCmp", "licbyl", "trty", "lsRlt", "ordinfd", "ordin", "admrul", "admrulOldAndNew", "lnkLsOrd", "prec", "expc", "decc", "couseLs", "aiRltLs"]:
+        elif 'LawSearch' in data and target not in ["thdCmp", "licbyl", "trty", "lsRlt", "ordinfd", "ordin", "admrul", "admrulOldAndNew", "lnkLsOrd", "prec", "expc", "decc", "couseLs"]:
             # 기본 검색 구조
             if target == "elaw":
                 # 영문 법령은 'law' 키 사용
