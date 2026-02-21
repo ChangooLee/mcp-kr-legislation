@@ -7,9 +7,9 @@
     "json_ok": 136,
     "warnings": 24,
     "html_only": 13,
-    "needs_development": 1,
+    "needs_development": 0,
     "last_test_run": "2026-02-21",
-    "total_tools_registered": 183
+    "total_tools_registered": 184
   },
   "tasks": [
     {
@@ -27,7 +27,7 @@
     {
       "id": "dev-couseAdmrul-articles",
       "type": "development",
-      "status": "pending",
+      "status": "completed",
       "priority": "low",
       "target": "couseAdmrul",
       "tool_name": "search_custom_administrative_rule_articles",
@@ -264,12 +264,25 @@
       "status": "pass",
       "response_size_bytes": 1171,
       "notes": "aiRltLs 연관법령 10건 검증"
+    },
+    "custom_administrative_rule_articles": {
+      "tested_at": "2026-02-21",
+      "status": "pass",
+      "response_size_bytes": 1200,
+      "notes": "couseAdmrul+lj=jo vcode=A0000000000601 검증"
     }
   },
   "session_history": [
     {
       "date": "2026-02-21",
       "tasks_completed": ["dev-aiRltLs"],
+      "tasks_failed": [],
+      "issues_found": [],
+      "commit_hash": null
+    },
+    {
+      "date": "2026-02-21",
+      "tasks_completed": ["dev-couseAdmrul-articles"],
       "tasks_failed": [],
       "issues_found": [],
       "commit_hash": null

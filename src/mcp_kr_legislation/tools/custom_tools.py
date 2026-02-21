@@ -195,6 +195,34 @@ def search_custom_administrative_rule(vcode: Optional[str] = None, query: Option
         return TextContent(type="text", text=f"맞춤형 행정규칙 검색 중 오류: {str(e)}")
 
 
+@mcp.tool(name="search_custom_administrative_rule_articles", description="""맞춤형 행정규칙 조문 목록을 조회합니다.
+
+매개변수:
+- vcode: 분류코드 (필수) - 행정규칙은 A로 시작하는 14자리 코드 (예: A0000000000601)
+- query: 검색어 (선택) - 행정규칙명 또는 조문 내용
+- display: 결과 개수 (최대 100, 기본값: 20)
+- page: 페이지 번호 (기본값: 1)
+
+사용 예시: search_custom_administrative_rule_articles(vcode="A0000000000601")
+참고: 조문 조회를 위해 lj=jo 파라미터가 자동 추가됩니다. vcode는 search_custom_administrative_rule 결과에서 확인 가능합니다.""")
+def search_custom_administrative_rule_articles(vcode: Optional[str] = None, query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+    """맞춤형 행정규칙 조문 목록 조회 (target=couseAdmrul, lj=jo)"""
+    if not vcode:
+        return TextContent(type="text", text="vcode(분류코드)를 입력해주세요. 행정규칙은 A로 시작하는 14자리 코드입니다.\n\n예: search_custom_administrative_rule_articles(vcode=\"A0000000000601\")")
+    params = {"vcode": vcode, "display": min(display, 100), "page": page, "lj": "jo"}
+    if query and query.strip():
+        search_query = query.strip()
+        params["query"] = search_query
+    else:
+        search_query = f"맞춤형 행정규칙 조문 (분류: {vcode})"
+    try:
+        data = _make_legislation_request("couseAdmrul", params)
+        result = _format_search_results(data, "couseAdmrul", search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"맞춤형 행정규칙 조문 조회 중 오류: {str(e)}")
+
+
 # ===========================================
 # 맞춤형 판례 도구들
 # ===========================================
@@ -229,4 +257,4 @@ def search_custom_precedent(vcode: Optional[str] = None, query: Optional[str] = 
         return TextContent(type="text", text=f"맞춤형 판례 검색 중 오류: {str(e)}")
 
 
-logger.info("맞춤형 도구가 로드되었습니다! (6개 도구)")
+logger.info("맞춤형 도구가 로드되었습니다! (7개 도구)")
