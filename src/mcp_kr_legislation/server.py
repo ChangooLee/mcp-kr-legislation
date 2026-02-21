@@ -159,6 +159,7 @@ mcp = FastMCP(
 # 도구 모듈 동적 로딩
 import importlib
 tool_modules = [
+    "ai_tools",
     "law_tools",
     "law_comparison_tools",  # 비교/이력/연계 도구들
     "law_specialized_tools",  # 금융/세무/개인정보 특수 검색 도구들
