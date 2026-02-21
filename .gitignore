@@ -78,9 +78,11 @@ __pycache__/
 
 # Data files
 *.csv
-*.json
 data/
 cache/
+
+# Automation logs (keep scripts and config, ignore logs)
+automation/logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints

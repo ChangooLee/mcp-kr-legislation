@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mcp-kr-legislation": {
+      "command": "/home/lchangoo/Workspace/mcp-kr-legislation/.venv/bin/python",
+      "args": ["-m", "mcp_kr_legislation.server"],
+      "cwd": "/home/lchangoo/Workspace/mcp-kr-legislation",
+      "env": {
+        "LEGISLATION_API_KEY": "lchangoo",
+        "TRANSPORT": "stdio"
+      }
+    }
+  }
+}

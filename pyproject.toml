@@ -31,5 +31,10 @@ dev = [
     "mypy"
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "regression: API regression tests (actual network calls)",
+]
+
 [project.scripts]
 mcp-kr-legislation = "mcp_kr_legislation.server:main" 

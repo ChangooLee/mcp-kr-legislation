@@ -166,6 +166,74 @@ def search_legal_ai(
         error_msg = f"AI 검색 중 오류가 발생했습니다: {str(e)}"
         return TextContent(type="text", text=error_msg)
 
+@mcp.tool(name="search_ai_related_law", description="""지능형 법령검색 시스템의 연관법령을 조회합니다.
+
+입력한 검색어에 대해 AI가 관련 법령 조문들을 찾아 반환합니다.
+
+매개변수:
+- query: 검색어 (필수)
+- search: 검색 범위 (기본값: 0)
+  - 0: 법령 조문
+  - 1: 행정규칙 조문
+
+반환정보:
+- 법령명, 법령ID, 조문번호, 조문제목, 시행일자, 공포일자
+
+사용 예시:
+- search_ai_related_law("뺑소니")
+- search_ai_related_law("개인정보 유출", search=1)""")
+def search_ai_related_law(
+    query: Optional[str] = None,
+    search: int = 0,
+) -> TextContent:
+    if not query or not query.strip():
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+
+    search_query = query.strip()
+    params = {
+        "query": search_query,
+        "search": search,
+    }
+
+    try:
+        data = _make_legislation_request("aiRltLs", params)
+
+        if not data or not isinstance(data, dict):
+            return TextContent(type="text", text=f"'{search_query}'에 대한 연관법령 결과가 없습니다.")
+
+        root = data.get("aiRltLsSearch", {})
+        total = root.get("검색결과개수", "0")
+        items = root.get("법령조문", [])
+
+        if isinstance(items, dict):
+            items = [items]
+
+        if not items:
+            return TextContent(type="text", text=f"'{search_query}'에 대한 연관법령이 없습니다.")
+
+        search_type = "법령 조문" if search == 0 else "행정규칙 조문"
+        lines = [f"연관법령 검색: '{search_query}' ({search_type}, {total}건)"]
+
+        for item in items:
+            law_name = item.get("법령명", "")
+            article_no = item.get("조문번호", "")
+            article_sub = item.get("조문가지번호", "00")
+            title = item.get("조문제목", "")
+            enforce_date = item.get("시행일자", "")
+            law_id = item.get("법령ID", "")
+
+            article_str = f"제{int(article_no)}조" if article_no else ""
+            if article_sub and article_sub != "00":
+                article_str += f"의{int(article_sub)}"
+
+            lines.append(f"- {law_name} {article_str} ({title}) [시행 {enforce_date}, ID:{law_id}]")
+
+        return TextContent(type="text", text="\n".join(lines))
+
+    except Exception as e:
+        return TextContent(type="text", text=f"연관법령 검색 오류: {str(e)}")
+
+
 logger.info("AI 도구가 로드되었습니다!")
 
  
