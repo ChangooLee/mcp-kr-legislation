@@ -21,8 +21,9 @@ logger = logging.getLogger(__name__)
 # 유틸리티 함수들 import
 from .law_tools import (
     _make_legislation_request,
-    _generate_api_url
+    _generate_api_url,
 )
+from ..utils.law_tools_utils import extract_total_count, format_result_guidance
 
 def _format_committee_search_results(data: dict, target: str, search_query: str, max_results: int = 50) -> str:
     """위원회 검색 전용 결과 포맷팅 함수"""
@@ -213,16 +214,15 @@ def search_privacy_committee(
     # search=2 (본문검색) 파라미터로 더 많은 결과 확보
     params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
     
-    # 고급 검색 파라미터 추가
     if sort:
         params["sort"] = sort
     if alphabetical:
         params["gana"] = alphabetical
-        
+
     try:
-        data = _make_legislation_request("ppc", params)
-        url = _generate_api_url("ppc", params)
+        data = _make_legislation_request("ppc", params, use_cache=True)
         result = _format_committee_search_results(data, "ppc", search_query, display)
+        result += format_result_guidance(extract_total_count(data), search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"개인정보보호위원회 결정문 검색 중 오류: {str(e)}")
@@ -268,7 +268,7 @@ def search_financial_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("fsc", params)
+        data = _make_legislation_request("fsc", params, use_cache=True)
         url = _generate_api_url("fsc", params)
         result = _format_committee_search_results(data, "fsc", search_query, display)
         return TextContent(type="text", text=result)
@@ -316,7 +316,7 @@ def search_monopoly_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("ftc", params)
+        data = _make_legislation_request("ftc", params, use_cache=True)
         url = _generate_api_url("ftc", params)
         result = _format_committee_search_results(data, "ftc", search_query, display)
         return TextContent(type="text", text=result)
@@ -369,7 +369,7 @@ def search_anticorruption_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("acr", params)
+        data = _make_legislation_request("acr", params, use_cache=True)
         url = _generate_api_url("acr", params)
         display_query = search_query if search_query else "전체 목록"
         result = _format_committee_search_results(data, "acr", display_query, display)
@@ -418,7 +418,7 @@ def search_labor_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("nlrc", params)
+        data = _make_legislation_request("nlrc", params, use_cache=True)
         url = _generate_api_url("nlrc", params)
         result = _format_committee_search_results(data, "nlrc", search_query, display)
         return TextContent(type="text", text=result)
@@ -466,7 +466,7 @@ def search_environment_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("ecc", params)
+        data = _make_legislation_request("ecc", params, use_cache=True)
         url = _generate_api_url("ecc", params)
         result = _format_committee_search_results(data, "ecc", search_query, display)
         return TextContent(type="text", text=result)
@@ -514,7 +514,7 @@ def search_securities_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("sfc", params)
+        data = _make_legislation_request("sfc", params, use_cache=True)
         url = _generate_api_url("sfc", params)
         result = _format_committee_search_results(data, "sfc", search_query, display)
         return TextContent(type="text", text=result)
@@ -562,7 +562,7 @@ def search_human_rights_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("nhrck", params)
+        data = _make_legislation_request("nhrck", params, use_cache=True)
         url = _generate_api_url("nhrck", params)
         result = _format_committee_search_results(data, "nhrck", search_query, display)
         return TextContent(type="text", text=result)
@@ -610,7 +610,7 @@ def search_broadcasting_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("kcc", params)
+        data = _make_legislation_request("kcc", params, use_cache=True)
         url = _generate_api_url("kcc", params)
         result = _format_committee_search_results(data, "kcc", search_query, display)
         return TextContent(type="text", text=result)
@@ -658,7 +658,7 @@ def search_industrial_accident_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("iaciac", params)
+        data = _make_legislation_request("iaciac", params, use_cache=True)
         url = _generate_api_url("iaciac", params)
         result = _format_committee_search_results(data, "iaciac", search_query, display)
         return TextContent(type="text", text=result)
@@ -706,7 +706,7 @@ def search_land_tribunal(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("oclt", params)
+        data = _make_legislation_request("oclt", params, use_cache=True)
         url = _generate_api_url("oclt", params)
         result = _format_committee_search_results(data, "oclt", search_query, display)
         return TextContent(type="text", text=result)
@@ -754,7 +754,7 @@ def search_employment_insurance_committee(
         params["gana"] = alphabetical
         
     try:
-        data = _make_legislation_request("eiac", params)
+        data = _make_legislation_request("eiac", params, use_cache=True)
         url = _generate_api_url("eiac", params)
         result = _format_committee_search_results(data, "eiac", search_query, display)
         return TextContent(type="text", text=result)
@@ -777,7 +777,7 @@ def get_privacy_committee_detail(decision_id: Union[str, int]) -> TextContent:
     """개인정보보호위원회 결정문 본문 조회 (ppc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("ppc", params, is_detail=True)
+        data = _make_legislation_request("ppc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("ppc", params, is_detail=True)
         result = _format_committee_detail(data, "ppc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -803,7 +803,7 @@ def get_financial_committee_detail(decision_id: Union[str, int]) -> TextContent:
     
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("fsc", params, is_detail=True)
+        data = _make_legislation_request("fsc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("fsc", params, is_detail=True)
         
         # 응답 데이터 유효성 검사 강화
@@ -833,7 +833,7 @@ def get_monopoly_committee_detail(decision_id: Union[str, int]) -> TextContent:
     """공정거래위원회 결정문 본문 조회 (ftc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("ftc", params, is_detail=True)
+        data = _make_legislation_request("ftc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("ftc", params, is_detail=True)
         result = _format_committee_detail(data, "ftc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -850,7 +850,7 @@ def get_anticorruption_committee_detail(decision_id: Union[str, int]) -> TextCon
     """국민권익위원회 결정문 본문 조회 (acr)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("acr", params, is_detail=True)
+        data = _make_legislation_request("acr", params, is_detail=True, use_cache=True)
         url = _generate_api_url("acr", params, is_detail=True)
         result = _format_committee_detail(data, "acr", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -867,7 +867,7 @@ def get_labor_committee_detail(decision_id: Union[str, int]) -> TextContent:
     """노동위원회 결정문 본문 조회 (nlrc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("nlrc", params, is_detail=True)
+        data = _make_legislation_request("nlrc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("nlrc", params, is_detail=True)
         result = _format_committee_detail(data, "nlrc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -884,7 +884,7 @@ def get_environment_committee_detail(decision_id: Union[str, int]) -> TextConten
     """중앙환경분쟁조정위원회 결정문 본문 조회 (ecc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("ecc", params, is_detail=True)
+        data = _make_legislation_request("ecc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("ecc", params, is_detail=True)
         result = _format_committee_detail(data, "ecc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -901,7 +901,7 @@ def get_securities_committee_detail(decision_id: Union[str, int]) -> TextContent
     """증권선물위원회 결정문 본문 조회 (sfc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("sfc", params, is_detail=True)
+        data = _make_legislation_request("sfc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("sfc", params, is_detail=True)
         result = _format_committee_detail(data, "sfc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -918,7 +918,7 @@ def get_human_rights_committee_detail(decision_id: Union[str, int]) -> TextConte
     """국가인권위원회 결정문 본문 조회 (nhrck)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("nhrck", params, is_detail=True)
+        data = _make_legislation_request("nhrck", params, is_detail=True, use_cache=True)
         url = _generate_api_url("nhrck", params, is_detail=True)
         result = _format_committee_detail(data, "nhrck", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -935,7 +935,7 @@ def get_broadcasting_committee_detail(decision_id: Union[str, int]) -> TextConte
     """방송통신위원회 결정문 본문 조회 (kcc)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("kcc", params, is_detail=True)
+        data = _make_legislation_request("kcc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("kcc", params, is_detail=True)
         result = _format_committee_detail(data, "kcc", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -952,7 +952,7 @@ def get_industrial_accident_committee_detail(decision_id: Union[str, int]) -> Te
     """산업재해보상보험 재심사위원회 결정문 본문 조회 (eiac)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("eiac", params, is_detail=True)
+        data = _make_legislation_request("eiac", params, is_detail=True, use_cache=True)
         url = _generate_api_url("eiac", params, is_detail=True)
         result = _format_committee_detail(data, "eiac", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -969,7 +969,7 @@ def get_land_tribunal_detail(decision_id: Union[str, int]) -> TextContent:
     """중앙토지수용위원회 결정문 본문 조회 (lx)"""
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("oclt", params, is_detail=True)
+        data = _make_legislation_request("oclt", params, is_detail=True, use_cache=True)
         url = _generate_api_url("oclt", params, is_detail=True)
         result = _format_committee_detail(data, "oclt", str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -986,7 +986,7 @@ def get_employment_insurance_committee_detail(decision_id: Union[str, int]) -> T
     """고용보험심사위원회 결정문 본문 조회"""
     params = {"target": "eiac", "ID": str(decision_id)}
     try:
-        data = _make_legislation_request("eiac", params, is_detail=True)
+        data = _make_legislation_request("eiac", params, is_detail=True, use_cache=True)
         url = _generate_api_url("eiac", params, is_detail=True)
         result = _format_committee_detail(data, "eiac", str(decision_id), url)
         return TextContent(type="text", text=result)

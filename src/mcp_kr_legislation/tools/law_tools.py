@@ -37,7 +37,8 @@ from ..utils.law_tools_utils import (
     # get_law_articles_range 도구 관련
     format_article_body,
     # 공통 유틸리티
-    clean_html_tags, safe_get_nested_value
+    clean_html_tags, safe_get_nested_value,
+    extract_total_count, format_result_guidance
 )
 from .law_config import (
     DOMAIN_KEYWORDS,
@@ -177,14 +178,23 @@ def extract_article_number(article_key: str) -> int:
 
 # 유틸리티 함수들은 utils/law_tools_utils.py로 이동됨
 
-def _make_legislation_request(target: str, params: dict, is_detail: bool = False, timeout: int = 10) -> dict:
-    """법제처 API 요청 공통 함수"""
+def _make_legislation_request(target: str, params: dict, is_detail: bool = False, timeout: int = 10, use_cache: bool = False) -> dict:
+    """법제처 API 요청 공통 함수. use_cache=True이면 결과를 캐싱합니다."""
+    cache_key = None
+    if use_cache:
+        params_for_key = {k: v for k, v in params.items() if k not in ("OC", "type")}
+        cache_key = get_cache_key(
+            f"{target}_{'detail' if is_detail else 'search'}_{json.dumps(params_for_key, sort_keys=True)}",
+            "list"
+        )
+        cached = load_from_cache(cache_key)
+        if cached and isinstance(cached, dict):
+            return cached
+
     try:
-        # 시간이 많이 걸리는 API들은 더 긴 타임아웃 설정
-        if target in ["lsHstInf", "lsStmd", "lawHst"]:  # 변경이력, 체계도, 법령연혁
-            timeout = max(timeout, 60)  # 최소 60초
+        if target in ["lsHstInf", "lsStmd", "lawHst"]:
+            timeout = max(timeout, 60)
         
-        # URL 생성 - 올바른 target 파라미터 사용
         url = _generate_api_url(target, params, is_detail)
         
         # 디버깅: 법령약칭과 삭제된 법령 URL 로그
@@ -260,6 +270,11 @@ def _make_legislation_request(target: str, params: dict, is_detail: bool = False
                     # 실제로 결과가 없는 경우만 처리 (빈 검색 결과는 오류가 아님)
                     pass
         
+        if use_cache and cache_key and data:
+            try:
+                save_to_cache(cache_key, data)
+            except Exception:
+                pass
         return data
         
     except requests.exceptions.RequestException as e:
@@ -743,11 +758,12 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     target_data = target_data['조문']
                 else:
                     target_data = [target_data]
+        elif 'lstrmAISearch' in data and target == "lstrmAI":
+            search_data = data['lstrmAISearch']
+            target_data = search_data.get('법령용어', [])
         elif target in data:
-            # 직접 타겟 구조
             target_data = data[target]
         else:
-            # 단일 키 구조 확인
             keys = list(data.keys())
             if len(keys) == 1:
                 target_data = data[keys[0]]
@@ -1112,8 +1128,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             
             result += "\n"
         
-        if total_count > max_results:
-            result += f"더 많은 결과가 있습니다. 검색어를 구체화하거나 페이지 번호를 조정해보세요.\n"
+        api_total = extract_total_count(data)
+        result += format_result_guidance(api_total, search_query)
         
         return result
         
@@ -1526,7 +1542,7 @@ def search_law(
             }
             
             try:
-                data = _make_legislation_request("law", params, is_detail=False)
+                data = _make_legislation_request("law", params, is_detail=False, use_cache=True)
                 if 'LawSearch' in data and 'law' in data['LawSearch']:
                     laws = data['LawSearch']['law']
                     if isinstance(laws, list):
@@ -1630,7 +1646,7 @@ def search_law(
             
             try:
                 # API 요청 - 현행법령 검색
-                data = _make_legislation_request("law", params, is_detail=False)
+                data = _make_legislation_request("law", params, is_detail=False, use_cache=True)
                 
                 # 1차 시도(원본 쿼리 법령명 검색) 결과 캐시 저장
                 if attempt_query == original_query and search_mode == 1 and data:
@@ -1687,7 +1703,7 @@ def search_law(
             params["query"] = original_query
             
             try:
-                data = _make_legislation_request("law", params, is_detail=False)
+                data = _make_legislation_request("law", params, is_detail=False, use_cache=True)
                 result = _format_search_results(data, "law", original_query)
                 
                 # 본문검색임을 명시
@@ -1754,40 +1770,32 @@ def search_english_law(
         return TextContent(type="text", text="검색어를 입력해주세요. 예: 'Civil Act', 'Commercial Act' 등")
     
     search_query = query.strip()
-    
+
+    params = {
+        "OC": legislation_config.oc,
+        "type": "JSON",
+        "target": "elaw",
+        "query": search_query,
+        "search": search,
+        "display": min(display, 100),
+        "page": page
+    }
+
+    optional_params = {
+        "sort": sort,
+        "lawType": law_type,
+        "promulgateDate": promulgate_date,
+        "enforceDate": enforce_date
+    }
+    for key, value in optional_params.items():
+        if value is not None:
+            params[key] = value
+
     try:
-        # 기본 파라미터 설정 - 다른 검색 도구와 동일한 패턴 사용
-        params = {
-            "OC": legislation_config.oc,  # 직접 OC 포함
-            "type": "JSON",               # 직접 type 포함
-            "target": "elaw",            # 영문법령은 target이 'elaw'
-            "query": search_query,
-            "search": search,
-            "display": min(display, 100),
-            "page": page
-        }
-        
-        # 선택적 파라미터 추가
-        optional_params = {
-            "sort": sort,
-            "lawType": law_type,
-            "promulgateDate": promulgate_date,
-            "enforceDate": enforce_date
-        }
-        
-        for key, value in optional_params.items():
-            if value is not None:
-                params[key] = value
-        
-        # API 요청 - 영문법령은 is_detail=False로 명시
-        data = _make_legislation_request("elaw", params, is_detail=False)
-        
-        # 영문법령 검색 결과 정확도 기반 정렬
+        data = _make_legislation_request("elaw", params, is_detail=False, use_cache=True)
         data = _sort_english_law_results(data, search_query)
-        
         result = _format_search_results(data, "elaw", search_query)
         return TextContent(type="text", text=result)
-        
     except Exception as e:
         logger.error(f"영문법령 검색 중 오류: {e}")
         return TextContent(type="text", text=f"영문법령 검색 중 오류가 발생했습니다: {str(e)}")
@@ -2134,7 +2142,7 @@ def search_effective_law(
                 params[key] = value
         
         # API 요청 - 검색 API 사용
-        data = _make_legislation_request("eflaw", params, is_detail=False)
+        data = _make_legislation_request("eflaw", params, is_detail=False, use_cache=True)
         search_term = query or "시행일법령"
         result = _format_search_results(data, "eflaw", search_term)
         return TextContent(type="text", text=result)
@@ -2188,7 +2196,7 @@ def search_law_nickname(
             params["endDt"] = end_date
         
         # API 요청
-        data = _make_legislation_request("lsAbrv", params)
+        data = _make_legislation_request("lsAbrv", params, use_cache=True)
         result = _format_search_results(data, "lsAbrv", "법령약칭")
         return TextContent(type="text", text=result)
         
@@ -2258,7 +2266,7 @@ def search_deleted_law_data(
                 params[key] = value  # type: ignore
         
         # API 요청
-        data = _make_legislation_request("delHst", params, is_detail=False)
+        data = _make_legislation_request("delHst", params, is_detail=False, use_cache=True)
         result = _format_search_results(data, "delHst", "삭제된 법령 데이터")
         return TextContent(type="text", text=result)
         
@@ -2310,7 +2318,7 @@ def search_law_articles(
         try:
             # MST로 법령 상세 조회 시도
             detail_params = {"MST": mst_str}
-            detail_data = _make_legislation_request("law", detail_params, is_detail=True)
+            detail_data = _make_legislation_request("law", detail_params, is_detail=True, use_cache=True)
             
             if detail_data and "법령" in detail_data:
                 # 법령 상세 정보에서 조문 추출
@@ -2325,7 +2333,7 @@ def search_law_articles(
             if len(mst_str) >= 6 and mst_str.isdigit():
                 # MST 형태인 경우 - 해당 MST로 직접 상세 조회 재시도
                 detail_params = {"MST": mst_str}
-                detail_data = _make_legislation_request("law", detail_params, is_detail=True)
+                detail_data = _make_legislation_request("law", detail_params, is_detail=True, use_cache=True)
                 
                 if detail_data and "법령" in detail_data:
                     result = _format_law_detail_articles(detail_data, mst_str, mst_str, article_no=article_no, include_content=include_content)
@@ -2337,7 +2345,7 @@ def search_law_articles(
                     "display": 5,
                     "type": "JSON"
                 }
-                search_data = _make_legislation_request("law", search_params, is_detail=False)
+                search_data = _make_legislation_request("law", search_params, is_detail=False, use_cache=True)
                 
                 if search_data and "LawSearch" in search_data and "law" in search_data["LawSearch"]:
                     laws = search_data["LawSearch"]["law"]
@@ -2354,7 +2362,7 @@ def search_law_articles(
                             if law_id_field == mst_str and law_mst:
                                 # 찾은 MST로 상세 조회
                                 detail_params = {"MST": str(law_mst)}
-                                detail_data = _make_legislation_request("law", detail_params, is_detail=True)
+                                detail_data = _make_legislation_request("law", detail_params, is_detail=True, use_cache=True)
                                 
                                 if detail_data and "법령" in detail_data:
                                     result = _format_law_detail_articles(detail_data, mst_str, law_mst, article_no=article_no, include_content=include_content)
@@ -2818,7 +2826,7 @@ def search_old_and_new_law(
             params["query"] = query.strip()
         
         # API 요청
-        data = _make_legislation_request("oldAndNew", params)
+        data = _make_legislation_request("oldAndNew", params, use_cache=True)
         search_term = query or "신구법비교"
         result = _format_search_results(data, "oldAndNew", search_term)
         return TextContent(type="text", text=result)
@@ -2844,7 +2852,7 @@ def get_old_and_new_law_detail(
     """신구법비교 본문 조회"""
     try:
         params = {"MST": str(mst)}
-        data = _make_legislation_request("oldAndNew", params, is_detail=True)
+        data = _make_legislation_request("oldAndNew", params, is_detail=True, use_cache=True)
         
         if not data:
             return TextContent(type="text", text=f"법령일련번호 {mst}에 해당하는 신구법비교 정보를 찾을 수 없습니다.")
@@ -2942,7 +2950,7 @@ def search_three_way_comparison(
             params["query"] = query.strip()
         
         # API 요청 - target: thdCmp (3단비교)
-        data = _make_legislation_request("thdCmp", params)
+        data = _make_legislation_request("thdCmp", params, use_cache=True)
         search_term = query or "3단비교"
         result = _format_search_results(data, "thdCmp", search_term)
         return TextContent(type="text", text=result)
@@ -2971,7 +2979,7 @@ def get_three_way_comparison_detail(
     """3단비교 본문 조회 (응답 구조 디버깅 및 대안 제시)"""
     try:
         params = {"MST": str(mst), "knd": str(knd)}
-        data = _make_legislation_request("thdCmp", params, is_detail=True)
+        data = _make_legislation_request("thdCmp", params, is_detail=True, use_cache=True)
         
         if not data:
             return _suggest_three_way_alternatives(mst, knd)
@@ -3103,7 +3111,7 @@ def _find_mst_from_law_id(law_id: str, item: dict) -> Optional[str]:
             "query": law_name_clean,
             "display": 5
         }
-        search_data = _make_legislation_request("law", search_params, is_detail=False)
+        search_data = _make_legislation_request("law", search_params, is_detail=False, use_cache=True)
         
         if search_data and 'LawSearch' in search_data:
             laws = search_data['LawSearch'].get('law', [])
@@ -3188,7 +3196,7 @@ def search_one_view(query: Optional[str] = None, display: int = 20, page: int = 
             params["query"] = query.strip()
         
         # API 요청 - 올바른 target: oneview
-        data = _make_legislation_request("oneview", params)
+        data = _make_legislation_request("oneview", params, use_cache=True)
         search_term = query or "한눈보기"
         result = _format_search_results(data, "oneview", search_term)
         return TextContent(type="text", text=result)
@@ -3219,7 +3227,7 @@ def get_one_view_detail(
             params["MST"] = str(mst)
         else:
             params["display"] = min(display, 100)
-        data = _make_legislation_request("oneview", params, is_detail=True)
+        data = _make_legislation_request("oneview", params, is_detail=True, use_cache=True)
         
         if not data:
             return TextContent(type="text", text="한눈보기 정보를 찾을 수 없습니다.")
@@ -3314,7 +3322,7 @@ def search_law_system_diagram(query: Optional[str] = None, display: int = 20, pa
             params["query"] = query.strip()
         
         # API 호출
-        data = _make_legislation_request("lsStmd", params, is_detail=False)
+        data = _make_legislation_request("lsStmd", params, is_detail=False, use_cache=True)
         
         if not data or not _has_meaningful_content(data):
             search_term = query or "전체"
@@ -3380,7 +3388,7 @@ def get_law_system_diagram_detail(mst_id: Union[str, int]) -> TextContent:
         
         # API 요청 (target="lsStmd"가 가장 정확함)
         params = {"MST": mst_str}
-        data = _make_legislation_request("lsStmd", params, is_detail=True)
+        data = _make_legislation_request("lsStmd", params, is_detail=True, use_cache=True)
         
         if data and "법령체계도" in data:
             diagram_data = data["법령체계도"]
@@ -3461,9 +3469,9 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
                 }
                 
                 if attempt["endpoint"] == "detail":
-                    data = _make_legislation_request(attempt["target"], params, is_detail=True)
+                    data = _make_legislation_request(attempt["target"], params, is_detail=True, use_cache=True)
                 else:
-                    data = _make_legislation_request(attempt["target"], params, is_detail=False)
+                    data = _make_legislation_request(attempt["target"], params, is_detail=False, use_cache=True)
                 
                 # 유의미한 위임법령 데이터가 있는지 확인
                 if data and _has_delegated_law_content(data):
@@ -3478,7 +3486,7 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
         try:
             # 해당 법령명을 찾아서 관련 법령 검색 시도
             detail_params = {"ID": id_str}
-            detail_data = _make_legislation_request("law", detail_params, is_detail=True)
+            detail_data = _make_legislation_request("law", detail_params, is_detail=True, use_cache=True)
             
             law_name = ""
             if detail_data and "법령" in detail_data:
@@ -3492,7 +3500,7 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
                     "display": 20,
                     "type": "JSON"
                 }
-                related_data = _make_legislation_request("law", related_search_params, is_detail=False)
+                related_data = _make_legislation_request("law", related_search_params, is_detail=False, use_cache=True)
                 
                 if related_data and "LawSearch" in related_data and "law" in related_data["LawSearch"]:
                     laws = related_data["LawSearch"]["law"]
@@ -3841,7 +3849,7 @@ def get_effective_law_articles(
         }
         
         # API 요청 - eflaw (시행일 법령 본문) API 사용
-        data = _make_legislation_request("eflaw", params, is_detail=True)
+        data = _make_legislation_request("eflaw", params, is_detail=True, use_cache=True)
         
         # eflawjosub 전용 포맷팅 - 실제 조문 내용 반환
         result = _format_effective_law_articles(data, str(mst), article_no, paragraph_no, item_no, subitem_no, include_content)
@@ -3881,7 +3889,7 @@ def search_effective_law_articles_raw(
     """시행일법령 조항호목 메타데이터 직접 조회 (eflawjosub target)"""
     try:
         params = {"MST": str(mst), "display": min(display, 100), "page": page}
-        data = _make_legislation_request("eflawjosub", params)
+        data = _make_legislation_request("eflawjosub", params, use_cache=True)
         result = _format_search_results(data, "eflawjosub", str(mst))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -4006,7 +4014,7 @@ def get_effective_law_detail(effective_law_id: Union[str, int]) -> TextContent:
         else:
             # API 호출 - get_law_detail과 동일한 방식 (OC, type는 _make_legislation_request에서 처리)
             params = {"MST": mst}
-            data = _make_legislation_request(target, params, is_detail=True)
+            data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
             
             # 전체 데이터 캐시
             full_cache_key = get_cache_key(f"{target}_{mst}", "full")
@@ -4223,7 +4231,7 @@ def search_law_unified(
         if law_type_code:
             params["lawTypeCode"] = law_type_code
         
-        data = _make_legislation_request(target, params, is_detail=False)
+        data = _make_legislation_request(target, params, is_detail=False, use_cache=True)
         
         # 응답 파싱
         search_data = data.get("LawSearch", {})
@@ -4302,7 +4310,7 @@ def get_law_detail(mst: str) -> TextContent:
         else:
             # API 호출
             params = {"MST": mst}
-            data = _make_legislation_request("law", params, is_detail=True)
+            data = _make_legislation_request("law", params, is_detail=True, use_cache=True)
             
             # 전체 데이터 캐시
             full_cache_key = get_cache_key(f"law_{mst}", "full")
@@ -4445,7 +4453,7 @@ def get_law_articles_range(
         if not cached_data:
             # 캐시가 없으면 API 직접 호출
             params = {"MST": mst}
-            cached_data = _make_legislation_request(target, params, is_detail=True)
+            cached_data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
             
             # 데이터 검증 로그
             try:

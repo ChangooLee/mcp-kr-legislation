@@ -22,10 +22,8 @@ logger = logging.getLogger(__name__)
 from .law_tools import (
     _make_legislation_request,
     _generate_api_url,
-    get_cache_key,
-    load_from_cache,
-    save_to_cache,
 )
+from ..utils.law_tools_utils import extract_total_count, format_result_guidance
 
 def _format_precedent_search_results(data: dict, target: str, search_query: str, max_results: int = 50) -> str:
     """판례/해석례/행정심판례 전용 검색 결과 포맷팅 함수"""
@@ -292,21 +290,10 @@ def search_precedent(
     if data_source:
         params["datSrcNm"] = data_source
 
-    params_for_key = {k: v for k, v in params.items() if k != "OC"}
-    cache_key = get_cache_key("prec_search_" + json.dumps(params_for_key, sort_keys=True), "list")
-    cached_data = load_from_cache(cache_key)
-    if cached_data and isinstance(cached_data, dict) and "PrecSearch" in cached_data:
-        result = _format_precedent_search_results(cached_data, "prec", search_query, display)
-        return TextContent(type="text", text=result)
-
     try:
-        data = _make_legislation_request("prec", params)
-        _generate_api_url("prec", params)
+        data = _make_legislation_request("prec", params, use_cache=True)
         result = _format_precedent_search_results(data, "prec", search_query, display)
-        try:
-            save_to_cache(cache_key, data)
-        except Exception as cache_err:
-            logger.debug("search_precedent cache save skip: %s", cache_err)
+        result += format_result_guidance(extract_total_count(data), search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"판례 검색 중 오류: {str(e)}")
@@ -320,9 +307,9 @@ def search_constitutional_court(query: Optional[str] = None, display: int = 20, 
     search_query = query.strip()
     params = {"target": "detc", "query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("detc", params)
-        url = _generate_api_url("detc", params)
+        data = _make_legislation_request("detc", params, use_cache=True)
         result = _format_constitutional_search_results(data, "detc", search_query, display)
+        result += format_result_guidance(extract_total_count(data), search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"헌법재판소 결정례 검색 중 오류: {str(e)}")
@@ -336,7 +323,7 @@ def search_legal_interpretation(query: Optional[str] = None, display: int = 20, 
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("expc", params)
+        data = _make_legislation_request("expc", params, use_cache=True)
         url = _generate_api_url("expc", params)
         result = _format_precedent_search_results(data, "expc", search_query, display)
         return TextContent(type="text", text=result)
@@ -352,7 +339,7 @@ def search_administrative_trial(query: Optional[str] = None, search: int = 1, di
     search_query = query.strip()
     params = {"target": "decc", "query": search_query, "search": search, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("decc", params)
+        data = _make_legislation_request("decc", params, use_cache=True)
         url = _generate_api_url("decc", params)
         result = _format_precedent_search_results(data, "decc", search_query, display)
         return TextContent(type="text", text=result)
@@ -369,7 +356,7 @@ def get_administrative_trial_detail(trial_id: Union[str, int]) -> TextContent:
     """행정심판례 본문 조회"""
     params = {"target": "decc", "ID": str(trial_id)}
     try:
-        data = _make_legislation_request("decc", params, is_detail=True)
+        data = _make_legislation_request("decc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("decc", params)
         result = _format_precedent_search_results(data, "decc", f"행정심판례ID:{trial_id}", 1)
         return TextContent(type="text", text=result)
@@ -389,7 +376,7 @@ def get_precedent_detail(case_id: Union[str, int]) -> TextContent:
     
     try:
         # 기본 JSON 시도 (is_detail=True로 lawService.do 사용)
-        data = _make_legislation_request("prec", params, is_detail=True)
+        data = _make_legislation_request("prec", params, is_detail=True, use_cache=True)
         url = _generate_api_url("prec", params, is_detail=True)
         
         # JSON 응답 확인
@@ -439,7 +426,7 @@ def get_constitutional_court_detail(decision_id: Union[str, int]) -> TextContent
     params = {"target": "detc", "ID": str(decision_id)}
     try:
         # 상세조회이므로 is_detail=True로 lawService.do 사용
-        data = _make_legislation_request("detc", params, is_detail=True)
+        data = _make_legislation_request("detc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("detc", params, is_detail=True)
         result = _format_constitutional_court_detail(data, str(decision_id), url)
         return TextContent(type="text", text=result)
@@ -457,7 +444,7 @@ def get_legal_interpretation_detail(interpretation_id: Union[str, int]) -> TextC
     """법령해석례 본문 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("expc", params, is_detail=True)
+        data = _make_legislation_request("expc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("expc", params)
         result = _format_precedent_search_results(data, "expc", f"법령해석례ID:{interpretation_id}", 1)
         return TextContent(type="text", text=result)

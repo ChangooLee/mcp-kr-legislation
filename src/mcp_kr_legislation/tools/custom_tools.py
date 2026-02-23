@@ -56,7 +56,7 @@ def search_custom_law(vcode: Optional[str] = None, query: Optional[str] = None, 
         search_query = f"맞춤형 법령 (분류: {vcode})"
     
     try:
-        data = _make_legislation_request("couseLs", params)
+        data = _make_legislation_request("couseLs", params, use_cache=True)
         result = _format_search_results(data, "couseLs", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -89,7 +89,7 @@ def search_custom_law_articles(vcode: Optional[str] = None, query: Optional[str]
         search_query = f"맞춤형 법령 조문 (분류: {vcode})"
     
     try:
-        data = _make_legislation_request("couseLs", params)
+        data = _make_legislation_request("couseLs", params, use_cache=True)
         result = _format_search_results(data, "couseLs", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -123,7 +123,7 @@ def search_custom_ordinance(vcode: Optional[str] = None, query: Optional[str] = 
         search_query = f"맞춤형 자치법규 (분류: {vcode})"
     
     try:
-        data = _make_legislation_request("couseOrdin", params)
+        data = _make_legislation_request("couseOrdin", params, use_cache=True)
         result = _format_search_results(data, "couseOrdin", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -153,7 +153,7 @@ def search_custom_ordinance_articles(vcode: Optional[str] = None, query: Optiona
         search_query = f"맞춤형 자치법규 조문 (분류: {vcode})"
     
     try:
-        data = _make_legislation_request("couseOrdin", params)
+        data = _make_legislation_request("couseOrdin", params, use_cache=True)
         result = _format_search_results(data, "couseOrdin", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -187,7 +187,7 @@ def search_custom_administrative_rule(vcode: Optional[str] = None, query: Option
         search_query = f"맞춤형 행정규칙 (분류: {vcode})"
     
     try:
-        data = _make_legislation_request("couseAdmrul", params)
+        data = _make_legislation_request("couseAdmrul", params, use_cache=True)
         result = _format_search_results(data, "couseAdmrul", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -215,7 +215,7 @@ def search_custom_administrative_rule_articles(vcode: Optional[str] = None, quer
     else:
         search_query = f"맞춤형 행정규칙 조문 (분류: {vcode})"
     try:
-        data = _make_legislation_request("couseAdmrul", params)
+        data = _make_legislation_request("couseAdmrul", params, use_cache=True)
         result = _format_search_results(data, "couseAdmrul", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:

@@ -47,7 +47,7 @@ def search_legal_term(query: Optional[str] = None, display: int = 20, page: int 
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("lstrm", params)
+        data = _make_legislation_request("lstrm", params, use_cache=True)
         result = _format_search_results(data, "lstrm", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -69,11 +69,40 @@ def search_legal_term_ai(query: Optional[str] = None, display: int = 20, page: i
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("lstrmAI", params)
-        result = _format_search_results(data, "lstrmAI", search_query)
+        data = _make_legislation_request("lstrmAI", params, use_cache=True)
+        result = _format_lstrm_ai_results(data, search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"법령용어 AI 검색 중 오류: {str(e)}")
+
+
+def _format_lstrm_ai_results(data: dict, query: str) -> str:
+    """lstrmAI 응답 전용 포맷터 (검색결과개수/법령용어 구조)"""
+    search_data = data.get("lstrmAISearch", {})
+    total = search_data.get("검색결과개수", "0")
+    items = search_data.get("법령용어", [])
+    if isinstance(items, dict):
+        items = [items]
+    if not items:
+        return f"'{query}' 법령용어 AI 검색 결과가 없습니다."
+
+    lines = [f"**'{query}' 법령용어 AI 검색** (총 {total}건)\n"]
+    for i, item in enumerate(items, 1):
+        if not isinstance(item, dict):
+            continue
+        name = item.get("법령용어명", "")
+        mst = ""
+        rlt_link = item.get("용어간관계링크", "")
+        if "MST=" in rlt_link:
+            mst = rlt_link.split("MST=")[-1]
+        lines.append(f"**{i}. {name}**")
+        if item.get("비고"):
+            lines.append(f"   비고: {item['비고']}")
+        if item.get("동음이의어존재여부") == "Y":
+            lines.append(f"   동음이의어 있음")
+        if mst:
+            lines.append(f"   용어 MST: {mst}")
+    return "\n".join(lines)
 
 @mcp.tool(name="search_daily_legal_term_link", description="""일상용어-법령용어 연계 정보를 검색합니다.
 
@@ -91,7 +120,7 @@ def search_daily_legal_term_link(query: Optional[str] = None, display: int = 20,
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("dlytrmRlt", params)
+        data = _make_legislation_request("dlytrmRlt", params, use_cache=True)
         # HTML 응답 처리
         if isinstance(data, dict) and data.get("status") == "html":
             return TextContent(type="text", text=f"일상용어-법령용어 연계 API는 HTML만 지원합니다.\n\n직접 확인: http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=dlytrmRlt&type=HTML&query={search_query}\n\nJSON 법령용어 검색은 search_legal_term 도구를 이용해주세요.")
@@ -176,7 +205,7 @@ def get_legal_term_detail(term_id: Union[str, int]) -> TextContent:
     """법령용어 상세 조회"""
     params = {"ID": str(term_id)}
     try:
-        data = _make_legislation_request("lstrm", params, is_detail=True)
+        data = _make_legislation_request("lstrm", params, is_detail=True, use_cache=True)
         url = _generate_api_url("lstrm", params, is_detail=True)
         result = _format_search_results(data, "lstrm", str(term_id), 50)
         return TextContent(type="text", text=result)
@@ -241,7 +270,7 @@ def search_intelligent_law(query: Optional[str] = None, display: int = 20, page:
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("aiSearch", params)
+        data = _make_legislation_request("aiSearch", params, use_cache=True)
         result = _format_search_results(data, "aiSearch", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -262,7 +291,7 @@ def search_intelligent_related_law(query: Optional[str] = None, display: int = 2
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("aiRltLs", params)
+        data = _make_legislation_request("aiRltLs", params, use_cache=True)
         result = _format_search_results(data, "aiRltLs", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:

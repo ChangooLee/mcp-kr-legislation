@@ -23,9 +23,6 @@ from ..config import legislation_config
 from .law_tools import (
     _make_legislation_request,
     _format_search_results,
-    get_cache_key,
-    load_from_cache,
-    save_to_cache,
     normalize_article_key,
     find_article_in_data,
     clean_html_tags,
@@ -88,7 +85,7 @@ def search_law_change_history(change_date: str, org: Optional[str] = None, displ
         
         # API 요청 (타임아웃 대응)
         try:
-            data = _make_legislation_request("lsHstInf", params, is_detail=False)
+            data = _make_legislation_request("lsHstInf", params, is_detail=False, use_cache=True)
         except requests.exceptions.ReadTimeout:
             return TextContent(type="text", text=f"""**법령 변경이력 검색 결과**
 
@@ -135,6 +132,8 @@ def search_law_change_history(change_date: str, org: Optional[str] = None, displ
 
 @mcp.tool(name="search_law_amendment_history", description="""법령의 연혁(개정이력)을 검색합니다. 특정 법령이 어떻게 제정/개정되어왔는지 연혁 목록을 확인합니다.
 
+주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
+
 매개변수:
 - query: 검색어 (필수) - 법령명
 - display: 결과 개수 (최대 100)
@@ -142,37 +141,57 @@ def search_law_change_history(change_date: str, org: Optional[str] = None, displ
 
 사용 예시: search_law_amendment_history("개인정보보호법"), search_law_amendment_history("민법", display=50)""")
 def search_law_amendment_history(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """법령 연혁 검색"""
+    """법령 연혁 검색 (HTML 전용)"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어(법령명)를 입력해주세요.")
-    try:
-        search_query = query.strip()
-        params = {"query": search_query, "display": min(display, 100), "page": page}
-        data = _make_legislation_request("lsHistory", params)
-        result = _format_search_results(data, "lsHistory", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        logger.error(f"법령 연혁 검색 중 오류: {e}")
-        return TextContent(type="text", text=f"법령 연혁 검색 중 오류: {str(e)}")
+    
+    search_query = query.strip()
+    oc = legislation_config.oc
+    base_url = "http://www.law.go.kr/DRF/lawSearch.do"
+    url = f"{base_url}?OC={oc}&target=lsHistory&type=HTML&query={search_query}&display={min(display, 100)}&page={page}"
+    
+    result = f"""법령 연혁 검색: '{search_query}'
+
+이 API는 HTML만 지원합니다. 아래 URL에서 확인해주세요:
+- 연혁 목록: {url}
+
+대안 도구:
+- 법령 변경이력: search_law_change_history("{search_query}")
+- 법령 신구대조: compare_law_old_new("{search_query}")"""
+    return TextContent(type="text", text=result)
 
 @mcp.tool(name="get_law_amendment_history_detail", description="""법령 연혁의 상세 본문을 조회합니다. 특정 개정 시점의 법령 내용을 확인합니다.
 
+주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
+
 매개변수:
 - law_id: 법령ID (필수) - search_law_amendment_history 결과에서 확인
+- mst: 법령 마스터번호 (선택) - law_id 대신 사용 가능
 
-사용 예시: get_law_amendment_history_detail(law_id="000900")""")
-def get_law_amendment_history_detail(law_id: Union[str, int]) -> TextContent:
-    """법령 연혁 상세 조회"""
-    if not law_id:
-        return TextContent(type="text", text="법령ID를 입력해주세요.")
-    try:
-        params = {"ID": str(law_id)}
-        data = _make_legislation_request("lsHistory", params, is_detail=True)
-        result = _format_search_results(data, "lsHistory", str(law_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        logger.error(f"법령 연혁 상세조회 중 오류: {e}")
-        return TextContent(type="text", text=f"법령 연혁 상세조회 중 오류: {str(e)}")
+사용 예시: get_law_amendment_history_detail(law_id="000900"), get_law_amendment_history_detail(mst="9094")""")
+def get_law_amendment_history_detail(law_id: Optional[Union[str, int]] = None, mst: Optional[Union[str, int]] = None) -> TextContent:
+    """법령 연혁 상세 조회 (HTML 전용)"""
+    if not law_id and not mst:
+        return TextContent(type="text", text="법령ID 또는 MST를 입력해주세요.")
+    
+    oc = legislation_config.oc
+    base_url = "http://www.law.go.kr/DRF/lawService.do"
+    url = f"{base_url}?OC={oc}&target=lsHistory&type=HTML"
+    if law_id:
+        url += f"&ID={law_id}"
+    if mst:
+        url += f"&MST={mst}"
+    
+    identifier = str(law_id or mst)
+    result = f"""법령 연혁 상세: '{identifier}'
+
+이 API는 HTML만 지원합니다. 아래 URL에서 확인해주세요:
+- 연혁 본문: {url}
+
+대안 도구:
+- 법령 본문 조회: get_law_detail(mst="{identifier}")
+- 법령 변경이력: search_law_change_history(법령명)"""
+    return TextContent(type="text", text=result)
 
 
 @mcp.tool(name="search_article_change_history", description="""조문의 상세 변경이력과 정책적 배경을 조회합니다.
@@ -227,7 +246,7 @@ def search_article_change_history(mst: str, article_no: str, display: int = 20, 
                     "MST": mst_str,
                     "display": 1
                 }
-                search_data = _make_legislation_request("law", search_params, is_detail=True)
+                search_data = _make_legislation_request("law", search_params, is_detail=True, use_cache=True)
                 
                 if search_data and "법령" in search_data:
                     law_info = search_data["법령"]
@@ -252,7 +271,7 @@ def search_article_change_history(mst: str, article_no: str, display: int = 20, 
         }
         
         # API 요청
-        data = _make_legislation_request("lsJoHstInf", params, is_detail=True)
+        data = _make_legislation_request("lsJoHstInf", params, is_detail=True, use_cache=True)
         
         # 조문번호 표시 형식화 (000200 -> 제2조)
         article_display = f"제{int(normalized_article_no[:4])}조"
@@ -300,7 +319,7 @@ def compare_law_versions(law_name: str) -> TextContent:
     
     try:
         # 1. 현행법령 검색
-        current_data = _make_legislation_request("law", {"query": law_name, "display": 1})
+        current_data = _make_legislation_request("law", {"query": law_name, "display": 1}, use_cache=True)
         current_items = current_data.get("LawSearch", {}).get("law", [])
         
         if not current_items:
@@ -313,7 +332,7 @@ def compare_law_versions(law_name: str) -> TextContent:
             return TextContent(type="text", text=f"현행법령의 법령일련번호를 찾을 수 없습니다.")
         
         # 2. 시행일법령 검색
-        eflaw_data = _make_legislation_request("eflaw", {"query": law_name, "display": 5})
+        eflaw_data = _make_legislation_request("eflaw", {"query": law_name, "display": 5}, use_cache=True)
         eflaw_items = eflaw_data.get("LawSearch", {}).get("law", [])
         
         if not isinstance(eflaw_items, list):
@@ -330,8 +349,8 @@ def compare_law_versions(law_name: str) -> TextContent:
             return TextContent(type="text", text=f"시행일법령의 법령일련번호를 찾을 수 없습니다.")
         
         # 3. 두 버전의 상세 조문 조회
-        current_detail = _make_legislation_request("law", {"MST": current_mst}, is_detail=True)
-        eflaw_detail = _make_legislation_request("eflaw", {"MST": eflaw_mst}, is_detail=True)
+        current_detail = _make_legislation_request("law", {"MST": current_mst}, is_detail=True, use_cache=True)
+        eflaw_detail = _make_legislation_request("eflaw", {"MST": eflaw_mst}, is_detail=True, use_cache=True)
         
         # 4. 조문 추출
         current_articles = _extract_articles_from_detail(current_detail)
@@ -398,7 +417,7 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
             search_query = "법령-자치법규 연계"
         
         # API 요청 - target: lnkLs (법령 기준 자치법규 연계)
-        data = _make_legislation_request("lnkLs", params)
+        data = _make_legislation_request("lnkLs", params, use_cache=True)
         result = _format_search_results(data, "lnkLs", search_query)
         return TextContent(type="text", text=result)
         
@@ -409,6 +428,8 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
 
 @mcp.tool(name="search_law_ordinance_status", description="""법령-자치법규 연계현황을 조회합니다. 특정 법령에 연계된 자치법규의 현황을 확인할 수 있습니다.
 
+주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
+
 매개변수:
 - query: 검색어 (선택) - 법령명 키워드
 - display: 결과 개수 (최대 100)
@@ -416,21 +437,25 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
 
 사용 예시: search_law_ordinance_status("도시계획"), search_law_ordinance_status("건축", display=50)""")
 def search_law_ordinance_status(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """법령-자치법규 연계현황 조회"""
-    try:
-        params = {"display": min(display, 100), "page": page}
-        if query and query.strip():
-            search_query = query.strip()
-            params["query"] = search_query
-        else:
-            search_query = "법령-자치법규 연계현황"
+    """법령-자치법규 연계현황 조회 (HTML 전용)"""
+    oc = legislation_config.oc
+    base_url = "http://www.law.go.kr/DRF/lawSearch.do"
+    
+    url = f"{base_url}?OC={oc}&target=drlaw&type=HTML"
+    if query and query.strip():
+        url += f"&query={query.strip()}"
+    url += f"&display={min(display, 100)}&page={page}"
+    
+    search_query = query.strip() if query and query.strip() else "전체"
+    result = f"""법령-자치법규 연계현황: '{search_query}'
 
-        data = _make_legislation_request("drlaw", params)
-        result = _format_search_results(data, "drlaw", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        logger.error(f"법령-자치법규 연계현황 조회 중 오류: {e}")
-        return TextContent(type="text", text=f"법령-자치법규 연계현황 조회 중 오류: {str(e)}")
+이 API는 HTML만 지원합니다. 아래 URL에서 확인해주세요:
+- 연계현황: {url}
+
+대안 도구:
+- 자치법규 검색: search_local_ordinance("{search_query}")
+- 연계법령 검색: search_linked_law("{search_query}")"""
+    return TextContent(type="text", text=result)
 
 
 @mcp.tool(name="search_related_law", description="""관련법령을 검색합니다.
@@ -475,37 +500,13 @@ def search_related_law(query: str, display: int = 20, page: int = 1) -> TextCont
         
         search_query = query.strip()
         
-        # 캐시 확인
-        try:
-            cache_key = get_cache_key(f"lsRlt_{search_query}_{display}_{page}", "related_law")
-            cached_data = load_from_cache(cache_key)
-            if cached_data:
-                logger.info(f"관련법령 캐시 히트: {search_query}")
-                result = _format_search_results(cached_data, "lsRlt", search_query)
-                return TextContent(type="text", text=result + "\n\n(캐시된 결과)")
-        except Exception:
-            logger.warning("캐시 모듈 로드 실패, API 직접 호출")
-            cached_data = None
-            cache_key = None
-        
-        # 기본 파라미터 설정
         params = {
             "query": search_query,
             "display": min(display, 100),
             "page": page
         }
         
-        # API 요청 (타임아웃 60초)
-        data = _make_legislation_request("lsRlt", params, timeout=60)
-        
-        # 캐시 저장 (결과가 있는 경우)
-        if data and cache_key:
-            try:
-                save_to_cache(cache_key, data)
-                logger.info(f"관련법령 캐시 저장: {search_query}")
-            except Exception as cache_err:
-                logger.warning(f"캐시 저장 실패: {cache_err}")
-        
+        data = _make_legislation_request("lsRlt", params, timeout=60, use_cache=True)
         result = _format_search_results(data, "lsRlt", search_query)
         return TextContent(type="text", text=result)
         
@@ -598,7 +599,7 @@ def search_law_appendix(
                 params[key] = value
         
         # API 요청 - target: licbyl (법령 별표서식)
-        data = _make_legislation_request("licbyl", params)
+        data = _make_legislation_request("licbyl", params, use_cache=True)
         result = _format_search_results(data, "licbyl", search_query)
         return TextContent(type="text", text=result)
         
@@ -627,7 +628,7 @@ def get_law_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
     try:
         # 목록에서 해당 별표 정보 찾기
         params = {"display": 100}
-        data = _make_legislation_request("licbyl", params, is_detail=False)
+        data = _make_legislation_request("licbyl", params, is_detail=False, use_cache=True)
         
         if "licBylSearch" in data and "licbyl" in data["licBylSearch"]:
             items = data["licBylSearch"]["licbyl"]
@@ -686,7 +687,7 @@ def search_admin_rule_appendix(
         else:
             search_query = "행정규칙 별표서식"
 
-        data = _make_legislation_request("admbyl", params)
+        data = _make_legislation_request("admbyl", params, use_cache=True)
         result = _format_search_results(data, "admbyl", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:

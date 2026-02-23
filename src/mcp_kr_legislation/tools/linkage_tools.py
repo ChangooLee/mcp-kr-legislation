@@ -60,7 +60,7 @@ def search_daily_term(query: Optional[str] = None, display: int = 20, page: int 
             search_query = "일상용어"
         
         # API 요청
-        data = _make_legislation_request("dlytrm", params)
+        data = _make_legislation_request("dlytrm", params, use_cache=True)
         result = _format_search_results(data, "dailyTerm", search_query)
         return TextContent(type="text", text=result)
         
@@ -101,7 +101,7 @@ def search_legal_daily_term_link(query: Optional[str] = None, display: int = 20,
             search_query = "법령용어-일상용어 연계"
         
         # API 요청
-        data = _make_legislation_request("dlytrmRlt", params)
+        data = _make_legislation_request("dlytrmRlt", params, use_cache=True)
         result = _format_search_results(data, "legalDailyTermLink", search_query)
         return TextContent(type="text", text=result)
         

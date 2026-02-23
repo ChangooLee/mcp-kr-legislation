@@ -140,7 +140,7 @@ def get_treaty_detail(treaty_id: Union[str, int]) -> TextContent:
         params = {"target": "trty", "ID": str(treaty_id)}
         
         # API 요청 (is_detail=True로 lawService.do 호출)
-        data = _make_legislation_request("trty", params, is_detail=True)
+        data = _make_legislation_request("trty", params, is_detail=True, use_cache=True)
         
         # 결과 포맷팅
         result = f"**조약 상세 정보** (ID: {treaty_id})\n"
@@ -224,7 +224,7 @@ def get_ordinance_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
         url = _generate_api_url("ordinbyl", params)
         
         # API 요청
-        data = _make_legislation_request("ordinbyl", params)
+        data = _make_legislation_request("ordinbyl", params, use_cache=True)
         
         # 결과 포맷팅
         result = f"**자치법규 별표서식 상세 정보** (ID: {appendix_id})\n"

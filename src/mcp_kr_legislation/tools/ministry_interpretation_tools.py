@@ -23,9 +23,6 @@ from .law_tools import (
     _make_legislation_request,
     _generate_api_url,
     _format_search_results,
-    get_cache_key,
-    load_from_cache,
-    save_to_cache,
 )
 
 # ===========================================
@@ -48,7 +45,7 @@ def search_moef_interpretation(query: Optional[str] = None, display: int = 20, p
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moefCgmExpc", params)
+        data = _make_legislation_request("moefCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "moefCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -70,7 +67,7 @@ def search_molit_interpretation(query: Optional[str] = None, display: int = 20, 
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("molitCgmExpc", params)
+        data = _make_legislation_request("molitCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "molitCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -92,7 +89,7 @@ def search_moel_interpretation(query: Optional[str] = None, display: int = 20, p
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moelCgmExpc", params)
+        data = _make_legislation_request("moelCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "moelCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -114,7 +111,7 @@ def search_mof_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mofCgmExpc", params)
+        data = _make_legislation_request("mofCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "mofCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -136,7 +133,7 @@ def search_mohw_interpretation(query: Optional[str] = None, display: int = 20, p
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mohwCgmExpc", params)
+        data = _make_legislation_request("mohwCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "mohwCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -158,7 +155,7 @@ def search_moe_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("moeCgmExpc", params)
+        data = _make_legislation_request("moeCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "moeCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -180,7 +177,7 @@ def search_mote_interpretation(query: Optional[str] = None, display: int = 20, p
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("motieCgmExpc", params)
+        data = _make_legislation_request("motieCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "motieCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -202,7 +199,7 @@ def search_maf_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mafraCgmExpc", params)
+        data = _make_legislation_request("mafraCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "mafraCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -224,7 +221,7 @@ def search_moms_interpretation(query: Optional[str] = None, display: int = 20, p
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mndCgmExpc", params)
+        data = _make_legislation_request("mndCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "mndCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -246,7 +243,7 @@ def search_sme_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("mssCgmExpc", params)
+        data = _make_legislation_request("mssCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "mssCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -268,7 +265,7 @@ def search_nfa_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("kfsCgmExpc", params)
+        data = _make_legislation_request("kfsCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "kfsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -289,20 +286,9 @@ def search_nts_interpretation(query: Optional[str] = None, display: int = 20, pa
 
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
-    params_for_key = {"query": search_query, "display": params["display"], "page": params["page"]}
-    cache_key = get_cache_key("nts_search_" + json.dumps(params_for_key, sort_keys=True), "list")
     try:
-        cached_data = load_from_cache(cache_key)
-        if cached_data and isinstance(cached_data, dict) and "CgmExpc" in cached_data:
-            result = _format_search_results(cached_data, "ntsCgmExpc", search_query)
-            return TextContent(type="text", text=result)
-        data = _make_legislation_request("ntsCgmExpc", params)
+        data = _make_legislation_request("ntsCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "ntsCgmExpc", search_query)
-        if data:
-            try:
-                save_to_cache(cache_key, data)
-            except Exception as cache_err:
-                logger.debug("search_nts_interpretation cache save skip: %s", cache_err)
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국세청 법령해석 검색 중 오류: {str(e)}")
@@ -323,7 +309,7 @@ def search_kcs_interpretation(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("kcsCgmExpc", params)
+        data = _make_legislation_request("kcsCgmExpc", params, use_cache=True)
         result = _format_search_results(data, "kcsCgmExpc", search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -343,7 +329,7 @@ def get_moef_interpretation_detail(interpretation_id: Union[str, int]) -> TextCo
     """기획재정부 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("moefCgmExpc", params, is_detail=True)
+        data = _make_legislation_request("moefCgmExpc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("moefCgmExpc", params, is_detail=True)
         result = _format_search_results(data, "moefCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
@@ -360,7 +346,7 @@ def get_nts_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     """국세청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("ntsCgmExpc", params, is_detail=True)
+        data = _make_legislation_request("ntsCgmExpc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("ntsCgmExpc", params, is_detail=True)
         result = _format_search_results(data, "ntsCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)
@@ -377,7 +363,7 @@ def get_kcs_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     """관세청 법령해석 상세 조회"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("kcsCgmExpc", params, is_detail=True)
+        data = _make_legislation_request("kcsCgmExpc", params, is_detail=True, use_cache=True)
         url = _generate_api_url("kcsCgmExpc", params, is_detail=True)
         result = _format_search_results(data, "kcsCgmExpc", str(interpretation_id))
         return TextContent(type="text", text=result)

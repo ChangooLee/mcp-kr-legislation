@@ -244,115 +244,91 @@
     {
       "id": "improve-empty-result-guidance",
       "type": "improvement",
-      "status": "pending",
+      "status": "completed",
       "priority": "medium",
-      "description": "빈 결과 시 대안 검색어 제시 및 관련 도구 안내 추가"
+      "description": "빈 결과 시 대안 검색어 안내 + totalCount > 1000 시 검색어 구체화 안내 추가"
+    },
+    {
+      "id": "improve-cache-narrowing-7",
+      "type": "improvement",
+      "status": "completed",
+      "priority": "medium",
+      "description": "needs_narrowing 7개 도구에 캐싱(5개) + 안내 메시지(7개) 적용: detc, ordin, ppc, elaw, ttSpecialDecc, prec, ntsCgmExpc"
     }
   ],
-  "warning_tools": [
-    {
-      "tool": "search_bai_preconsulting",
-      "target": "baiPvcs",
-      "issue": "API 미오픈"
-    },
-    {
-      "tool": "search_legal_term_ai",
-      "target": "lstrmAI",
-      "issue": "데이터 없음"
-    },
-    {
-      "tool": "search_cha_interpretation",
-      "target": "khsCgmExpc",
-      "issue": "0건 반환"
-    },
-    {
-      "tool": "search_police_interpretation",
-      "target": "npaCgmExpc",
-      "issue": "0건 반환"
-    },
-    {
-      "tool": "search_kdca_interpretation",
-      "target": "kdcaCgmExpc",
-      "issue": "0건 반환"
-    },
-    {
-      "tool": "search_kcg_interpretation",
-      "target": "kcgCgmExpc",
-      "issue": "0건 반환"
-    }
-  ],
+  "warning_tools": [],
+  "_warning_note": "2026-02-21 전수 확인: 모든 API 정상 동작 (Referer 헤더 필수). _make_legislation_request에 이미 포함됨.",
   "test_results": {
     "law": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.42
+      "duration_sec": 0.18
     },
     "precedent": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.16,
-      "notes": "search_precedent 캐시 적용 완료"
+      "duration_sec": 0.18
     },
     "constitutional_court": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.17
     },
     "legal_interpretation": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.16
     },
     "administrative_trial": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.16
+      "duration_sec": 0.29
     },
     "administrative_rule": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.15
+      "duration_sec": 0.26
     },
     "local_ordinance": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.38
+      "duration_sec": 0.24
     },
     "legal_term": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.29
+      "duration_sec": 0.18
     },
     "treaty": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.15
     },
     "committee_ppc": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.29
+      "duration_sec": 0.18
     },
     "tax_tribunal": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.17
+      "duration_sec": 0.18
     },
     "ministry_moef": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.19
     },
     "english_law": {
       "tested_at": "2026-02-21",
       "status": "pass",
-      "duration_sec": 0.35
+      "duration_sec": 0.15
     }
   },
   "completeness_score": {
-    "total_score": 55.0,
-    "grade": "F",
-    "evaluated_at": "2026-02-21 15:22",
+    "total_score": 77.5,
+    "grade": "C",
+    "evaluated_at": "2026-02-21 17:14",
     "breakdown": {
       "api_coverage": {
         "score": 100.0,
@@ -363,12 +339,12 @@
         "weighted": 25.0
       },
       "quality_gate": {
-        "score": 0.0,
-        "weighted": 0.0
+        "score": 75.0,
+        "weighted": 15.0
       },
       "task_completion": {
-        "score": 0.0,
-        "weighted": 0.0
+        "score": 50.0,
+        "weighted": 7.5
       },
       "warning_resolution": {
         "score": 0.0,

@@ -79,7 +79,7 @@ def get_law_summary(
                 "display": 5
             }
             
-            search_result = _make_legislation_request("law", search_params)
+            search_result = _make_legislation_request("law", search_params, use_cache=True)
             # 응답 구조: LawSearch.law
             law_search = search_result.get("LawSearch", {}) if search_result else {}
             if law_search and law_search.get("law"):
@@ -182,7 +182,7 @@ def get_law_articles_summary(
                 "query": law_name,
                 "display": 10
             }
-            search_result = _make_legislation_request("law", search_params)
+            search_result = _make_legislation_request("law", search_params, use_cache=True)
             
             if search_result and "LawSearch" in search_result:
                 laws = search_result["LawSearch"].get("law", [])
@@ -505,7 +505,7 @@ def search_law_with_cache(query: str) -> TextContent:
             "display": 10
         }
         
-        search_result = _make_legislation_request("law", search_params)
+        search_result = _make_legislation_request("law", search_params, use_cache=True)
         
         # 검색 결과에서 가장 적합한 법령 찾기
         target_law = None

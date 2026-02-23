@@ -88,7 +88,7 @@ def search_financial_laws(
             for law_name in FINANCIAL_LAWS:
                 if query.lower() in law_name.lower():
                     try:
-                        law_result = _make_legislation_request("law", {"query": law_name, "display": 3})
+                        law_result = _make_legislation_request("law", {"query": law_name, "display": 3}, use_cache=True)
                         laws = law_result.get("LawSearch", {}).get("law", [])
                         if laws:
                             search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -98,7 +98,7 @@ def search_financial_laws(
             # 전체 금융법령 검색
             for law_name in FINANCIAL_LAWS[:FINANCIAL_SEARCH_LIMIT]:
                 try:
-                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2})
+                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2}, use_cache=True)
                     laws = law_result.get("LawSearch", {}).get("law", [])
                     if laws:
                         search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -205,7 +205,7 @@ def search_tax_laws(
             for law_name in TAX_LAWS:
                 if query.lower() in law_name.lower():
                     try:
-                        law_result = _make_legislation_request("law", {"query": law_name, "display": 3})
+                        law_result = _make_legislation_request("law", {"query": law_name, "display": 3}, use_cache=True)
                         laws = law_result.get("LawSearch", {}).get("law", [])
                         if laws:
                             search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -215,7 +215,7 @@ def search_tax_laws(
             # 전체 세무법령 검색
             for law_name in TAX_LAWS[:TAX_SEARCH_LIMIT]:
                 try:
-                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2})
+                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2}, use_cache=True)
                     laws = law_result.get("LawSearch", {}).get("law", [])
                     if laws:
                         search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -324,7 +324,7 @@ def search_privacy_laws(
             for law_name in PRIVACY_LAWS:
                 if query.lower() in law_name.lower():
                     try:
-                        law_result = _make_legislation_request("law", {"query": law_name, "display": 2})
+                        law_result = _make_legislation_request("law", {"query": law_name, "display": 2}, use_cache=True)
                         laws = law_result.get("LawSearch", {}).get("law", [])
                         if laws:
                             search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -334,7 +334,7 @@ def search_privacy_laws(
             # 전체 개인정보보호법령 검색
             for law_name in PRIVACY_LAWS[:PRIVACY_SEARCH_LIMIT]:
                 try:
-                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2})
+                    law_result = _make_legislation_request("law", {"query": law_name, "display": 2}, use_cache=True)
                     laws = law_result.get("LawSearch", {}).get("law", [])
                     if laws:
                         search_results.extend(laws if isinstance(laws, list) else [laws])
@@ -451,7 +451,7 @@ def search_law_articles_semantic(
         if not cached_data:
             logger.info(f"캐시 없음. API로 법령 전체 조회: {target}_{mst}")
             params = {"MST": mst}
-            data = _make_legislation_request(target, params, is_detail=True)
+            data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
             
             if not data:
                 return TextContent(type="text", text=f"법령 데이터를 가져올 수 없습니다. MST: {mst}")
@@ -572,7 +572,7 @@ def search_english_law_articles_semantic(
         
         if not cached_data:
             params = {"MST": mst}
-            data = _make_legislation_request("elaw", params, is_detail=True)
+            data = _make_legislation_request("elaw", params, is_detail=True, use_cache=True)
             
             if not data or 'Law' not in data:
                 return TextContent(
@@ -765,7 +765,7 @@ def get_english_law_summary(
             "page": 1
         }
         
-        search_data = _make_legislation_request("elaw", search_params, is_detail=False)
+        search_data = _make_legislation_request("elaw", search_params, is_detail=False, use_cache=True)
         
         if not search_data or 'LawSearch' not in search_data or 'law' not in search_data['LawSearch']:
             return TextContent(

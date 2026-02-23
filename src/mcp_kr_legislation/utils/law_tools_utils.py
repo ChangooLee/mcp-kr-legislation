@@ -569,6 +569,45 @@ def format_article_body(article: Dict, include_details: bool = True) -> str:
     return result
 
 
+NARROWING_THRESHOLD = 1000
+
+
+def extract_total_count(data: Dict[str, Any]) -> int:
+    """API 응답에서 totalCnt 추출 (페이지 단위가 아닌 전체 건수)"""
+    for val in data.values():
+        if isinstance(val, dict):
+            tc = val.get("totalCnt")
+            if tc:
+                try:
+                    return int(tc)
+                except (ValueError, TypeError):
+                    pass
+    return 0
+
+
+def format_result_guidance(total_count: int, query: str) -> str:
+    """검색 결과 건수에 따른 안내 메시지 생성
+
+    - totalCount > 1000: 검색어 구체화 안내
+    - totalCount == 0: 대안 검색 안내
+    - 그 외: 빈 문자열 반환
+    """
+    if total_count > NARROWING_THRESHOLD:
+        return (
+            f"\n---\n"
+            f"전체 {total_count:,}건 중 일부만 표시됩니다. "
+            f"더 구체적인 검색어를 사용하거나, 날짜 범위/정렬 등 "
+            f"고급 검색 파라미터를 활용하면 정확한 결과를 얻을 수 있습니다."
+        )
+    elif total_count == 0:
+        return (
+            f"\n---\n"
+            f"'{query}' 검색 결과가 없습니다. "
+            f"다른 검색어를 시도하거나, 유사한 키워드로 검색해보세요."
+        )
+    return ""
+
+
 def safe_get_nested_value(data: Dict, keys: List[str], default: Any = "") -> Any:
     """
     중첩된 딕셔너리에서 안전하게 값 추출하는 공통 함수

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 from .law_tools import (
     _make_legislation_request,
     _generate_api_url,
-    _format_search_results
+    _format_search_results,
 )
 
 # ===========================================
@@ -37,7 +37,7 @@ def search_administrative_rule(query: Optional[str] = None, search: int = 2, dis
     search_query = query.strip()
     params = {"target": "admrul", "query": search_query, "search": search, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("admrul", params)
+        data = _make_legislation_request("admrul", params, use_cache=True)
         url = _generate_api_url("admrul", params)
         result = _format_search_results(data, "admrul", search_query, min(display, 100))
         return TextContent(type="text", text=result)
@@ -49,7 +49,7 @@ def get_administrative_rule_detail(rule_id: Union[str, int]) -> TextContent:
     """행정규칙 본문 조회"""
     try:
         params = {"target": "admrul", "ID": str(rule_id)}
-        data = _make_legislation_request("admrul", params, is_detail=True)
+        data = _make_legislation_request("admrul", params, is_detail=True, use_cache=True)
         
         if not data:
             return TextContent(type="text", text=f"행정규칙 ID {rule_id}에 해당하는 정보를 찾을 수 없습니다.")
@@ -191,7 +191,7 @@ def search_administrative_rule_comparison(query: Optional[str] = None, display: 
     search_query = query.strip()
     params = {"target": "admrulOldAndNew", "query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("admrulOldAndNew", params)
+        data = _make_legislation_request("admrulOldAndNew", params, use_cache=True)
         url = _generate_api_url("admrulOldAndNew", params)
         result = _format_search_results(data, "admrulOldAndNew", search_query, min(display, 100))
         return TextContent(type="text", text=result)
@@ -203,7 +203,7 @@ def get_administrative_rule_comparison_detail(comparison_id: Union[str, int]) ->
     """행정규칙 신구법 비교 본문 조회"""
     params = {"target": "admrulOldAndNew", "ID": str(comparison_id)}
     try:
-        data = _make_legislation_request("admrulOldAndNew", params, is_detail=True)
+        data = _make_legislation_request("admrulOldAndNew", params, is_detail=True, use_cache=True)
         url = _generate_api_url("admrulOldAndNew", params)
         result = _format_search_results(data, "admrulOldAndNew", f"비교ID:{comparison_id}", 50)
         return TextContent(type="text", text=result)
@@ -223,8 +223,7 @@ def search_local_ordinance(query: Optional[str] = None, search: int = 2, display
     search_query = query.strip()
     params = {"target": "ordin", "query": search_query, "search": search, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("ordin", params)
-        url = _generate_api_url("ordin", params)
+        data = _make_legislation_request("ordin", params, use_cache=True)
         result = _format_search_results(data, "ordin", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -239,7 +238,7 @@ def search_ordinance_appendix(query: Optional[str] = None, display: int = 20, pa
     search_query = query.strip()
     params = {"target": "ordinbyl", "query": search_query, "display": min(display, 100), "page": page}
     try:
-        data = _make_legislation_request("ordinbyl", params)
+        data = _make_legislation_request("ordinbyl", params, use_cache=True)
         url = _generate_api_url("ordinbyl", params)
         result = _format_search_results(data, "ordinbyl", search_query, min(display, 100))
         return TextContent(type="text", text=result)
@@ -265,7 +264,7 @@ def search_linked_ordinance(
         params["OID"] = ordinance_id
     
     try:
-        data = _make_legislation_request("lnkOrd", params)
+        data = _make_legislation_request("lnkOrd", params, use_cache=True)
         search_term = query or f"법령ID:{law_id}" if law_id else f"자치법규ID:{ordinance_id}" if ordinance_id else "연계 자치법규"
         result = _format_search_results(data, "lnkOrd", search_term, min(display, 100))
         return TextContent(type="text", text=result)
