@@ -2,7 +2,9 @@
 
 > Claude Desktop 테스트용 (44개 도구)
 
-## 1. 기본 법령 검색
+**테스트 완료 상태**: ✅ 1-22번 도구 (기본 법령 검색, 시행일 기준 법령, 영문 법령, 법령 이력/비교)
+
+## 1. 기본 법령 검색 ✅
 
 1. `search_law` (현행법령 목록 검색) - 개인정보보호법을 검색해줘
 2. `get_law_detail` (현행법령 본문 조회) - 개인정보보호법을 검색하고 그 상세 내용을 보여줘
@@ -13,20 +15,20 @@
 7. `get_law_articles_summary` (조문 목차) - 민법의 조문 목차와 인덱스만 간략히 보여줘
 8. `search_law_unified` (통합 검색) - 부동산 관련 법령을 통합 검색해줘
 
-## 2. 시행일 기준 법령
+## 2. 시행일 기준 법령 ✅
 
 9. `search_effective_law` (시행일 기준 목록) - 현재 시행 중인 은행 관련 법령을 검색해줘
 10. `get_effective_law_detail` (시행일 기준 본문) - 현재 시행 중인 개인정보보호법의 상세 내용을 조회해줘
 11. `get_effective_law_articles` (시행일 기준 조항호목) - 현재 시행 중인 개인정보보호법 제1조의 조항, 호, 목 단위 내용을 보여줘
 
-## 3. 영문 법령
+## 3. 영문 법령 ✅
 
 12. `search_english_law` (영문 법령 검색) - Banking Act를 영문으로 검색해줘
 13. `get_english_law_detail` (영문 법령 상세) - 영문 개인정보보호법의 전체 조문을 보여줘
 14. `get_english_law_summary` (영문 법령 요약) - Show me the English version of the Personal Information Protection Act
 15. `search_english_law_articles_semantic` (영문 조문 시맨틱 검색) - 영문 민법에서 contract provisions에 대한 조문을 찾아줘
 
-## 4. 법령 이력/비교
+## 4. 법령 이력/비교 ✅
 
 16. `search_law_change_history` (법령 변경이력 검색) - 2024년 1월 1일에 변경된 법령을 검색해줘
 17. `search_article_change_history` (조문별 변경이력) - 개인정보보호법 제15조의 변경 이력을 조회해줘
@@ -37,6 +39,8 @@
 22. `get_three_way_comparison_detail` (3단 비교 본문) - 은행법의 상위법령-하위법령-조문 3단 비교 내용을 보여줘
 
 ## 5. 법령 연계/체계
+
+(23번: 법령명만 주어지면 search_ordinance_law_link 사용, ID가 있으면 search_linked_ordinance 사용)
 
 23. `search_ordinance_law_link` (자치법규 연계) - 개인정보보호법과 연계된 자치법규를 검색해줘
 24. `get_delegated_law` (위임법령 조회) - 개인정보보호법의 위임법령을 조회해줘

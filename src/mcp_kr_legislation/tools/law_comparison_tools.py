@@ -382,6 +382,9 @@ def compare_law_versions(law_name: str) -> TextContent:
 
 @mcp.tool(name="search_ordinance_law_link", description="""자치법규와 연계된 법령 목록을 검색합니다 (법령 기준).
 
+법령명만 주어졌을 때(예: 개인정보보호법과 연계된 자치법규) 이 도구를 사용하세요. query에 법령명을 넣습니다.
+반환: 연계된 법령 목록(자치법규 목록 아님). 실제 연계 자치법규(조례 등)는 검색된 법령ID로 search_linked_ordinance(law_id='...')를 사용하세요.
+
 매개변수:
 - query: 검색어 (선택) - 법령명 키워드
 - display: 결과 개수 (최대 100, 기본값: 20)
@@ -392,6 +395,7 @@ def compare_law_versions(law_name: str) -> TextContent:
 사용 예시:
 - search_ordinance_law_link()  # 전체 목록
 - search_ordinance_law_link("자동차")  # 자동차 관련 법령의 자치법규 연계
+- search_ordinance_law_link("개인정보보호법")  # OO법과 연계된 자치법규
 
 참고: 법령과 자치법규의 연계 현황을 파악할 때 사용합니다.""")
 def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
@@ -419,6 +423,7 @@ def search_ordinance_law_link(query: Optional[str] = None, display: int = 20, pa
         # API 요청 - target: lnkLs (법령 기준 자치법규 연계)
         data = _make_legislation_request("lnkLs", params, use_cache=True)
         result = _format_search_results(data, "lnkLs", search_query)
+        result += "\n\n**안내**: 연계 자치법규(조례 등) 목록은 위 결과의 법령ID로 `search_linked_ordinance(law_id='법령ID')`를 호출하면 됩니다."
         return TextContent(type="text", text=result)
         
     except Exception as e:

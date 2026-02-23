@@ -245,7 +245,7 @@ def search_ordinance_appendix(query: Optional[str] = None, display: int = 20, pa
     except Exception as e:
         return TextContent(type="text", text=f"자치법규 별표서식 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_linked_ordinance", description="연계 자치법규를 검색합니다. 법령과 연계된 조례를 조회할 수 있습니다.")
+@mcp.tool(name="search_linked_ordinance", description="""연계 자치법규를 검색합니다. 이미 법령ID(knd) 또는 자치법규ID(OID)가 있을 때 연계 목록을 조회할 때 사용합니다. 법령명만 있는 경우에는 search_ordinance_law_link를 사용하세요. 법령과 연계된 조례를 조회할 수 있습니다.""")
 def search_linked_ordinance(
     query: Optional[str] = None,
     law_id: Optional[str] = None,

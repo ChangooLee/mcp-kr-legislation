@@ -3383,8 +3383,14 @@ def get_law_system_diagram_detail(mst_id: Union[str, int]) -> TextContent:
             logger.warning("캐시 모듈을 로드할 수 없습니다. 캐시 없이 진행합니다.")
             cached_data = None
         
-        if cached_data:
-            return TextContent(type="text", text=cached_data.get("summary", "캐시된 데이터를 읽을 수 없습니다."))
+        # 캐시 사용: summary 키가 있고 비어 있지 않은 문자열일 때만 사용
+        if (
+            isinstance(cached_data, dict)
+            and "summary" in cached_data
+            and isinstance(cached_data["summary"], str)
+            and cached_data["summary"].strip()
+        ):
+            return TextContent(type="text", text=cached_data["summary"])
         
         # API 요청 (target="lsStmd"가 가장 정확함)
         params = {"MST": mst_str}
@@ -3540,7 +3546,7 @@ def get_delegated_law(law_id: Union[str, int]) -> TextContent:
                                 result += f"   ID: {related['ID']}\n"
                             result += f"   상세조회: get_law_detail(mst=\"{related['MST'] or related['ID']}\")\n\n"
                         
-                        result += f"""**참고**: 위임법령 API가 작동하지 않아 관련법령 검색으로 시행령/시행규칙을 찾았습니다."""
+                        result += f"""**참고**: 위임법령 전용 API가 응답하지 않아, 해당 법령과 관련된 법령(시행령·시행규칙 등) 검색 결과로 대체했습니다. 추가로 search_related_law(query="법령명")으로 관련 법령을 조회할 수 있습니다."""
                         
                         return TextContent(type="text", text=result)
         except Exception as e:
@@ -3607,26 +3613,37 @@ def _format_system_diagram_summary(diagram_data: dict, mst_id: str) -> str:
             result += f"- 시행일자: {basic_info.get('시행일자', '정보없음')}\n"
             result += f"- 공포일자: {basic_info.get('공포일자', '정보없음')}\n\n"
         
-        # 관련법령 요약
+        # 관련법령: 전건 명칭 나열 (최대 20건, 초과 시 "외 N건")
+        _MAX_LIST = 20
         related_laws = diagram_data.get('관련법령', [])
         if related_laws:
-            count = len(related_laws) if isinstance(related_laws, list) else 1
+            items = related_laws if isinstance(related_laws, list) else [related_laws]
+            count = len(items)
             result += f"**🔗 관련법령**: {count}건\n"
-            if isinstance(related_laws, list) and related_laws:
-                result += f"- 첫 번째: {related_laws[0].get('법령명', '정보없음')}\n"
-                if count > 1:
-                    result += f"- 기타 {count-1}건 추가\n"
+            for item in items[:_MAX_LIST]:
+                if isinstance(item, dict):
+                    name = item.get('법령명', item.get('법령명_한글', '정보없음'))
+                else:
+                    name = str(item) if item else '정보없음'
+                result += f"- {name}\n"
+            if count > _MAX_LIST:
+                result += f"- 외 {count - _MAX_LIST}건\n"
             result += "\n"
         
-        # 상하위법 요약
+        # 상하위법: 전건 명칭 나열 (최대 20건, 초과 시 "외 N건")
         hierarchy_laws = diagram_data.get('상하위법', [])
         if hierarchy_laws:
-            count = len(hierarchy_laws) if isinstance(hierarchy_laws, list) else 1
+            items = hierarchy_laws if isinstance(hierarchy_laws, list) else [hierarchy_laws]
+            count = len(items)
             result += f"**상하위법**: {count}건\n"
-            if isinstance(hierarchy_laws, list) and hierarchy_laws:
-                result += f"- 첫 번째: {hierarchy_laws[0].get('법령명', '정보없음')}\n"
-                if count > 1:
-                    result += f"- 기타 {count-1}건 추가\n"
+            for item in items[:_MAX_LIST]:
+                if isinstance(item, dict):
+                    name = item.get('법령명', item.get('법령명_한글', '정보없음'))
+                else:
+                    name = str(item) if item else '정보없음'
+                result += f"- {name}\n"
+            if count > _MAX_LIST:
+                result += f"- 외 {count - _MAX_LIST}건\n"
             result += "\n"
         
         # 데이터 크기 정보
