@@ -320,11 +320,24 @@ def format_law_detail_summary(summary: Dict[str, Any], mst: str, target: str = "
     get_law_detail 도구 전용 법령 상세 요약 포맷팅 함수
     """
     try:
-        result = f"**{summary.get('법령명', '제목없음')}** 상세\n"
+        law_name = summary.get('법령명', '')
+        law_id_val = summary.get('법령ID', '')
+        
+        if not law_name and not law_id_val:
+            return (
+                f"법령일련번호(MST) '{mst}'에 해당하는 법령을 찾을 수 없습니다.\n\n"
+                f"**해결 방법:**\n"
+                f"1. search_law 도구로 먼저 검색하여 올바른 법령일련번호를 확인하세요.\n"
+                f"   예: search_law(query=\"개인정보보호법\")\n"
+                f"2. 검색 결과의 '법령일련번호' 값을 사용하세요.\n"
+                f"   예: get_law_detail(mst=\"270351\")"
+            )
+        
+        result = f"**{law_name or '제목없음'}** 상세\n"
         result += "=" * 50 + "\n\n"
         
         result += "**기본 정보:**\n"
-        result += f"• 법령ID: {summary.get('법령ID')}\n"
+        result += f"• 법령ID: {law_id_val}\n"
         result += f"• 법령일련번호: {summary.get('법령일련번호')}\n"
         result += f"• 공포일자: {summary.get('공포일자')}\n"
         result += f"• 시행일자: {summary.get('시행일자')}\n"

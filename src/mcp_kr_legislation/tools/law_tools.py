@@ -682,6 +682,12 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
         elif target == "decc" and 'Decc' in data:
             search_data = data['Decc']
             target_data = search_data.get('decc', [])
+        elif 'LsTrmSearch' in data and target == "lstrm":
+            search_data = data['LsTrmSearch']
+            target_data = search_data.get('lstrm', [])
+        elif 'CgmExpc' in data:
+            search_data = data['CgmExpc']
+            target_data = search_data.get('cgmExpc', [])
         elif target == "couseLs" and '맞춤형분류' in data:
             # 맞춤형 법령은 맞춤형분류 루트키와 법령 데이터키 사용
             search_data = data['맞춤형분류']
@@ -856,7 +862,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                 '자치법규명',  # 연계 자치법규용
                 '안건명',  # 해석례용
                 '사건명',  # 판례용
-                '재판사건명'  # 판례용
+                '재판사건명',  # 판례용
+                '법령용어명',  # 법령용어용
             ]
             
             # 맞춤형 법령인 경우 기본정보에서 법령명 추출
@@ -1109,6 +1116,41 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   • 법령일련번호(MST): {thd_mst}\n"
                     result += f"   상세조회: get_three_way_comparison_detail(mst=\"{thd_mst}\", knd=1)  # 인용조문\n"
                     result += f"   상세조회: get_three_way_comparison_detail(mst=\"{thd_mst}\", knd=2)  # 위임조문\n"
+            elif target == "ordin":
+                ord_id = None
+                for key in ['자치법규일련번호', '자치법규MST']:
+                    if key in item and item[key]:
+                        ord_id = item[key]
+                        break
+                if ord_id:
+                    result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{ord_id}\")\n"
+                elif law_id:
+                    result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{law_id}\")\n"
+            elif target in ["ppc", "fsc", "ftc", "acr", "nlrc", "ecc", "sfc", "nhrck", "kcc", "iaciac", "oclt", "eiac"]:
+                committee_tool_map = {
+                    "ppc": "get_privacy_committee_detail", "fsc": "get_financial_committee_detail",
+                    "ftc": "get_monopoly_committee_detail", "acr": "get_anticorruption_committee_detail",
+                    "nlrc": "get_labor_committee_detail", "ecc": "get_environment_committee_detail",
+                    "sfc": "get_securities_committee_detail", "nhrck": "get_human_rights_committee_detail",
+                    "kcc": "get_broadcasting_committee_detail", "iaciac": "get_industrial_accident_committee_detail",
+                    "oclt": "get_land_tribunal_detail", "eiac": "get_employment_insurance_committee_detail",
+                }
+                detail_tool = committee_tool_map.get(target, f"get_{target}_detail")
+                dec_id = None
+                for key in ['결정문일련번호', 'ID', 'id', 'mstSeq']:
+                    if key in item and item[key]:
+                        dec_id = item[key]
+                        break
+                if dec_id:
+                    result += f"   상세조회: {detail_tool}(decision_id=\"{dec_id}\")\n"
+            elif target == "lstrm":
+                term_id = item.get('법령용어ID', '')
+                if term_id:
+                    result += f"   상세조회: get_legal_term_detail(term_id=\"{term_id}\")\n"
+            elif target.endswith("CgmExpc"):
+                interp_id = item.get('법령해석일련번호', '')
+                if interp_id:
+                    result += f"   상세조회용 ID: {interp_id}\n"
             elif mst:
                 result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             elif law_id:

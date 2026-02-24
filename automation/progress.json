@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-02-21",
+  "last_updated": "2026-02-23",
   "last_session_id": null,
   "schema_version": "2.0",
   "official_api_stats": {
@@ -86,20 +86,30 @@
         "note": "API 미오픈 상태 (2026-02-21)"
       }
     },
-    "last_test_run": "2026-02-21"
+    "last_test_run": "2026-02-23",
+    "full_coverage": {
+      "last_run": "2026-02-23",
+      "total": 452,
+      "passed": 449,
+      "failed": 0,
+      "skipped": 0,
+      "pass_rate": 99.3
+    }
   },
   "changes_made": {
     "date": "2026-02-21",
     "target_fixes": [
       {
-        "old": "acrSpecialDecc",
-        "new": "acrcSpecialDecc",
-        "file": "specialized_tools.py"
+        "old": "acrcSpecialDecc",
+        "new": "acrSpecialDecc",
+        "file": "specialized_tools.py, special_tribunal.json",
+        "note": "이전 수정이 잘못됨. 원래 target으로 복원 (2026-02-23)"
       },
       {
-        "old": "adapSpecialDecc",
-        "new": "mpmSpecialDecc",
-        "file": "specialized_tools.py"
+        "old": "mpmSpecialDecc",
+        "new": "adapSpecialDecc",
+        "file": "specialized_tools.py, special_tribunal.json",
+        "note": "이전 수정이 잘못됨. 원래 target으로 복원 (2026-02-23)"
       },
       {
         "old": "khaCgmExpc",
@@ -260,95 +270,95 @@
   "_warning_note": "2026-02-21 전수 확인: 모든 API 정상 동작 (Referer 헤더 필수). _make_legislation_request에 이미 포함됨.",
   "test_results": {
     "law": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.16
     },
     "precedent": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "constitutional_court": {
+      "tested_at": "2026-02-23",
       "status": "pass",
       "duration_sec": 0.18
     },
-    "constitutional_court": {
-      "tested_at": "2026-02-21",
-      "status": "pass",
-      "duration_sec": 0.17
-    },
     "legal_interpretation": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
       "duration_sec": 0.16
     },
     "administrative_trial": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.29
+      "duration_sec": 0.17
     },
     "administrative_rule": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.26
+      "duration_sec": 0.15
     },
     "local_ordinance": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.24
+      "duration_sec": 0.27
     },
     "legal_term": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
       "duration_sec": 0.18
     },
     "treaty": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.15
+      "duration_sec": 0.17
     },
     "committee_ppc": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.18
+      "duration_sec": 0.19
     },
     "tax_tribunal": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
       "duration_sec": 0.18
     },
     "ministry_moef": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.19
+      "duration_sec": 0.18
     },
     "english_law": {
-      "tested_at": "2026-02-21",
+      "tested_at": "2026-02-23",
       "status": "pass",
-      "duration_sec": 0.15
+      "duration_sec": 0.17
     }
   },
   "completeness_score": {
-    "total_score": 77.5,
-    "grade": "C",
-    "evaluated_at": "2026-02-21 17:14",
+    "total_score": 94.4,
+    "grade": "A",
+    "evaluated_at": "2026-02-23 14:21",
     "breakdown": {
       "api_coverage": {
         "score": 100.0,
         "weighted": 30.0
       },
       "test_health": {
-        "score": 100.0,
-        "weighted": 25.0
+        "score": 97.7,
+        "weighted": 24.4
       },
       "quality_gate": {
         "score": 75.0,
         "weighted": 15.0
       },
       "task_completion": {
-        "score": 50.0,
-        "weighted": 7.5
+        "score": 100.0,
+        "weighted": 15.0
       },
       "warning_resolution": {
-        "score": 0.0,
-        "weighted": 0.0
+        "score": 100.0,
+        "weighted": 10.0
       }
     }
   },
@@ -486,5 +496,2544 @@
         }
       ]
     }
+  },
+  "full_coverage_results": {
+    "search:admrul": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:admrulOldAndNew": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:decc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:licbyl": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:admbyl": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:ordinbyl": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.26
+    },
+    "search:ppc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:eiac": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:ftc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:acr": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:fsc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "search:nlrc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:oclt": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:ecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:sfc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:nhrck": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kcc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:iaciac": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:detc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:lstrmAI": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:dlytrm": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "search:law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "search:elaw": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:lnkLs": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:lsStmd": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:oldAndNew": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:thdCmp": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:lsAbrv": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.64
+    },
+    "search:delHst": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:oneview": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "search:eflaw": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "search:expc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.27
+    },
+    "search:lstrm": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:ordin": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.3
+    },
+    "search:lnkOrd": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:moelCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:molitCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:moefCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "search:mofCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:moisCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:meCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kcsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.33
+    },
+    "search:ntsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.26
+    },
+    "search:moeCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:mpvaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:mndCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:mafraCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:mcstCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:mojCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:mohwCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:motieCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:mogefCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:mssCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:molegCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:mfdsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "search:mpmCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:kmaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.24
+    },
+    "search:khsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:rdaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:npaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:dapaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:mmaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kfsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:nfaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:okaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:ppsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kdcaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:kostatCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kipoCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:kcgCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "search:msitCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:naaccCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:prec": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "search:school": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:ttSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.29
+    },
+    "search:kmstSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "search:trty": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.73
+    },
+    "detail:elaw": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.13
+    },
+    "detail:lsStmd": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 3.77
+    },
+    "detail:thdCmp": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.57
+    },
+    "detail:oneview": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.36
+    },
+    "detail:eflaw": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.86
+    },
+    "detail:prec": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "search:couseLs": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "search:couseAdmrul": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:couseOrdin": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search:lsRlt": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.32
+    },
+    "search:aiSearch": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.72
+    },
+    "search:aiRltLs": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.34
+    },
+    "search:lsHstInf": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 3.43
+    },
+    "search:lsJoHstInf": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.9
+    },
+    "search:mofaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "search:mouCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "search:acrSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "search:adapSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:decc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:eiac": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:ftc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:nlrc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:nhrck": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:iaciac": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.36
+    },
+    "detail:detc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:admrul": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "detail:admrulOldAndNew": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 6.77
+    },
+    "detail:ppc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:acr": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:fsc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:oclt": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:ecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:sfc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:kcc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.42
+    },
+    "detail:lstrmRlt": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:dlytrmRlt": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "detail:lstrmRltJo": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 5.91
+    },
+    "detail:joRltLstrm": {
+      "tested_at": "2026-02-23",
+      "status": "xfail"
+    },
+    "detail:lawjosub": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "detail:lsJoHstInf": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.91
+    },
+    "detail:lsDelegated": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.96
+    },
+    "detail:oldAndNew": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.53
+    },
+    "detail:eflawjosub": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.43
+    },
+    "detail:expc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.39
+    },
+    "detail:lstrm": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.36
+    },
+    "detail:ordin": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:moelCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:molitCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:mofCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.26
+    },
+    "detail:moisCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:meCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:kcsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:moeCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:mpvaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:mndCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:mafraCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:mcstCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:mojCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:mohwCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:motieCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:mogefCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:mofaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "detail:mssCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "detail:mouCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:molegCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:mfdsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:mpmCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:kmaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:khsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:rdaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:npaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "detail:dapaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:mmaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:kfsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:nfaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "detail:okaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "detail:ppsCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "detail:kdcaCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:kostatCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "detail:kipoCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "detail:kcgCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "detail:msitCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.35
+    },
+    "detail:naaccCgmExpc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.36
+    },
+    "detail:school": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.26
+    },
+    "detail:ttSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.47
+    },
+    "detail:kmstSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.38
+    },
+    "detail:acrSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.45
+    },
+    "detail:adapSpecialDecc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.42
+    },
+    "detail:trty": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "precedent": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "constitutional_court": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "legal_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "administrative_trial": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "administrative_rule": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "local_ordinance": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.27
+    },
+    "legal_term": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "treaty": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "committee_ppc": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "english_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "tax_tribunal": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "ministry_moef": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "search_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "get_law_detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_effective_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_english_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_nickname": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.01
+    },
+    "search_deleted_law_data": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_old_and_new_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_three_way_comparison": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_one_view": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_system_diagram": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_unified": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_change_history": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_article_change_history": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_ordinance_law_link": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_appendix": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_administrative_rule": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_administrative_rule_comparison": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_local_ordinance": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_ordinance_appendix": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_linked_ordinance": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_precedent": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_constitutional_court": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_legal_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_administrative_trial": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_privacy_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_financial_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_monopoly_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_anticorruption_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_labor_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_environment_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_securities_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_human_rights_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_broadcasting_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_industrial_accident_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_land_tribunal": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_employment_insurance_committee": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_custom_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_legal_term": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_legal_term_ai": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_intelligent_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_intelligent_related_law": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_daily_term": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "search_treaty": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_university_regulation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_tax_tribunal": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_maritime_safety_tribunal": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_moef_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_molit_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_moel_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_nts_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_mois_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_moj_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_mohw_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_police_interpretation": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "search_law_with_cache": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.01
+    },
+    "get_law_articles_summary": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.01
+    },
+    "get_treaty_detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "get_precedent_detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "law_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "law_comparison_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "law_specialized_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "optimized_law_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "legislation_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "additional_service_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "administrative_rule_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "committee_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "custom_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "legal_term_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "linkage_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "ministry_interpretation_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "ministry_interpretation_tools_extended": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "misc_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "precedent_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "specialized_tools": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.0
+    },
+    "sample:admrul:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:admrul:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:admrulOldAndNew:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:admrulOldAndNew:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 5.23
+    },
+    "sample:decc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:decc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:licbyl:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:admbyl:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:ordinbyl:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:ppc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:ppc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:eiac:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:eiac:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:ftc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:ftc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:acr:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:acr:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:fsc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:fsc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:nlrc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:nlrc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:oclt:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:oclt:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:ecc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:ecc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "sample:sfc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.24
+    },
+    "sample:sfc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:nhrck:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:nhrck:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:kcc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:kcc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "sample:iaciac:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:iaciac:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:detc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:detc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:couseLs:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:couseLs:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "sample:couseAdmrul:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:couseAdmrul:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:couseOrdin:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:couseOrdin:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:lstrmAI:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:dlytrm:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:lstrmRlt:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:dlytrmRlt:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.26
+    },
+    "sample:lstrmRltJo:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 4.74
+    },
+    "sample:aiSearch:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.59
+    },
+    "sample:aiRltLs:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.36
+    },
+    "sample:law:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:law:detail0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.71
+    },
+    "sample:law:detail1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.7
+    },
+    "sample:lawjosub:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:elaw:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:elaw:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.18
+    },
+    "sample:lsHstInf:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 5.49
+    },
+    "sample:lsJoHstInf:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.98
+    },
+    "sample:lsJoHstInf:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.25
+    },
+    "sample:lnkLs:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.43
+    },
+    "sample:lnkLs:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.32
+    },
+    "sample:lnkLs:search2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:lsDelegated:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 2.11
+    },
+    "sample:lsStmd:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "sample:lsStmd:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 3.86
+    },
+    "sample:oldAndNew:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:oldAndNew:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:thdCmp:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:thdCmp:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.3
+    },
+    "sample:lsAbrv:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.52
+    },
+    "sample:delHst:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.27
+    },
+    "sample:oneview:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:oneview:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 2.21
+    },
+    "sample:eflaw:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:eflaw:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:eflawjosub:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:expc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:expc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.4
+    },
+    "sample:lstrm:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.42
+    },
+    "sample:lstrm:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.39
+    },
+    "sample:ordin:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:ordin:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.32
+    },
+    "sample:ordin:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:lnkOrd:search0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:lnkOrd:search1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:lnkOrd:search2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:moelCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:moelCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:molitCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.39
+    },
+    "sample:molitCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:moefCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mofCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mofCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:moisCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:moisCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:meCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:meCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:kcsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:kcsCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:ntsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:moeCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:moeCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:mpvaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mpvaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mndCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mndCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:mafraCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mafraCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mcstCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "sample:mcstCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mojCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mojCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mohwCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mohwCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:motieCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:motieCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:mogefCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mogefCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mofaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mofaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:mssCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mssCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:mouCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mouCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:molegCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:molegCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mfdsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mfdsCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:mpmCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:mpmCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:kmaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:kmaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.14
+    },
+    "sample:khsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:khsCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:rdaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:rdaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:npaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:npaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:dapaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:dapaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.14
+    },
+    "sample:mmaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:mmaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:kfsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:kfsCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:nfaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:nfaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:okaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:okaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:ppsCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:ppsCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.21
+    },
+    "sample:kdcaCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:kdcaCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:kostatCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:kostatCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:kipoCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:kipoCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:kcgCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:kcgCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:msitCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.22
+    },
+    "sample:msitCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 1.06
+    },
+    "sample:naaccCgmExpc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "sample:naaccCgmExpc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:prec:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:prec:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:school:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:school:detail0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "sample:school:detail1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:ttSpecialDecc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.3
+    },
+    "sample:ttSpecialDecc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:kmstSpecialDecc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.27
+    },
+    "sample:kmstSpecialDecc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.4
+    },
+    "sample:trty:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:trty:detail0": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:trty:detail1": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:joRltLstrm:detail": {
+      "tested_at": "2026-02-23",
+      "status": "xfail"
+    },
+    "sample:lsRlt:search": {
+      "tested_at": "2026-02-23",
+      "status": "xfail"
+    },
+    "sample:acrSpecialDecc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:acrSpecialDecc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:adapSpecialDecc:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.23
+    },
+    "sample:adapSpecialDecc:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:couseLs:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:couseLs:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.35
+    },
+    "sample:couseAdmrul:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:couseAdmrul:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.15
+    },
+    "sample:couseOrdin:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:couseOrdin:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.17
+    },
+    "sample:law:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.77
+    },
+    "sample:law:detail#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.7
+    },
+    "sample:lnkLs:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:lnkLs:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.33
+    },
+    "sample:lnkLs:search#3": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.19
+    },
+    "sample:ordin:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    },
+    "sample:ordin:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.28
+    },
+    "sample:lnkOrd:search": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:lnkOrd:search#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.16
+    },
+    "sample:lnkOrd:search#3": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:school:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.3
+    },
+    "sample:school:detail#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.25
+    },
+    "sample:trty:detail": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.18
+    },
+    "sample:trty:detail#2": {
+      "tested_at": "2026-02-23",
+      "status": "pass",
+      "duration_sec": 0.2
+    }
+  },
+  "coverage_check": {
+    "checked_at": "2026-02-23 16:10",
+    "api_layout_targets": 99,
+    "live_targets": 98,
+    "covered": 98,
+    "missing": 0,
+    "extra_in_tools": 10,
+    "coverage_percent": 100.0,
+    "missing_targets": [],
+    "extra_targets": [
+      "civil",
+      "counsel",
+      "dailyTerm",
+      "faq",
+      "legalDailyTermLink",
+      "ordinanceAppendix",
+      "pi",
+      "precCounsel",
+      "public",
+      "qna"
+    ]
+  },
+  "tool_quality": {
+    "evaluated_at": "2026-02-23",
+    "evaluation_type": "LLM integration (Cursor session)",
+    "overall_grade": "C",
+    "overall_score": 58,
+    "individual_tool_eval": {
+      "search_law": {
+        "grade": "A",
+        "time_sec": 0.19,
+        "size_chars": 382,
+        "issues": []
+      },
+      "get_law_detail": {
+        "grade": "A",
+        "time_sec": 1.11,
+        "size_chars": 3059,
+        "issues": []
+      },
+      "search_precedent": {
+        "grade": "A",
+        "time_sec": 0.18,
+        "size_chars": 559,
+        "issues": []
+      },
+      "get_precedent_detail": {
+        "grade": "D",
+        "time_sec": 0.0,
+        "size_chars": 30,
+        "issues": [
+          "API 반환 데이터(PrecService)를 검색용 포맷터(PrecSearch 기대)로 처리하여 데이터 손실"
+        ]
+      },
+      "search_constitutional_court": {
+        "grade": "A",
+        "time_sec": 0.18,
+        "size_chars": 594,
+        "issues": []
+      },
+      "get_constitutional_court_detail": {
+        "grade": "A",
+        "time_sec": 0.18,
+        "size_chars": 1149,
+        "issues": []
+      },
+      "search_legal_interpretation": {
+        "grade": "A",
+        "time_sec": 0.17,
+        "size_chars": 876,
+        "issues": []
+      },
+      "get_legal_interpretation_detail": {
+        "grade": "D",
+        "time_sec": 0.17,
+        "size_chars": 33,
+        "issues": [
+          "API 반환 데이터를 검색용 포맷터로 처리하여 데이터 손실"
+        ]
+      },
+      "search_administrative_rule": {
+        "grade": "A",
+        "time_sec": 0.19,
+        "size_chars": 644,
+        "issues": []
+      },
+      "get_administrative_rule_detail": {
+        "grade": "A",
+        "time_sec": 0.19,
+        "size_chars": 727,
+        "issues": []
+      },
+      "search_local_ordinance": {
+        "grade": "C",
+        "time_sec": 0.33,
+        "size_chars": 584,
+        "issues": [
+          "상세조회 안내가 get_law_detail(law_id=순번)으로 잘못 표시"
+        ]
+      },
+      "get_local_ordinance_detail": {
+        "grade": "D",
+        "time_sec": 0.18,
+        "size_chars": 112,
+        "issues": [
+          "API에 ID 대신 MST 파라미터 필요. ID로 호출 시 데이터 없음"
+        ]
+      },
+      "search_administrative_trial": {
+        "grade": "C",
+        "time_sec": 0.2,
+        "size_chars": 192,
+        "issues": [
+          "상세조회용 ID 누락",
+          "상세조회 안내 누락"
+        ]
+      },
+      "search_monopoly_committee": {
+        "grade": "C",
+        "time_sec": 0.4,
+        "size_chars": 477,
+        "issues": [
+          "존재하지 않는 get_ftc_committee_detail 참조"
+        ]
+      },
+      "search_land_tribunal": {
+        "grade": "C",
+        "time_sec": 0.16,
+        "size_chars": 292,
+        "issues": [
+          "존재하지 않는 get_oclt_committee_detail 참조"
+        ]
+      },
+      "search_legal_term": {
+        "grade": "D",
+        "time_sec": 0.17,
+        "size_chars": 39,
+        "issues": [
+          "제목 없음만 반환, 유용한 정보 없음"
+        ]
+      },
+      "search_moleg_interpretation": {
+        "grade": "D",
+        "time_sec": 0.18,
+        "size_chars": 37,
+        "issues": [
+          "제목 없음만 반환, 유용한 정보 없음"
+        ]
+      },
+      "search_faq": {
+        "grade": "D",
+        "time_sec": 0.0,
+        "size_chars": 124,
+        "issues": [
+          "HTML URL만 표시, 실제 데이터 미제공"
+        ]
+      },
+      "get_law_articles_summary": {
+        "grade": "D",
+        "time_sec": 0.72,
+        "size_chars": 625,
+        "issues": [
+          "law_id 파라미터로 전혀 다른 법령의 조문이 반환됨"
+        ]
+      }
+    },
+    "workflow_eval": {
+      "WF1_법령조회플로우": {
+        "result": "FAIL",
+        "total_time_sec": 1.83,
+        "steps": [
+          "search_law: OK",
+          "get_law_detail: OK",
+          "get_law_articles_summary: WRONG DATA (다른 법령 반환)"
+        ],
+        "issue": "law_id vs mst 파라미터 혼동으로 잘못된 법령 조문 반환"
+      },
+      "WF2_판례교차참조": {
+        "result": "PARTIAL_FAIL",
+        "total_time_sec": 0.19,
+        "steps": [
+          "search_precedent: OK",
+          "get_precedent_detail: FAIL (데이터 손실)",
+          "search_legal_interpretation: OK"
+        ],
+        "issue": "get_precedent_detail이 API 반환 데이터를 파싱 못함"
+      },
+      "WF3_법령비교": {
+        "result": "PASS",
+        "total_time_sec": 0.88,
+        "steps": [
+          "search_old_and_new_law: OK",
+          "search_three_way_comparison: OK"
+        ],
+        "issue": null
+      },
+      "WF4_행정규칙자치법규": {
+        "result": "PARTIAL_FAIL",
+        "total_time_sec": 0.18,
+        "steps": [
+          "search_administrative_rule: OK",
+          "get_administrative_rule_detail: OK",
+          "search_local_ordinance: OK (잘못된 도구 참조)",
+          "get_local_ordinance_detail: FAIL (ID vs MST)"
+        ],
+        "issue": "자치법규 상세조회가 파라미터 오류로 실패"
+      },
+      "WF5_에러복구": {
+        "result": "PARTIAL_FAIL",
+        "steps": [
+          "get_law_detail(invalid): BAD (빈 구조체, 에러 메시지 없음)",
+          "search_law(empty): GOOD",
+          "search_precedent(nonsense): GOOD"
+        ],
+        "issue": "잘못된 MST로 빈 구조체 반환, 에러 안내 없음"
+      }
+    },
+    "critical_issues": [
+      {
+        "id": "CRIT-01",
+        "severity": "critical",
+        "description": "get_precedent_detail: PrecService 루트키를 PrecSearch로 탐색하여 모든 판례 상세조회 실패",
+        "affected_tools": [
+          "get_precedent_detail"
+        ]
+      },
+      {
+        "id": "CRIT-02",
+        "severity": "critical",
+        "description": "get_legal_interpretation_detail: 동일한 루트키 불일치 문제",
+        "affected_tools": [
+          "get_legal_interpretation_detail"
+        ]
+      },
+      {
+        "id": "CRIT-03",
+        "severity": "critical",
+        "description": "get_law_articles_summary: law_id 파라미터가 잘못된 법령을 반환",
+        "affected_tools": [
+          "get_law_articles_summary"
+        ]
+      },
+      {
+        "id": "CRIT-04",
+        "severity": "high",
+        "description": "get_local_ordinance_detail: API에 ID 대신 MST 파라미터 필요",
+        "affected_tools": [
+          "get_local_ordinance_detail"
+        ]
+      },
+      {
+        "id": "CRIT-05",
+        "severity": "high",
+        "description": "search_local_ordinance/monopoly_committee/land_tribunal: 존재하지 않는 상세조회 도구명 참조",
+        "affected_tools": [
+          "search_local_ordinance",
+          "search_monopoly_committee",
+          "search_land_tribunal"
+        ]
+      },
+      {
+        "id": "CRIT-06",
+        "severity": "medium",
+        "description": "search_legal_term/moleg_interpretation: 제목 없음만 반환, 유용한 정보 없음",
+        "affected_tools": [
+          "search_legal_term",
+          "search_moleg_interpretation"
+        ]
+      },
+      {
+        "id": "CRIT-07",
+        "severity": "medium",
+        "description": "get_law_detail(invalid mst): 빈 구조체 반환, 에러 메시지 없음",
+        "affected_tools": [
+          "get_law_detail"
+        ]
+      }
+    ],
+    "summary": "API 클라이언트 레벨 테스트(449/452 pass)와 달리, MCP 도구 레벨에서는 응답 포맷팅/파라미터 매핑에 심각한 문제 발견. 검색 도구는 대체로 양호하나, 상세조회 도구 중 3개가 완전 실패, 3개 검색 도구가 잘못된 상세조회 도구를 안내."
   }
 }

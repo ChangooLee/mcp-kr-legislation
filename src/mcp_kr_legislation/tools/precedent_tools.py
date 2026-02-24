@@ -8,6 +8,7 @@
 import logging
 import json
 import os
+import re
 import requests  # type: ignore
 from urllib.parse import urlencode
 from typing import Optional, Union, Annotated
@@ -381,6 +382,10 @@ def get_precedent_detail(case_id: Union[str, int]) -> TextContent:
         
         # JSON 응답 확인
         if isinstance(data, dict) and data:
+            # 상세조회는 PrecService 루트키 사용 (검색의 PrecSearch와 다름)
+            if 'PrecService' in data:
+                result = _format_precedent_detail(data['PrecService'], str(case_id))
+                return TextContent(type="text", text=result)
             result = _format_precedent_search_results(data, "prec", f"판례ID:{case_id}", 1)
             return TextContent(type="text", text=result)
         else:
@@ -445,7 +450,11 @@ def get_legal_interpretation_detail(interpretation_id: Union[str, int]) -> TextC
     params = {"ID": str(interpretation_id)}
     try:
         data = _make_legislation_request("expc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("expc", params)
+        
+        if isinstance(data, dict) and 'ExpcService' in data:
+            result = _format_expc_detail(data['ExpcService'], str(interpretation_id))
+            return TextContent(type="text", text=result)
+        
         result = _format_precedent_search_results(data, "expc", f"법령해석례ID:{interpretation_id}", 1)
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -512,6 +521,72 @@ def _format_constitutional_court_detail(data: dict, decision_id: str, url: str) 
         return result
     else:
         return f"예상과 다른 응답 구조입니다: {list(data.keys())}\n\nAPI URL: {url}"
+
+def _format_precedent_detail(prec_data: dict, case_id: str) -> str:
+    """판례 상세조회(PrecService) 결과 포맷팅"""
+    result = f"**판례 상세정보** (ID: {case_id})\n"
+    result += "=" * 50 + "\n\n"
+    
+    fields = {
+        '사건명': '사건명', '사건번호': '사건번호',
+        '선고일자': '선고일자', '법원명': '법원명',
+        '사건종류명': '사건종류명', '판결유형': '판결유형',
+    }
+    for display, key in fields.items():
+        val = prec_data.get(key)
+        if val and str(val).strip():
+            result += f"**{display}**: {val}\n"
+    
+    result += "\n"
+    
+    detail_sections = ['판시사항', '판결요지', '참조조문', '참조판례']
+    for section in detail_sections:
+        val = prec_data.get(section)
+        if val and str(val).strip():
+            content = re.sub(r'<br\s*/?>', '\n', str(val))
+            content = re.sub(r'<[^>]+>', '', content).strip()
+            if len(content) > 3000:
+                content = content[:3000] + "..."
+            result += f"## {section}\n{content}\n\n"
+    
+    full_text = prec_data.get('전문')
+    if full_text and str(full_text).strip():
+        text = re.sub(r'<br\s*/?>', '\n', str(full_text))
+        text = re.sub(r'<[^>]+>', '', text).strip()
+        if len(text) > 3000:
+            text = text[:3000] + "..."
+        result += f"## 전문\n{text}\n\n"
+    
+    return result
+
+def _format_expc_detail(expc_data: dict, interpretation_id: str) -> str:
+    """법령해석례 상세조회 결과 포맷팅"""
+    result = f"**법령해석례 상세정보** (ID: {interpretation_id})\n"
+    result += "=" * 50 + "\n\n"
+    
+    fields = {
+        '안건명': '안건명', '안건번호': '안건번호',
+        '회신일자': '회신일자', '질의기관명': '질의기관명',
+        '법령해석례일련번호': '법령해석례일련번호',
+    }
+    for display, key in fields.items():
+        val = expc_data.get(key)
+        if val and str(val).strip():
+            result += f"**{display}**: {val}\n"
+    
+    result += "\n"
+    
+    detail_sections = ['질의요지', '회답', '이유']
+    for section in detail_sections:
+        val = expc_data.get(section)
+        if val and str(val).strip():
+            content = re.sub(r'<br\s*/?>', '\n', str(val))
+            content = re.sub(r'<[^>]+>', '', content).strip()
+            if len(content) > 3000:
+                content = content[:3000] + "..."
+            result += f"## {section}\n{content}\n\n"
+    
+    return result
 
 def _format_html_precedent_response(html_content: str, case_id: str, url: str) -> TextContent:
     """HTML 판례 응답 포맷팅"""

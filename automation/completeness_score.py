@@ -37,7 +37,19 @@ def load_progress():
 
 
 def score_api_coverage(progress):
-    """API 구현 커버리지 (30점). 공식 비모바일 API 기준."""
+    """API 구현 커버리지 (30점).
+
+    coverage_check 결과가 있으면 api_layout 기준 실시간 검증 결과를 사용하고,
+    없으면 summary의 수동 기록 기준으로 평가합니다.
+    """
+    cc = progress.get("coverage_check", {})
+    if cc:
+        live = cc.get("live_targets", 0)
+        covered = cc.get("covered", 0)
+        coverage_pct = cc.get("coverage_percent", 0)
+        detail = f"[자동검증] {covered}/{live} target 커버 ({coverage_pct}%)"
+        return round(coverage_pct, 1), detail
+
     summary = progress.get("summary", {})
     total_targets = summary.get("total_unique_targets", 0)
     covered_targets = summary.get("tool_covered_targets", 0)
@@ -55,8 +67,14 @@ def score_api_coverage(progress):
 
 
 def score_test_health(progress):
-    """테스트 건강도 (25점)."""
-    test_results = progress.get("test_results", {})
+    """테스트 건강도 (25점).
+
+    full_coverage_results가 있으면 전수 테스트 기준으로 평가하고,
+    없으면 기존 test_results(대표 13건) 기준으로 평가합니다.
+    """
+    full_results = progress.get("full_coverage_results", {})
+    test_results = full_results if full_results else progress.get("test_results", {})
+    source = "전수" if full_results else "대표"
 
     if not test_results:
         return 0.0, "테스트 결과 없음"
@@ -64,8 +82,10 @@ def score_test_health(progress):
     total = len(test_results)
     passed = sum(1 for r in test_results.values() if r.get("status") == "pass")
     failed = sum(1 for r in test_results.values() if r.get("status") == "fail")
+    skipped = sum(1 for r in test_results.values() if r.get("status") == "skip")
 
-    pass_ratio = passed / total if total > 0 else 0
+    testable = total - skipped
+    pass_ratio = passed / testable if testable > 0 else 0
 
     freshness_score = 0
     now = datetime.now()
@@ -87,7 +107,7 @@ def score_test_health(progress):
 
     score = (pass_ratio * 0.7 + freshness_ratio * 0.3) * 100
 
-    detail = f"{passed}/{total} 통과, {failed} 실패, 신선도 {freshness_ratio:.0%}"
+    detail = f"[{source}] {passed}/{testable} 통과, {failed} 실패, {skipped} skip, 신선도 {freshness_ratio:.0%}"
     return round(score, 1), detail
 
 

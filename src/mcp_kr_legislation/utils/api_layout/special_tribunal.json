@@ -293,8 +293,8 @@
     {
       "id": "5",
       "title": "국민권익위원회 특별행정심판례 목록 조회 API",
-      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=acrcSpecialDecc",
-      "target": "acrcSpecialDecc",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=acrSpecialDecc",
+      "target": "acrSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "국민권익위원회",
       "parameters": [
@@ -372,23 +372,23 @@
       "sample_urls": [
         {
           "format": "JSON",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=JSON"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrSpecialDecc&type=JSON"
         },
         {
           "format": "XML",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=XML"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrSpecialDecc&type=XML"
         },
         {
           "format": "HTML",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrcSpecialDecc&type=HTML"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=acrSpecialDecc&type=HTML"
         }
       ]
     },
     {
       "id": "6",
       "title": "국민권익위원회 특별행정심판례 본문 조회 API",
-      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=acrcSpecialDecc",
-      "target": "acrcSpecialDecc",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=acrSpecialDecc",
+      "target": "acrSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "국민권익위원회",
       "parameters": [
@@ -421,23 +421,23 @@
       "sample_urls": [
         {
           "format": "JSON",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=JSON"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrSpecialDecc&type=JSON"
         },
         {
           "format": "XML",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=XML"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrSpecialDecc&type=XML"
         },
         {
           "format": "HTML",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrcSpecialDecc&type=HTML"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=acrSpecialDecc&type=HTML"
         }
       ]
     },
     {
       "id": "7",
       "title": "인사혁신처 소청심사위원회 특별행정심판재결례 목록 조회 API",
-      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=mpmSpecialDecc",
-      "target": "mpmSpecialDecc",
+      "request_url": "https://www.law.go.kr/DRF/lawSearch.do?target=adapSpecialDecc",
+      "target": "adapSpecialDecc",
       "api_type": "목록조회",
       "sub_category": "인사혁신처 소청심사위원회",
       "parameters": [
@@ -515,23 +515,23 @@
       "sample_urls": [
         {
           "format": "JSON",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=JSON"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=adapSpecialDecc&type=JSON"
         },
         {
           "format": "XML",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=XML"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=adapSpecialDecc&type=XML"
         },
         {
           "format": "HTML",
-          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=mpmSpecialDecc&type=HTML"
+          "url": "https://www.law.go.kr/DRF/lawSearch.do?OC=test&target=adapSpecialDecc&type=HTML"
         }
       ]
     },
     {
       "id": "8",
       "title": "인사혁신처 소청심사위원회 특별행정심판재결례 본문 조회 API",
-      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=mpmSpecialDecc",
-      "target": "mpmSpecialDecc",
+      "request_url": "https://www.law.go.kr/DRF/lawService.do?target=adapSpecialDecc",
+      "target": "adapSpecialDecc",
       "api_type": "본문조회",
       "sub_category": "인사혁신처 소청심사위원회",
       "parameters": [
@@ -564,15 +564,15 @@
       "sample_urls": [
         {
           "format": "JSON",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=JSON"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=adapSpecialDecc&type=JSON"
         },
         {
           "format": "XML",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=XML"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=adapSpecialDecc&type=XML"
         },
         {
           "format": "HTML",
-          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=mpmSpecialDecc&type=HTML"
+          "url": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=adapSpecialDecc&type=HTML"
         }
       ]
     }

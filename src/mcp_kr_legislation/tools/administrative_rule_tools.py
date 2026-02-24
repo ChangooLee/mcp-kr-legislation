@@ -271,13 +271,17 @@ def search_linked_ordinance(
     except Exception as e:
         return TextContent(type="text", text=f"연계 자치법규 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="get_local_ordinance_detail", description="자치법규 상세내용을 조회합니다. 특정 자치법규의 본문을 제공합니다.")
+@mcp.tool(name="get_local_ordinance_detail", description="""자치법규 상세내용을 조회합니다. 특정 자치법규의 본문을 제공합니다.
+
+매개변수:
+- ordinance_id: 자치법규일련번호 - search_local_ordinance 결과의 '자치법규일련번호' 필드값 사용
+
+사용 예시: get_local_ordinance_detail(ordinance_id="1013533")""")
 def get_local_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
     """자치법규 본문 조회"""
     try:
-        # 올바른 API 엔드포인트 사용 (lawService.do)
         oc = os.getenv("LEGISLATION_API_KEY", "lchangoo")
-        url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&ID={ordinance_id}&type=JSON"
+        url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&MST={ordinance_id}&type=JSON"
         
         # API 요청 - 직접 requests 사용 (Referer 헤더 필수)
         headers = {"Referer": "https://open.law.go.kr/"}
@@ -337,8 +341,16 @@ def get_local_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
                         result += f"{부칙_data['부칙내용']}\n\n"
             else:
                 result += "자치법규 기본정보를 찾을 수 없습니다.\n\n"
+        elif 'Law' in data:
+            law_msg = data['Law']
+            if isinstance(law_msg, str) and '일치하는' in law_msg:
+                result += f"자치법규를 찾을 수 없습니다. (ID: {ordinance_id})\n"
+                result += "search_local_ordinance 도구로 먼저 검색하여 올바른 자치법규일련번호를 확인하세요.\n\n"
+            else:
+                result += "자치법규 정보를 찾을 수 없습니다.\n\n"
         else:
-            result += "자치법규 정보를 찾을 수 없습니다.\n\n"
+            result += f"자치법규를 찾을 수 없습니다. (ID: {ordinance_id})\n"
+            result += "search_local_ordinance 도구로 먼저 검색하여 올바른 자치법규일련번호를 확인하세요.\n\n"
         
         return TextContent(type="text", text=result)
     except Exception as e:

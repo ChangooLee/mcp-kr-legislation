@@ -304,8 +304,8 @@
 |-----|--------|----------|----------|------|
 | 조세심판원 | ttSpecialDecc | search_tax_tribunal | get_tax_tribunal_detail | ✅ |
 | 해양안전심판원 | kmstSpecialDecc | search_maritime_safety_tribunal | get_maritime_safety_tribunal_detail | ✅ |
-| 국민권익위원회 | acrcSpecialDecc | search_acrc_special_tribunal | get_acrc_special_tribunal_detail | ✅ |
-| 인사혁신처 소청심사위원회 | mpmSpecialDecc | search_mpm_appeal_tribunal | get_mpm_appeal_tribunal_detail | ✅ |
+| 국민권익위원회 | acrSpecialDecc | search_acrc_special_tribunal | get_acrc_special_tribunal_detail | ✅ |
+| 인사혁신처 소청심사위원회 | adapSpecialDecc | search_mpm_appeal_tribunal | get_mpm_appeal_tribunal_detail | ✅ |
 
 ---
 

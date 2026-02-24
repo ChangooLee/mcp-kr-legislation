@@ -34,6 +34,7 @@ dev = [
 [tool.pytest.ini_options]
 markers = [
     "regression: API regression tests (actual network calls)",
+    "fullcoverage: api_layout full coverage tests",
 ]
 
 [project.scripts]

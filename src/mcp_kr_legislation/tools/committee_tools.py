@@ -69,8 +69,7 @@ def _format_committee_search_results(data: dict, target: str, search_query: str,
             # 개인정보보호위원회: 안건명이 비어있는 경우가 많으므로 대체 필드 사용
             title_keys = ['안건명', '의안명', '결정구분', '회의종류', '결정문제목']
         else:
-            # 다른 위원회들
-            title_keys = ['안건명', '의안명', '결정문제목', '위원회결정문명']
+            title_keys = ['안건명', '사건명', '제목', '의안명', '결정문제목', '위원회결정문명']
         
         # 상세 정보 필드
         detail_fields = {
@@ -102,10 +101,19 @@ def _format_committee_search_results(data: dict, target: str, search_query: str,
                         result_lines.append(f"   {field_name}: {item[key]}")
                         break
             
-            # ID 정보 추가 (상세조회용)
+            # ID 정보 추가 (상세조회용) - target별 올바른 도구명 매핑
+            target_detail_tool_map = {
+                "ppc": "get_privacy_committee_detail", "fsc": "get_financial_committee_detail",
+                "ftc": "get_monopoly_committee_detail", "acr": "get_anticorruption_committee_detail",
+                "nlrc": "get_labor_committee_detail", "ecc": "get_environment_committee_detail",
+                "sfc": "get_securities_committee_detail", "nhrck": "get_human_rights_committee_detail",
+                "kcc": "get_broadcasting_committee_detail", "iaciac": "get_industrial_accident_committee_detail",
+                "oclt": "get_land_tribunal_detail", "eiac": "get_employment_insurance_committee_detail",
+            }
+            detail_tool_name = target_detail_tool_map.get(target, f"get_{target}_committee_detail")
             for id_key in ['결정문일련번호', 'ID', 'id']:
                 if id_key in item and item[id_key]:
-                    result_lines.append(f"   상세조회: get_{target}_committee_detail(decision_id=\"{item[id_key]}\")")
+                    result_lines.append(f"   상세조회: {detail_tool_name}(decision_id=\"{item[id_key]}\")")
                     break
                     
             results.append("\\n".join(result_lines))

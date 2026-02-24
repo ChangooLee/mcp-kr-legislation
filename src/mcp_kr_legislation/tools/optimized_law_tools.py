@@ -416,7 +416,13 @@ def get_law_article_detail(
 # 기존 get_law_articles는 요약/목차만 반환하도록 변경(또는 안내)
 @mcp.tool(
     name="get_law_articles_summary",
-    description="법령 조문 요약/목차만 반환합니다. 전체 조문이 아닌 인덱스와 요약만 제공합니다."
+    description="""법령 조문 요약/목차만 반환합니다. 전체 조문이 아닌 인덱스와 요약만 제공합니다.
+
+매개변수:
+- law_id: 법령일련번호(MST) - search_law 결과의 '법령일련번호' 필드값 사용 (법령ID 아님!)
+- law_name: 법령명 (law_id가 없을 때 사용)
+
+사용 예시: get_law_articles_summary(law_id="270351")  # 270351은 법령일련번호(MST)"""
 )
 def get_law_articles_summary_tool(
     law_id: Optional[str] = None,

@@ -260,8 +260,8 @@ def search_acrc_special_tribunal(query: Optional[str] = None, display: int = 20,
         search_query = "전체"
     
     try:
-        data = _make_legislation_request("acrcSpecialDecc", params, use_cache=True)
-        result = _format_search_results(data, "acrcSpecialDecc", search_query, min(display, 100))
+        data = _make_legislation_request("acrSpecialDecc", params, use_cache=True)
+        result = _format_search_results(data, "acrSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국민권익위원회 특별행정심판 검색 중 오류: {str(e)}")
@@ -276,8 +276,8 @@ def get_acrc_special_tribunal_detail(tribunal_id: Union[str, int]) -> TextConten
     """국민권익위원회 특별행정심판재결례 상세 조회"""
     params = {"ID": str(tribunal_id)}
     try:
-        data = _make_legislation_request("acrcSpecialDecc", params, is_detail=True, use_cache=True)
-        result = _format_search_results(data, "acrcSpecialDecc", str(tribunal_id))
+        data = _make_legislation_request("acrSpecialDecc", params, is_detail=True, use_cache=True)
+        result = _format_search_results(data, "acrSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"국민권익위원회 특별행정심판 상세조회 중 오류: {str(e)}")
@@ -300,8 +300,8 @@ def search_mpm_appeal_tribunal(query: Optional[str] = None, display: int = 20, p
         search_query = "전체"
     
     try:
-        data = _make_legislation_request("mpmSpecialDecc", params, use_cache=True)
-        result = _format_search_results(data, "mpmSpecialDecc", search_query, min(display, 100))
+        data = _make_legislation_request("adapSpecialDecc", params, use_cache=True)
+        result = _format_search_results(data, "adapSpecialDecc", search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"인사혁신처 소청심사위원회 검색 중 오류: {str(e)}")
@@ -316,8 +316,8 @@ def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
     """인사혁신처 소청심사위원회 특별행정심판재결례 상세 조회"""
     params = {"ID": str(tribunal_id)}
     try:
-        data = _make_legislation_request("mpmSpecialDecc", params, is_detail=True, use_cache=True)
-        result = _format_search_results(data, "mpmSpecialDecc", str(tribunal_id))
+        data = _make_legislation_request("adapSpecialDecc", params, is_detail=True, use_cache=True)
+        result = _format_search_results(data, "adapSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"인사혁신처 소청심사위원회 상세조회 중 오류: {str(e)}")
