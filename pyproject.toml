@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-kr-legislation"
-version = "0.2.0"
-description = "한국 법제처 OPEN API 121개 완전 통합 MCP 서버 - 법령/행정규칙/자치법규/판례/조약/위원회결정문 등 종합 법령정보 제공"
+version = "0.3.0"
+description = "한국 법제처 OPEN API 203개 도구 MCP 서버 - 법령/행정규칙/자치법규/판례/조약/위원회결정문/BM25 검색고도화 등 종합 법령정보 제공"
 authors = [
     { name = "Changoo Lee", email = "lchangoo@gmail.com" }
 ]
