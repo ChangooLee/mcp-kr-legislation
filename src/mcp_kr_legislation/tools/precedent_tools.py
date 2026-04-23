@@ -74,11 +74,10 @@ def _format_precedent_search_results(data: dict, target: str, search_query: str,
                 '질의기관': ['질의기관명', '소관부처', 'dept', 'department']
             }
         elif target == "decc":
-            title_keys = ['재결례명', '사건명', '재결제목']
+            title_keys = ['사건명', '재결례명', '재결제목', '청구취지']
             detail_fields = {
-                '사건번호': ['사건번호', 'case_no', 'caseNo'],
-                '재결일자': ['재결일자', 'decision_date', 'decisionDate'],
-                '심판부': ['심판부', 'panel', 'tribunal']
+                '의결일자': ['의결일자', '재결일자', 'decision_date', 'decisionDate'],
+                '재결청': ['재결청', '재결구분명', 'tribunal'],
             }
         else:
             title_keys = ['title', 'name', '제목']
@@ -123,12 +122,14 @@ def _format_precedent_search_results(data: dict, target: str, search_query: str,
                         result_lines.append(f"   상세조회: get_legal_interpretation_detail(interpretation_id=\"{item[id_key]}\")")
                         break
             elif target == "decc":
-                # 행정심판례는 행정심판례일련번호 사용
-                for id_key in ['행정심판례일련번호', '심판례일련번호', 'mstSeq']:
+                # 행정심판례는 행정심판재결례일련번호 사용
+                for id_key in ['행정심판재결례일련번호', '행정심판례일련번호', '심판례일련번호', 'mstSeq']:
                     if id_key in item and item[id_key]:
-                        result_lines.append(f"   ★ 상세조회용 ID: {item[id_key]}")
                         result_lines.append(f"   상세조회: get_administrative_trial_detail(trial_id=\"{item[id_key]}\")")
                         break
+                사건번호 = item.get('사건번호', '')
+                if 사건번호:
+                    result_lines.append(f"   사건번호: {사건번호}")
             else:
                 # 기타 타겟은 기존 방식 사용
                 for id_key in ['ID', 'id', 'mstSeq', '일련번호']:
