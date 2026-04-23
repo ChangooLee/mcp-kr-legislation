@@ -319,8 +319,9 @@ def _generate_api_url(target: str, params: dict, is_detail: bool = False) -> str
                 base_params["section"] = "lawNm"  # 법령명 검색
         
         # URL 결정: 상세조회 vs 검색
-        if is_detail and ("ID" in params or "MST" in params):
-            # 상세조회: lawService.do 사용  
+        _detail_id_params = {"ID", "MST", "trmSeqs"}  # 상세조회에 사용되는 ID 파라미터
+        if is_detail and (set(params.keys()) & _detail_id_params):
+            # 상세조회: lawService.do 사용
             base_url = legislation_config.service_base_url
         else:
             # 검색: lawSearch.do 사용
