@@ -626,6 +626,41 @@ def _sort_english_law_results(data: dict, query: str) -> dict:
         logger.warning(f"영문법령 검색 결과 정렬 중 오류: {e}")
         return data  # 오류 시 원본 반환
 
+def _format_cgmexpc_service_detail(svc: dict, target: str, search_query: str) -> str:
+    """CgmExpcService JSON 상세 응답 포맷팅 (부처 법령해석 상세)"""
+    ministry = svc.get('해석기관명', target.replace('CgmExpc', ''))
+    interp_id = svc.get('법령해석일련번호', search_query)
+    안건명 = svc.get('안건명', '')
+    안건번호 = svc.get('안건번호', '')
+    해석일자 = svc.get('해석일자', '')
+    질의기관 = svc.get('질의기관명', '')
+    질의요지 = svc.get('질의요지', '') or svc.get('질의내용', '')
+    회답 = svc.get('회답', '')
+    이유 = svc.get('이유', '')
+    관련법령 = svc.get('관련법령', '')
+
+    lines = [f"**{ministry} 법령해석 상세 (ID: {interp_id})**\n"]
+    if 안건명:
+        lines.append(f"**안건명**: {안건명}")
+    if 안건번호:
+        lines.append(f"**안건번호**: {안건번호}")
+    if 해석일자:
+        lines.append(f"**해석일자**: {해석일자}")
+    if 질의기관:
+        lines.append(f"**질의기관**: {질의기관}")
+    if 관련법령:
+        lines.append(f"**관련법령**: {관련법령}")
+    if 질의요지:
+        lines.append(f"\n**질의요지**:\n{질의요지[:1000]}")
+    if 회답:
+        lines.append(f"\n**회답**:\n{회답[:1500]}")
+    if 이유:
+        lines.append(f"\n**이유**:\n{이유[:1000]}")
+    if not any([안건명, 질의요지, 회답]):
+        lines.append("상세 내용이 없습니다.")
+    return "\n".join(lines)
+
+
 def _format_cgmexpc_html_detail(data: dict, ministry_name: str = "") -> str:
     """CgmExpc HTML 상세 응답 포맷팅"""
     interp_id = data.get("ID", "")
@@ -675,6 +710,10 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
         # HTML 상세 응답 처리 (CgmExpc 타겟 detail)
         if isinstance(data, dict) and data.get("html_content"):
             return _format_cgmexpc_html_detail(data)
+
+        # CgmExpcService 상세 응답 처리 (부처 법령해석 detail JSON)
+        if isinstance(data, dict) and 'CgmExpcService' in data:
+            return _format_cgmexpc_service_detail(data['CgmExpcService'], target, search_query)
 
         # target_data 초기화
         target_data = []
