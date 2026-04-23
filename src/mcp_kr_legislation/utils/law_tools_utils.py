@@ -215,7 +215,15 @@ def extract_law_summary_from_detail(data: Dict[str, Any]) -> Dict[str, Any]:
                 article_content = article.get("조문내용", "")
                 
                 if article_no:
+                    # 조문키에서 가지번호(의N) 추출: '0007021' → 의2, '0007001' → 없음
+                    조문키 = article.get("조문키", "")
                     key = f"제{article_no}조"
+                    if 조문키 and len(조문키) >= 7:
+                        key_suffix = 조문키[4:]  # 마지막 3자리 (예: '001', '021', '141')
+                        if key_suffix != '001':
+                            sub_num = int(key_suffix) // 10
+                            if sub_num >= 2:
+                                key = f"제{article_no}조의{sub_num}"
                     if article_title:
                         key += f"({article_title})"
                     
@@ -341,7 +349,7 @@ def format_law_detail_summary(summary: Dict[str, Any], mst: str, target: str = "
         
         result += "**기본 정보:**\n"
         result += f"• 법령ID: {law_id_val}\n"
-        result += f"• 법령일련번호: {summary.get('법령일련번호')}\n"
+        result += f"• 법령일련번호: {summary.get('법령일련번호') or mst}\n"
         result += f"• 공포일자: {summary.get('공포일자')}\n"
         result += f"• 시행일자: {summary.get('시행일자')}\n"
         result += f"• 소관부처: {summary.get('소관부처')}\n\n"

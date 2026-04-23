@@ -1110,21 +1110,23 @@ def _format_search_results(data: dict, search_type: str, query: str = "", url: s
 # get_law_detail은 basic_law_tools.py로 분리됨
 
 @mcp.tool(
-    name="search_all_legal_documents", 
+    name="search_all_legal_documents",
     description="""모든 종류의 법적 문서를 통합 검색합니다. 법령, 판례, 해석례, 위원회 결정문을 포괄적으로 검색합니다.
-    
+
 매개변수:
 - query: 검색어 (필수)
+- display: 각 카테고리별 결과 개수 (기본값: 5)
 - include_law: 법령 포함 여부 (기본값: True)
 - include_precedent: 판례 포함 여부 (기본값: True)
 - include_interpretation: 해석례 포함 여부 (기본값: True)
 - include_committee: 위원회 결정문 포함 여부 (기본값: True)
 
-사용 예시: search_all_legal_documents("개인정보보호"), search_all_legal_documents("금융규제", include_law=False)""",
+사용 예시: search_all_legal_documents("개인정보보호"), search_all_legal_documents("금융규제", display=10, include_law=False)""",
     tags={"통합검색", "법령", "판례", "해석례", "위원회", "종합분석", "법적문서"}
 )
 def search_all_legal_documents(
     query: Optional[str] = None,
+    display: int = 5,
     include_law: bool = True,
     include_precedent: bool = True,
     include_interpretation: bool = True,
@@ -1143,12 +1145,14 @@ def search_all_legal_documents(
     try:
         total_results = 0
         
+        display = max(1, min(display, 20))
+
         # 1. 스마트 법령 검색 (정확도 개선)
         if include_law:
             try:
-                law_data = _smart_search("law", search_query, display=5)
-                law_url = _generate_api_url("law", {"query": search_query, "display": 5})
-                
+                law_data = _smart_search("law", search_query, display=display)
+                law_url = _generate_api_url("law", {"query": search_query, "display": display})
+
                 # 결과 유효성 검사
                 if law_data and isinstance(law_data, dict) and law_data.get('LawSearch'):
                     law_count = law_data['LawSearch'].get('totalCnt', 0)
@@ -1157,7 +1161,7 @@ def search_all_legal_documents(
                     except (ValueError, TypeError):
                         law_count = 0
                     if law_count > 0:
-                        law_result = _format_search_results(law_data, "law", search_query, 20)
+                        law_result = _format_search_results(law_data, "law", search_query, display)
                         results.append("**법령 검색 결과:**\n")
                         results.append(law_result + "\n")
                         total_results += law_count

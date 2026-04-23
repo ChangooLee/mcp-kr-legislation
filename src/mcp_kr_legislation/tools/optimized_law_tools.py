@@ -570,9 +570,7 @@ def search_law_with_cache(query: str) -> TextContent:
                                      basic_info.get("법령명") or
                                      target_law.get("법령명한글", ""))
                     
-                    # 메타데이터 추가
-                    formatted += f"\n---\n[메타데이터] mst: {mst}, law_name: {actual_law_name}\n"
-                    formatted += f"**더 자세한 조문 보기**: get_law_detail_unified(mst=\"{mst}\", target=\"law\")를 사용하세요.\n"
+                    formatted += f"\n**더 자세한 조문 보기**: get_law_detail(mst=\"{mst}\")를 사용하세요.\n"
                     formatted += f"**{actual_law_name} 관련 질문**: 구체적인 조항이나 시행령이 궁금하시면 말씀해주세요."
                     
                     return TextContent(type="text", text=formatted)

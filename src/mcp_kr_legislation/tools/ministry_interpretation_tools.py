@@ -327,47 +327,99 @@ def search_kcs_interpretation(query: Optional[str] = None, display: int = 20, pa
 사용 예시: get_moef_interpretation_detail(interpretation_id="123456")""")
 def get_moef_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """기획재정부 법령해석 상세 조회"""
-    params = {"ID": str(interpretation_id)}
-    try:
-        data = _make_legislation_request("moefCgmExpc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("moefCgmExpc", params, is_detail=True)
-        result = _format_search_results(data, "moefCgmExpc", str(interpretation_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"기획재정부 법령해석 상세조회 중 오류: {str(e)}")
+    return _get_cgmexpc_detail("moefCgmExpc", interpretation_id, "기획재정부")
 
 @mcp.tool(name="get_nts_interpretation_detail", description="""국세청 법령해석 상세내용을 조회합니다.
-
-매개변수:
-- interpretation_id: 해석례ID - search_nts_interpretation 도구의 결과에서 'ID' 필드값 사용
-
+- interpretation_id: 해석례ID (search_nts_interpretation 결과의 법령해석일련번호)
 사용 예시: get_nts_interpretation_detail(interpretation_id="123456")""")
 def get_nts_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """국세청 법령해석 상세 조회"""
-    params = {"ID": str(interpretation_id)}
-    try:
-        data = _make_legislation_request("ntsCgmExpc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("ntsCgmExpc", params, is_detail=True)
-        result = _format_search_results(data, "ntsCgmExpc", str(interpretation_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국세청 법령해석 상세조회 중 오류: {str(e)}")
+    return _get_cgmexpc_detail("ntsCgmExpc", interpretation_id, "국세청")
 
 @mcp.tool(name="get_kcs_interpretation_detail", description="""관세청 법령해석 상세내용을 조회합니다.
-
-매개변수:
-- interpretation_id: 해석례ID - search_kcs_interpretation 도구의 결과에서 'ID' 필드값 사용
-
+- interpretation_id: 해석례ID (search_kcs_interpretation 결과의 법령해석일련번호)
 사용 예시: get_kcs_interpretation_detail(interpretation_id="123456")""")
 def get_kcs_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """관세청 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("kcsCgmExpc", interpretation_id, "관세청")
+
+@mcp.tool(name="get_molit_interpretation_detail", description="""국토교통부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_molit_interpretation 결과의 법령해석일련번호)
+사용 예시: get_molit_interpretation_detail(interpretation_id="123456")""")
+def get_molit_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """국토교통부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("molitCgmExpc", interpretation_id, "국토교통부")
+
+@mcp.tool(name="get_moel_interpretation_detail", description="""고용노동부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_moel_interpretation 결과의 법령해석일련번호)
+사용 예시: get_moel_interpretation_detail(interpretation_id="123456")""")
+def get_moel_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """고용노동부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("moelCgmExpc", interpretation_id, "고용노동부")
+
+@mcp.tool(name="get_mof_interpretation_detail", description="""금융위원회 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_mof_interpretation 결과의 법령해석일련번호)
+사용 예시: get_mof_interpretation_detail(interpretation_id="123456")""")
+def get_mof_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """금융위원회 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("mofCgmExpc", interpretation_id, "금융위원회")
+
+@mcp.tool(name="get_mohw_interpretation_detail", description="""보건복지부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_mohw_interpretation 결과의 법령해석일련번호)
+사용 예시: get_mohw_interpretation_detail(interpretation_id="123456")""")
+def get_mohw_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """보건복지부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("mohwCgmExpc", interpretation_id, "보건복지부")
+
+@mcp.tool(name="get_moe_interpretation_detail", description="""교육부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_moe_interpretation 결과의 법령해석일련번호)
+사용 예시: get_moe_interpretation_detail(interpretation_id="123456")""")
+def get_moe_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """교육부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("moeCgmExpc", interpretation_id, "교육부")
+
+@mcp.tool(name="get_motie_interpretation_detail", description="""산업통상자원부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_mote_interpretation 결과의 법령해석일련번호)
+사용 예시: get_motie_interpretation_detail(interpretation_id="123456")""")
+def get_motie_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """산업통상자원부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("motieCgmExpc", interpretation_id, "산업통상자원부")
+
+@mcp.tool(name="get_mafra_interpretation_detail", description="""농림축산식품부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_maf_interpretation 결과의 법령해석일련번호)
+사용 예시: get_mafra_interpretation_detail(interpretation_id="123456")""")
+def get_mafra_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """농림축산식품부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("mafraCgmExpc", interpretation_id, "농림축산식품부")
+
+@mcp.tool(name="get_mnd_interpretation_detail", description="""국방부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_moms_interpretation 결과의 법령해석일련번호)
+사용 예시: get_mnd_interpretation_detail(interpretation_id="123456")""")
+def get_mnd_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """국방부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("mndCgmExpc", interpretation_id, "국방부")
+
+@mcp.tool(name="get_mss_interpretation_detail", description="""중소벤처기업부 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_sme_interpretation 결과의 법령해석일련번호)
+사용 예시: get_mss_interpretation_detail(interpretation_id="123456")""")
+def get_mss_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """중소벤처기업부 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("mssCgmExpc", interpretation_id, "중소벤처기업부")
+
+@mcp.tool(name="get_kfs_interpretation_detail", description="""산림청 법령해석 상세내용을 조회합니다.
+- interpretation_id: 해석례ID (search_nfa_interpretation 결과의 법령해석일련번호)
+사용 예시: get_kfs_interpretation_detail(interpretation_id="123456")""")
+def get_kfs_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
+    """산림청 법령해석 상세 조회"""
+    return _get_cgmexpc_detail("kfsCgmExpc", interpretation_id, "산림청")
+
+
+def _get_cgmexpc_detail(target: str, interpretation_id: Union[str, int], ministry_name: str) -> TextContent:
+    """부처 법령해석 상세조회 공통 함수 - HTML 응답 처리 포함"""
     params = {"ID": str(interpretation_id)}
     try:
-        data = _make_legislation_request("kcsCgmExpc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("kcsCgmExpc", params, is_detail=True)
-        result = _format_search_results(data, "kcsCgmExpc", str(interpretation_id))
+        data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
+        result = _format_search_results(data, target, str(interpretation_id))
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"관세청 법령해석 상세조회 중 오류: {str(e)}")
-
-# 추가로 더 많은 부처별 상세 조회 도구들이 있을 수 있습니다... 
+        return TextContent(type="text", text=f"{ministry_name} 법령해석 상세조회 중 오류: {str(e)}")

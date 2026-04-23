@@ -359,6 +359,20 @@ def get_administrative_trial_detail(trial_id: Union[str, int]) -> TextContent:
     params = {"target": "decc", "ID": str(trial_id)}
     try:
         data = _make_legislation_request("decc", params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'PrecService' in data:
+            svc = data['PrecService']
+            lines = [f"**행정심판례 상세** (ID: {trial_id})", "=" * 50, ""]
+            for field in ['사건번호', '재결청', '처분청', '의결일자']:
+                val = svc.get(field, '').strip()
+                if val:
+                    lines.append(f"**{field}**: {val}")
+            lines.append("")
+            for section in ['청구취지', '재결요지', '이유']:
+                val = svc.get(section, '').strip()
+                if val:
+                    clean = re.sub(r'\s{2,}', ' ', val)
+                    lines += [f"## {section}", clean[:1500] + ("..." if len(clean) > 1500 else ""), ""]
+            return TextContent(type="text", text="\n".join(lines))
         url = _generate_api_url("decc", params)
         result = _format_precedent_search_results(data, "decc", f"행정심판례ID:{trial_id}", 1)
         return TextContent(type="text", text=result)

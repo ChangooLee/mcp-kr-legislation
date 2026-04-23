@@ -441,9 +441,10 @@ def format_law_summary(summary_data: Dict[str, Any], search_term: str = "") -> s
                 result += f"**제개정 이유:**\n{reason_text[:500]}{'...' if len(reason_text) > 500 else ''}\n\n"
         
         # 추가 정보
-        original_size = summary_data.get("원본크기_kb", 0)
-        result += f"**전체 조문 보기**: `get_law_articles` 도구를 사용하세요.\n"
-        result += f"**원본 데이터 크기**: {original_size}KB\n"
+        original_size = summary_data.get("원본크기", 0)
+        if original_size:
+            result += f"**원본 데이터 크기**: {original_size // 1024}KB\n"
+        result += f"**전체 조문 보기**: get_law_article_by_key 도구를 사용하세요.\n"
         
         return result
         

@@ -225,6 +225,22 @@ def _make_legislation_request(target: str, params: dict, is_detail: bool = False
             elif target == "elaw":
                 logger.error(f"영문법령 HTML 응답: {response.text[:500]}")
                 raise ValueError("영문법령 API가 HTML을 반환했습니다. API 엔드포인트나 파라미터를 확인하세요.")
+            elif target.endswith("CgmExpc") and is_detail:
+                # 부처 법령해석 상세는 HTML로 제공 - 구조화된 데이터로 반환
+                html = response.text
+                import re as _re
+                def _extract(pattern, text, default=""):
+                    m = _re.search(pattern, text, _re.DOTALL)
+                    return m.group(1).strip() if m else default
+                title = _extract(r'<(?:title|h[12])[^>]*>([^<]+)</', html) or params.get("ID", "")
+                return {
+                    "html_content": True,
+                    "target": target,
+                    "ID": params.get("ID", ""),
+                    "title": title,
+                    "html_url": url,
+                    "raw_html_snippet": html[:3000],
+                }
             else:
                 raise ValueError("HTML 응답 반환 - JSON 응답이 예상됨")
         
@@ -610,9 +626,56 @@ def _sort_english_law_results(data: dict, query: str) -> dict:
         logger.warning(f"영문법령 검색 결과 정렬 중 오류: {e}")
         return data  # 오류 시 원본 반환
 
+def _format_cgmexpc_html_detail(data: dict, ministry_name: str = "") -> str:
+    """CgmExpc HTML 상세 응답 포맷팅"""
+    interp_id = data.get("ID", "")
+    html_url = data.get("html_url", "")
+    html = data.get("raw_html_snippet", "")
+    target = data.get("target", "")
+    if not ministry_name:
+        ministry_name = target.replace("CgmExpc", "")
+
+    def clean(text: str) -> str:
+        import re as _re
+        text = _re.sub(r'<[^>]+>', ' ', text)
+        text = _re.sub(r'\s+', ' ', text)
+        return text.strip()
+
+    lines = [f"**{ministry_name} 법령해석 상세 (ID: {interp_id})**\n"]
+    import re as _re
+    안건명 = _re.search(r'안건명[^\n:]*[:：]?\s*([^\n<]+)', html)
+    if 안건명:
+        lines.append(f"**안건명**: {clean(안건명.group(1))}")
+    안건번호 = _re.search(r'안건번호[^\n:]*[:：]?\s*([^\n<]+)', html)
+    if 안건번호:
+        lines.append(f"**안건번호**: {clean(안건번호.group(1))}")
+    해석일자 = _re.search(r'해석일자[^\n:]*[:：]?\s*([^\n<]+)', html)
+    if 해석일자:
+        lines.append(f"**해석일자**: {clean(해석일자.group(1))}")
+    질의 = _re.search(r'질의(?:내용)?[^\n:]*[:：]\s*(.*?)(?=회답|답변|이유|$)', html, _re.DOTALL)
+    if 질의:
+        content = clean(질의.group(1))[:800]
+        if content:
+            lines.append(f"\n**질의내용**:\n{content}")
+    회답 = _re.search(r'(?:회답|답변)[^\n:]*[:：]\s*(.*?)(?=이유|$)', html, _re.DOTALL)
+    if 회답:
+        content = clean(회답.group(1))[:800]
+        if content:
+            lines.append(f"\n**회답**:\n{content}")
+    if html_url:
+        lines.append(f"\n**원문 보기**: {html_url}")
+    if len(lines) <= 2:
+        lines.append("상세 내용은 원문 링크를 통해 확인하세요.")
+    return "\n".join(lines)
+
+
 def _format_search_results(data: dict, target: str, search_query: str, max_results: int = 50) -> str:
     """검색 결과 포맷팅 공통 함수"""
     try:
+        # HTML 상세 응답 처리 (CgmExpc 타겟 detail)
+        if isinstance(data, dict) and data.get("html_content"):
+            return _format_cgmexpc_html_detail(data)
+
         # target_data 초기화
         target_data = []
         
@@ -676,6 +739,21 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 행정규칙 별표서식은 admRulBylSearch 루트키와 admrulbyl 데이터키 사용
             search_data = data['admRulBylSearch']
             target_data = search_data.get('admrulbyl', [])
+        elif target == "ordinbyl" and 'licBylSearch' in data:
+            # 자치법규 별표서식은 licBylSearch 루트키와 ordinbyl 데이터키 사용
+            search_data = data['licBylSearch']
+            target_data = search_data.get('ordinbyl', [])
+        elif target in ("aiSearch", "aiRltLs") and target in data:
+            # 지능형 법령검색은 aiSearch/aiRltLs 루트키와 법령조문 데이터키 사용
+            search_data = data[target]
+            target_data = search_data.get('법령조문', [])
+            if not isinstance(target_data, list):
+                target_data = [target_data] if target_data else []
+        elif target == "oneview" and 'items' in data:
+            # 법령한눈보기는 items 루트키 사용
+            search_data = data['items']
+            raw = search_data.get('oneview', search_data.get('law', []))
+            target_data = raw if isinstance(raw, list) else ([raw] if raw else [])
         # 판례/해석례 특별 루트 키 우선 처리
         elif target == "prec" and 'PrecSearch' in data:
             search_data = data['PrecSearch']
@@ -915,10 +993,16 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     title = str(item.get(potential_title_keys[0], '')).strip()
             
             if title:
-                result += f"{title}**\n"
+                # eflaw: 시행 상태 배지 추가
+                if target == "eflaw":
+                    status_code = item.get('현행연혁코드', '')
+                    badge = {"현행": " [현행]", "시행예정": " [미시행]", "연혁": " [연혁]"}.get(status_code, "")
+                    result += f"{title}{badge}**\n"
+                else:
+                    result += f"{title}**\n"
             else:
                 result += "제목 없음**\n"
-            
+
             # 상세 정보 추가 (실제 API 응답 키 이름들)
             detail_fields = {
                 '법령ID': ['법령ID', 'ID', 'lawId', 'mstSeq'],  # 'id' 제외 (순번과 혼동 방지)
@@ -1189,6 +1273,41 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   별표일련번호: {별표id}\n"
                 if 파일링크:
                     result += f"   서식파일: https://www.law.go.kr{파일링크}\n"
+            elif target == "ordinbyl":
+                별표id = item.get('별표일련번호', '')
+                관련명 = item.get('관련자치법규명', '')
+                별표종류 = item.get('별표종류', '')
+                발령일자 = item.get('발령일자', '')
+                파일링크 = item.get('별표서식파일링크', '')
+                if 관련명:
+                    result += f"   관련자치법규: {관련명}\n"
+                if 발령일자 and len(발령일자) >= 8:
+                    result += f"   발령일자: {발령일자[:4]}-{발령일자[4:6]}-{발령일자[6:8]}\n"
+                if 별표종류:
+                    result += f"   별표종류: {별표종류}\n"
+                if 별표id:
+                    result += f"   별표일련번호: {별표id}\n"
+                if 파일링크:
+                    result += f"   서식파일: https://www.law.go.kr{파일링크}\n"
+            elif target in ("aiSearch", "aiRltLs"):
+                법령명 = item.get('법령명', '')
+                조문번호 = item.get('조문번호', '')
+                조문제목 = item.get('조문제목', '')
+                조문내용 = item.get('조문내용', '')
+                mst = item.get('법령일련번호', '')
+                시행일자 = item.get('시행일자', '')
+                if 조문번호:
+                    result += f"   조문: 제{조문번호.lstrip('0')}조"
+                    if 조문제목:
+                        result += f"({조문제목})"
+                    result += "\n"
+                if 조문내용:
+                    preview = re.sub(r'<[^>]+>', '', 조문내용)[:200].strip()
+                    result += f"   내용 미리보기: {preview}...\n"
+                if 시행일자:
+                    result += f"   시행일자: {시행일자[:8]}\n"
+                if mst:
+                    result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             elif target == "lstrm":
                 term_id = item.get('법령용어ID', '')
                 if term_id:
@@ -1224,14 +1343,29 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     "naaccCgmExpc": "get_naacc_interpretation_detail",
                     "msitCgmExpc": "get_msit_interpretation_detail",
                     "okaCgmExpc": "get_oka_interpretation_detail",
+                    "molitCgmExpc": "get_molit_interpretation_detail",
+                    "moelCgmExpc": "get_moel_interpretation_detail",
+                    "mofCgmExpc": "get_mof_interpretation_detail",
+                    "mohwCgmExpc": "get_mohw_interpretation_detail",
+                    "moeCgmExpc": "get_moe_interpretation_detail",
+                    "motieCgmExpc": "get_motie_interpretation_detail",
+                    "mafraCgmExpc": "get_mafra_interpretation_detail",
+                    "mndCgmExpc": "get_mnd_interpretation_detail",
+                    "mssCgmExpc": "get_mss_interpretation_detail",
+                    "kfsCgmExpc": "get_kfs_interpretation_detail",
                 }
                 interp_id = item.get('법령해석일련번호', '')
+                link = item.get('법령해석상세링크', '')
                 if interp_id:
                     detail_tool = _CGMEXPC_DETAIL_TOOL_MAP.get(target)
                     if detail_tool:
                         result += f"   상세조회: {detail_tool}(interpretation_id=\"{interp_id}\")\n"
+                    elif link:
+                        result += f"   상세보기: https://www.law.go.kr{link}\n"
                     else:
                         result += f"   법령해석일련번호: {interp_id}\n"
+                elif link:
+                    result += f"   상세보기: https://www.law.go.kr{link}\n"
             elif target == "lsRlt":
                 관계 = item.get('법령간관계', '')
                 if 관계:
@@ -2293,42 +2427,40 @@ def search_effective_law(
 @mcp.tool(name="search_law_nickname", description="""법령의 약칭을 검색합니다.
 
 매개변수:
+- query: 약칭 또는 법령명 검색어 (선택)
 - start_date: 시작일자 (선택) - YYYYMMDD 형식
 - end_date: 종료일자 (선택) - YYYYMMDD 형식
+- display: 결과 개수 (기본값: 20)
 
 반환정보: 법령약칭, 정식법령명, 법령ID, 등록일자
 
 사용 예시:
-- search_law_nickname()  # 전체 약칭 목록
+- search_law_nickname(query="개인정보")  # '개인정보' 관련 약칭 검색
 - search_law_nickname(start_date="20240101")  # 2024년 이후 등록된 약칭
-- search_law_nickname(start_date="20230101", end_date="20231231")  # 2023년 등록 약칭
+- search_law_nickname(start_date="20230101", end_date="20231231", display=10)
 
 참고: 법령의 통칭이나 줄임말로 검색할 때 유용합니다. 예: '개인정보법' → '개인정보보호법'""")
 def search_law_nickname(
+    query: Annotated[Optional[str], "약칭 또는 법령명 검색어 (선택)"] = None,
     start_date: Annotated[Optional[str], "시작일자 (YYYYMMDD)"] = None,
-    end_date: Annotated[Optional[str], "종료일자 (YYYYMMDD)"] = None
+    end_date: Annotated[Optional[str], "종료일자 (YYYYMMDD)"] = None,
+    display: Annotated[int, "결과 개수 (기본값: 20, 최대 100)"] = 20
 ) -> TextContent:
-    """법령 약칭 검색
-    
-    Args:
-        start_date: 시작일자 (YYYYMMDD)
-        end_date: 종료일자 (YYYYMMDD)
-    """
+    """법령 약칭 검색"""
     try:
-        # 기본 파라미터 설정 (target은 _make_legislation_request에서 자동 추가됨)
-        params = {}
-        
-        # 선택적 파라미터 추가 (API 가이드에 따른 올바른 매개변수명)
+        params = {"display": min(display, 100)}
+        if query:
+            params["query"] = query.strip()
         if start_date:
             params["stdDt"] = start_date
         if end_date:
             params["endDt"] = end_date
-        
-        # API 요청
+
         data = _make_legislation_request("lsAbrv", params, use_cache=True)
-        result = _format_search_results(data, "lsAbrv", "법령약칭")
+        search_term = query if query else "법령약칭"
+        result = _format_search_results(data, "lsAbrv", search_term, min(display, 100))
         return TextContent(type="text", text=result)
-        
+
     except Exception as e:
         logger.error(f"법령약칭 검색 중 오류: {e}")
         return TextContent(type="text", text=f"법령약칭 검색 중 오류가 발생했습니다: {str(e)}")
@@ -4378,14 +4510,26 @@ def search_law_unified(
             params["lawTypeCode"] = law_type_code
         
         data = _make_legislation_request(target, params, is_detail=False, use_cache=True)
-        
+
         # 응답 파싱
         search_data = data.get("LawSearch", {})
         items = search_data.get("law", search_data.get(target, []))
         if not isinstance(items, list):
             items = [items] if items else []
-        
+
         total_count = int(search_data.get("totalCnt", 0))
+
+        # 검색 결과 없으면 본문검색(search=2)으로 재시도
+        if total_count == 0 and search == 1:
+            params2 = dict(params, search=2)
+            data2 = _make_legislation_request(target, params2, is_detail=False, use_cache=True)
+            search_data2 = data2.get("LawSearch", {})
+            items2 = search_data2.get("law", search_data2.get(target, []))
+            if not isinstance(items2, list):
+                items2 = [items2] if items2 else []
+            total_count2 = int(search_data2.get("totalCnt", 0))
+            if total_count2 > 0:
+                data, search_data, items, total_count = data2, search_data2, items2, total_count2
         
         result = f"**'{query}' 검색 결과** (target: {target}, 총 {total_count}건)\n"
         result += "=" * 50 + "\n\n"

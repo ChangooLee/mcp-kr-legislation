@@ -265,7 +265,7 @@ def search_linked_ordinance(
     
     try:
         data = _make_legislation_request("lnkOrd", params, use_cache=True)
-        search_term = query or f"법령ID:{law_id}" if law_id else f"자치법규ID:{ordinance_id}" if ordinance_id else "연계 자치법규"
+        search_term = query if query else (f"법령ID:{law_id}" if law_id else (f"자치법규ID:{ordinance_id}" if ordinance_id else "연계 자치법규"))
         result = _format_search_results(data, "lnkOrd", search_term, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:

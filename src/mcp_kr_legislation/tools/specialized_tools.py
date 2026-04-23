@@ -25,6 +25,41 @@ from .law_tools import (
     _format_search_results,
 )
 
+def _format_special_decc_detail(svc: dict, tribunal_id: str, 기관명: str) -> str:
+    """SpecialDeccService 응답 포맷팅 (조세심판원, 해양안전심판원 공통)"""
+    import re
+    lines = [f"**{기관명} 특별행정심판례 상세** (ID: {tribunal_id})", "=" * 50, ""]
+    사건명 = svc.get('사건명', '') or svc.get('사건번호', '')
+    재결청 = svc.get('재결청', '')
+    의결일자 = svc.get('의결일자', '')
+    청구취지 = svc.get('청구취지', '').strip()
+    재결요지 = svc.get('재결요지', '').strip()
+    이유 = svc.get('이유', '').strip()
+    주문 = svc.get('주문', '').strip()
+    세목 = svc.get('세목', '')
+
+    if 사건명:
+        lines += [f"**사건명**: {사건명}", ""]
+    if 재결청:
+        lines.append(f"**재결청**: {재결청}")
+    if 의결일자:
+        lines.append(f"**의결일자**: {의결일자}")
+    if 세목:
+        lines.append(f"**세목**: {세목}")
+    lines.append("")
+    if 청구취지:
+        lines += [f"## 청구취지", 청구취지[:500] + ("..." if len(청구취지) > 500 else ""), ""]
+    if 주문:
+        lines += [f"## 주문", 주문, ""]
+    if 재결요지:
+        clean_요지 = re.sub(r'\s{2,}', ' ', 재결요지)
+        lines += [f"## 재결요지", clean_요지[:1000] + ("..." if len(clean_요지) > 1000 else ""), ""]
+    if 이유:
+        clean_이유 = re.sub(r'\s{2,}', ' ', 이유)
+        lines += [f"## 이유 (요약)", clean_이유[:1000] + ("..." if len(clean_이유) > 1000 else ""), ""]
+    return "\n".join(lines)
+
+
 # ===========================================
 # 전문화된 도구들
 # ===========================================
@@ -217,6 +252,8 @@ def get_tax_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
     params = {"ID": str(tribunal_id)}
     try:
         data = _make_legislation_request("ttSpecialDecc", params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'SpecialDeccService' in data:
+            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "조세심판원"))
         result = _format_search_results(data, "ttSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -233,6 +270,8 @@ def get_maritime_safety_tribunal_detail(tribunal_id: Union[str, int]) -> TextCon
     params = {"ID": str(tribunal_id)}
     try:
         data = _make_legislation_request("kmstSpecialDecc", params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'SpecialDeccService' in data:
+            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "해양안전심판원"))
         result = _format_search_results(data, "kmstSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -277,6 +316,8 @@ def get_acrc_special_tribunal_detail(tribunal_id: Union[str, int]) -> TextConten
     params = {"ID": str(tribunal_id)}
     try:
         data = _make_legislation_request("acrSpecialDecc", params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'SpecialDeccService' in data:
+            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "국민권익위원회"))
         result = _format_search_results(data, "acrSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -317,6 +358,8 @@ def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
     params = {"ID": str(tribunal_id)}
     try:
         data = _make_legislation_request("adapSpecialDecc", params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'SpecialDeccService' in data:
+            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "인사혁신처 소청심사위원회"))
         result = _format_search_results(data, "adapSpecialDecc", str(tribunal_id))
         return TextContent(type="text", text=result)
     except Exception as e:
@@ -338,18 +381,16 @@ def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
 참고: 이 API는 2026년 기준 미오픈 상태일 수 있습니다.""")
 def search_bai_preconsulting(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """감사원 사전컨설팅 의견서 검색"""
-    params = {"display": min(display, 100), "page": page}
-    if query and query.strip():
-        params["query"] = query.strip()
-        search_query = query.strip()
-    else:
-        search_query = "전체"
-    try:
-        data = _make_legislation_request("baiPvcs", params, use_cache=True)
-        result = _format_search_results(data, "baiPvcs", search_query, min(display, 100))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"감사원 사전컨설팅 의견서 검색 중 오류: {str(e)}")
+    return TextContent(
+        type="text",
+        text=(
+            "**감사원 사전컨설팅 의견서 API는 현재 미오픈 상태입니다.**\n\n"
+            "이 API(baiPvcs)는 법제처 OPEN API에 아직 공개되지 않아 데이터를 조회할 수 없습니다.\n\n"
+            "**대안:**\n"
+            "- 감사원 공식 홈페이지(https://www.bai.go.kr)에서 직접 검색하세요.\n"
+            "- 감사원 사전컨설팅 의견서는 감사원 홈페이지 > 정책자료 > 사전컨설팅 메뉴에서 확인할 수 있습니다."
+        )
+    )
 
 @mcp.tool(name="get_bai_preconsulting_detail", description="""감사원 사전컨설팅 의견서 상세내용을 조회합니다.
 

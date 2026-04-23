@@ -198,17 +198,37 @@ def search_article_legal_term_link(mst: Optional[str] = None, jo: Optional[str] 
 @mcp.tool(name="get_legal_term_detail", description="""법령용어 상세내용을 조회합니다. 특정 법령용어의 정의와 설명을 제공합니다.
 
 매개변수:
-- term_id: 법령용어 ID (필수) - search_legal_term 도구의 결과에서 'ID' 필드값 사용
+- term_id: 법령용어 일련번호 (필수) - search_legal_term 결과의 term_id 필드값 사용
 
-사용 예시: get_legal_term_detail(term_id="12345")""")
+사용 예시: get_legal_term_detail(term_id="5267621")""")
 def get_legal_term_detail(term_id: Union[str, int]) -> TextContent:
     """법령용어 상세 조회"""
-    params = {"ID": str(term_id)}
+    params = {"trmSeqs": str(term_id)}
     try:
         data = _make_legislation_request("lstrm", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("lstrm", params, is_detail=True)
-        result = _format_search_results(data, "lstrm", str(term_id), 50)
-        return TextContent(type="text", text=result)
+        svc = data.get("LsTrmService", {})
+        if not svc:
+            return TextContent(type="text", text=f"법령용어 ID '{term_id}'를 찾을 수 없습니다.\nsearch_legal_term으로 먼저 검색하여 정확한 ID를 확인하세요.")
+
+        term_name = svc.get("법령용어명_한글", "") or svc.get("법령용어명_한자", "")
+        term_def = svc.get("법령용어정의", "").strip()
+        source = svc.get("출처", "")
+        code_name = svc.get("법령용어코드명", "")
+        term_seq = svc.get("법령용어일련번호", str(term_id))
+
+        lines = [f"**법령용어**: {term_name}"]
+        if code_name:
+            lines.append(f"**분류**: {code_name}")
+        lines.append("")
+        if term_def:
+            lines.append(f"**정의**: {term_def}")
+        else:
+            lines.append("**정의**: (정의 없음)")
+        if source:
+            lines.append(f"**출처**: {source}")
+        lines.append("")
+        lines.append(f"**관련 검색**: search_legal_term(query=\"{term_name[:20]}\")")
+        return TextContent(type="text", text="\n".join(lines))
     except Exception as e:
         return TextContent(type="text", text=f"법령용어 상세조회 중 오류: {str(e)}")
 

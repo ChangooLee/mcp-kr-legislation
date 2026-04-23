@@ -74,7 +74,7 @@ def _format_committee_search_results(data: dict, target: str, search_query: str,
         # 상세 정보 필드
         detail_fields = {
             '결정문일련번호': ['결정문일련번호', '결정문ID', 'decision_id'],
-            '의결일자': ['의결일자', '회의일자', '처리일자', '결정일자'],
+            '의결일자': ['의결일', '의결일자', '회의일자', '처리일자', '결정일자'],
             '의안번호': ['의안번호', '안건번호', '사건번호'],
             '회의종류': ['회의종류', '회의구분', '결정구분']
         }
@@ -411,9 +411,9 @@ def search_anticorruption_committee(
 - sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=재정일자오름차순, ddes=재정일자내림차순)
 - alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
 def search_labor_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
+    query: Optional[str] = None,
+    search: int = 1,
+    display: int = 20,
     page: int = 1,
     sort: Optional[str] = None,
     alphabetical: Optional[str] = None

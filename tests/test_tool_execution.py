@@ -134,7 +134,7 @@ TOOL_TESTS = {
     # 연계 (linkage_tools.py)
     # ===================================================================
     "search_daily_term": {"query": "계약", "display": 2},
-    "search_legal_daily_term_link": {"query": "법률", "display": 2},
+    "search_legal_daily_term_link": {"term_id": "5267621", "display": 2},
 
     # ===================================================================
     # 조약 / 학칙 / 특수 (specialized_tools.py)

@@ -316,15 +316,28 @@ def search_precedent_bm25(
         case_name = (
             item.get("사건명") or item.get("법령명") or item.get("심판청구명", "")
         )
+        # 제목 70자 제한
+        if len(case_name) > 70:
+            case_name = case_name[:70] + "..."
         case_no = item.get("사건번호") or item.get("사건ID", "")
         court = (
             item.get("법원명") or item.get("소관부처명") or item.get("재결기관", "")
         )
-        lines += [
-            f"**{i}. {case_name}** (BM25 점수: {score})",
+        # 숫자형 case_id (get_precedent_detail 등에서 필요)
+        numeric_id = (
+            item.get("판례일련번호") or item.get("결정례일련번호")
+            or item.get("행정심판재결례일련번호") or item.get("ID") or item.get("id", "")
+        )
+        item_lines = [
+            f"**{i}. {case_name}** (BM25: {score:.4f})",
             f"   사건번호: {case_no}  |  기관: {court}",
-            "",
         ]
+        if numeric_id and target == "prec":
+            item_lines.append(f"   ★ 상세조회: get_precedent_detail(case_id=\"{numeric_id}\")")
+        elif numeric_id and target == "ccurt":
+            item_lines.append(f"   ★ 상세조회: get_constitutional_court_detail(case_id=\"{numeric_id}\")")
+        item_lines.append("")
+        lines += item_lines
 
     return TextContent(type="text", text="\n".join(lines))
 
@@ -413,6 +426,14 @@ def invalidate_law_cache(
 # 공통 BM25 결과 포맷터
 # ---------------------------------------------------------------------------
 
+def _normalize_text(text: str) -> str:
+    """전각공백/탭 등 이상 문자 정규화"""
+    import re as _re
+    text = text.replace('　', '').replace('\t', '')  # 전각공백, 탭 제거
+    text = _re.sub(r'  +', ' ', text).strip()
+    return text
+
+
 def _format_bm25_results(
     label: str,
     query: str,
@@ -431,13 +452,13 @@ def _format_bm25_results(
     for i, item in enumerate(ranked, 1):
         score = item.get("_bm25_score", 0)
         title = next(
-            (item.get(k, "") for k, _ in fields if item.get(k)), "제목 없음"
+            (_normalize_text(str(item.get(k, ""))) for k, _ in fields if item.get(k)), "제목 없음"
         )
         lines.append(f"**{i}. {title}** (BM25: {score})")
         for key, lbl in fields[1:]:
             val = item.get(key, "")
             if val:
-                lines.append(f"   {lbl}: {val}")
+                lines.append(f"   {lbl}: {_normalize_text(str(val))}")
         lines.append("")
     lines += [
         "---",

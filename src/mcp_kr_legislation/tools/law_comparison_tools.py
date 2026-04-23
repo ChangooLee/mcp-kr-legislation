@@ -157,7 +157,7 @@ def search_law_amendment_history(query: Optional[str] = None, display: int = 20,
 
 대안 도구:
 - 법령 변경이력: search_law_change_history("{search_query}")
-- 법령 신구대조: compare_law_old_new("{search_query}")"""
+- 법령 신구대조: search_old_and_new_law("{search_query}")"""
     return TextContent(type="text", text=result)
 
 @mcp.tool(name="get_law_amendment_history_detail", description="""법령 연혁의 상세 본문을 조회합니다. 특정 개정 시점의 법령 내용을 확인합니다.
