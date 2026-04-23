@@ -187,7 +187,10 @@ def extract_law_summary_from_detail(data: Dict[str, Any]) -> Dict[str, Any]:
         summary['법령일련번호'] = basic_info.get("법령일련번호", "")
         summary['공포일자'] = basic_info.get("공포일자", "")
         summary['시행일자'] = basic_info.get("시행일자", "")
-        summary['소관부처'] = basic_info.get("소관부처명", "") or basic_info.get("소관부처", "")
+        _ministry_raw = basic_info.get("소관부처명", "") or basic_info.get("소관부처", "")
+        if isinstance(_ministry_raw, dict):
+            _ministry_raw = _ministry_raw.get("content", "") or _ministry_raw.get("소관부처명", "") or str(_ministry_raw)
+        summary['소관부처'] = _ministry_raw
         
         # 조문 인덱스 생성
         articles_section = law_info.get("조문", {})

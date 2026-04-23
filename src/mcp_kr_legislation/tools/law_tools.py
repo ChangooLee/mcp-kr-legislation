@@ -657,8 +657,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 자치법규는 OrdinSearch 루트키와 law 데이터키 사용
             search_data = data['OrdinSearch']
             target_data = search_data.get('law', [])
-        elif target == "admrul" and 'AdmRulSearch' in data:
-            # 행정규칙은 AdmRulSearch 루트키와 admrul 데이터키 사용
+        elif target in ("admrul", "school", "public", "pi") and 'AdmRulSearch' in data:
+            # 행정규칙/학칙/공사공단/공공기관은 AdmRulSearch 루트키와 admrul 데이터키 사용
             search_data = data['AdmRulSearch']
             target_data = search_data.get('admrul', [])
         elif target == "admrulOldAndNew" and 'OldAndNewLawSearch' in data:
@@ -672,6 +672,10 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 법령-자치법규 연계는 OrdinSearch 루트키와 law 데이터키 사용
             search_data = data['OrdinSearch']
             target_data = search_data.get('law', [])
+        elif target == "admbyl" and 'admRulBylSearch' in data:
+            # 행정규칙 별표서식은 admRulBylSearch 루트키와 admrulbyl 데이터키 사용
+            search_data = data['admRulBylSearch']
+            target_data = search_data.get('admrulbyl', [])
         # 판례/해석례 특별 루트 키 우선 처리
         elif target == "prec" and 'PrecSearch' in data:
             search_data = data['PrecSearch']
@@ -679,7 +683,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
         elif target == "expc" and 'Expc' in data:
             search_data = data['Expc']
             target_data = search_data.get('expc', [])
-        elif target == "decc" and 'Decc' in data:
+        elif target in ("decc", "ttSpecialDecc", "kmstSpecialDecc", "acrSpecialDecc", "adapSpecialDecc") and 'Decc' in data:
             search_data = data['Decc']
             target_data = search_data.get('decc', [])
         elif 'LsTrmSearch' in data and target == "lstrm":
@@ -892,6 +896,13 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                 구분 = item.get('구분명', '법령')
                 일련번호 = item.get('일련번호', '')
                 title = f"삭제된 {구분} (일련번호: {일련번호})"
+
+            # 특별행정심판/행정심판 - 사건명이 비어있으면 청구번호+재결구분명 조합
+            if not title and target in ("ttSpecialDecc", "kmstSpecialDecc", "acrSpecialDecc", "adapSpecialDecc", "decc"):
+                청구번호 = item.get('청구번호', '') or item.get('사건번호', '')
+                재결구분명 = item.get('재결구분명', '')
+                의결일자 = item.get('의결일자', '')
+                title = " | ".join(filter(None, [청구번호, 재결구분명, 의결일자])) or "사건명 미제공"
             
             # 디버깅: 실제 키 이름들 확인
             if not title:
@@ -1031,8 +1042,8 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   상세조회: get_administrative_rule_comparison_detail(comparison_id=\"{comparison_id}\")\n"
                 else:
                     result += f"   상세조회: get_administrative_rule_comparison_detail(comparison_id=\"{law_id}\")\n"
-            elif target == "admrul":
-                # 행정규칙은 행정규칙일련번호 사용
+            elif target in ("admrul", "school", "public", "pi"):
+                # 행정규칙/학칙/공사공단/공공기관은 행정규칙일련번호 사용
                 rule_id = None
                 for key in ['행정규칙일련번호', '행정규칙MST']:
                     if key in item and item[key]:
@@ -1040,7 +1051,7 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         break
                 if rule_id:
                     result += f"   상세조회: get_administrative_rule_detail(rule_id=\"{rule_id}\")\n"
-                else:
+                elif law_id:
                     result += f"   상세조회: get_administrative_rule_detail(rule_id=\"{law_id}\")\n"
             elif target == "trty":
                 # 조약은 조약일련번호 사용
@@ -1126,6 +1137,25 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                     result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{ord_id}\")\n"
                 elif law_id:
                     result += f"   상세조회: get_local_ordinance_detail(ordinance_id=\"{law_id}\")\n"
+            elif target in ("ttSpecialDecc", "kmstSpecialDecc", "acrSpecialDecc", "adapSpecialDecc"):
+                tool_map = {
+                    "ttSpecialDecc": "get_tax_tribunal_detail",
+                    "kmstSpecialDecc": "get_maritime_safety_tribunal_detail",
+                    "acrSpecialDecc": "get_acrc_special_tribunal_detail",
+                    "adapSpecialDecc": "get_mpm_appeal_tribunal_detail",
+                }
+                detail_fn = tool_map.get(target, f"get_{target}_detail")
+                tid = (item.get('특별행정심판재결례일련번호') or item.get('행정심판재결례일련번호')
+                       or item.get('결정문일련번호') or item.get('ID') or item.get('id'))
+                if tid:
+                    result += f"   상세조회: {detail_fn}(tribunal_id=\"{tid}\")\n"
+            elif target == "decc":
+                did = (item.get('행정심판재결례일련번호') or item.get('ID') or item.get('id'))
+                if did:
+                    result += f"   상세조회: get_administrative_trial_detail(trial_id=\"{did}\")\n"
+                사건번호 = item.get('사건번호', '')
+                if 사건번호:
+                    result += f"   사건번호: {사건번호}\n"
             elif target in ["ppc", "fsc", "ftc", "acr", "nlrc", "ecc", "sfc", "nhrck", "kcc", "iaciac", "oclt", "eiac"]:
                 committee_tool_map = {
                     "ppc": "get_privacy_committee_detail", "fsc": "get_financial_committee_detail",
@@ -1143,14 +1173,71 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         break
                 if dec_id:
                     result += f"   상세조회: {detail_tool}(decision_id=\"{dec_id}\")\n"
+            elif target == "admbyl":
+                별표id = item.get('별표일련번호', '')
+                관련규칙명 = item.get('관련행정규칙명', '')
+                발령일자 = item.get('발령일자', '')
+                별표종류 = item.get('별표종류', '')
+                파일링크 = item.get('별표서식파일링크', '')
+                if 관련규칙명:
+                    result += f"   관련행정규칙: {관련규칙명}\n"
+                if 발령일자:
+                    result += f"   발령일자: {발령일자[:4]}-{발령일자[4:6]}-{발령일자[6:8]}\n"
+                if 별표종류:
+                    result += f"   별표종류: {별표종류}\n"
+                if 별표id:
+                    result += f"   별표일련번호: {별표id}\n"
+                if 파일링크:
+                    result += f"   서식파일: https://www.law.go.kr{파일링크}\n"
             elif target == "lstrm":
                 term_id = item.get('법령용어ID', '')
                 if term_id:
                     result += f"   상세조회: get_legal_term_detail(term_id=\"{term_id}\")\n"
             elif target.endswith("CgmExpc"):
+                _CGMEXPC_DETAIL_TOOL_MAP = {
+                    "moefCgmExpc": "get_moef_interpretation_detail",
+                    "ntsCgmExpc": "get_nts_interpretation_detail",
+                    "kcsCgmExpc": "get_kcs_interpretation_detail",
+                    "moisCgmExpc": "get_mois_interpretation_detail",
+                    "meCgmExpc": "get_me_interpretation_detail",
+                    "mcstCgmExpc": "get_mcst_interpretation_detail",
+                    "mojCgmExpc": "get_moj_interpretation_detail",
+                    "mogefCgmExpc": "get_mogef_interpretation_detail",
+                    "mofaCgmExpc": "get_mofa_interpretation_detail",
+                    "mouCgmExpc": "get_unikorea_interpretation_detail",
+                    "molegCgmExpc": "get_moleg_interpretation_detail",
+                    "mfdsCgmExpc": "get_mfds_interpretation_detail",
+                    "mpmCgmExpc": "get_mpm_interpretation_detail",
+                    "kmaCgmExpc": "get_kma_interpretation_detail",
+                    "khsCgmExpc": "get_cha_interpretation_detail",
+                    "rdaCgmExpc": "get_rda_interpretation_detail",
+                    "npaCgmExpc": "get_police_interpretation_detail",
+                    "dapaCgmExpc": "get_dapa_interpretation_detail",
+                    "mmaCgmExpc": "get_mma_interpretation_detail",
+                    "nfaCgmExpc": "get_fire_agency_interpretation_detail",
+                    "ppsCgmExpc": "get_pps_interpretation_detail",
+                    "kdcaCgmExpc": "get_kdca_interpretation_detail",
+                    "kcgCgmExpc": "get_kcg_interpretation_detail",
+                    "mpvaCgmExpc": "get_mpva_interpretation_detail",
+                    "kostatCgmExpc": "get_kostat_interpretation_detail",
+                    "kipoCgmExpc": "get_kipo_interpretation_detail",
+                    "naaccCgmExpc": "get_naacc_interpretation_detail",
+                    "msitCgmExpc": "get_msit_interpretation_detail",
+                    "okaCgmExpc": "get_oka_interpretation_detail",
+                }
                 interp_id = item.get('법령해석일련번호', '')
                 if interp_id:
-                    result += f"   상세조회용 ID: {interp_id}\n"
+                    detail_tool = _CGMEXPC_DETAIL_TOOL_MAP.get(target)
+                    if detail_tool:
+                        result += f"   상세조회: {detail_tool}(interpretation_id=\"{interp_id}\")\n"
+                    else:
+                        result += f"   법령해석일련번호: {interp_id}\n"
+            elif target == "lsRlt":
+                관계 = item.get('법령간관계', '')
+                if 관계:
+                    result += f"   법령간관계: {관계}\n"
+                if law_id:
+                    result += f"   상세조회: get_law_detail(law_id=\"{law_id}\")\n"
             elif mst:
                 result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             elif law_id:

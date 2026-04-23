@@ -44,28 +44,70 @@ logger = logging.getLogger(__name__)
 # 내부 헬퍼
 # ---------------------------------------------------------------------------
 
+def _extract_api_keyword(query: str) -> str:
+    """
+    자연어 쿼리에서 API 검색에 최적인 핵심 키워드를 추출합니다.
+
+    전략: 공백 기준 첫 번째 단어를 우선 사용.
+    kiwipiepy 형태소 분석은 합성어를 분해하는 경우가 있어 법령명 검색에
+    오히려 불리하므로, 첫 단어를 우선하고 형태소 분석은 BM25 재랭킹에만 사용.
+    """
+    words = query.strip().split()
+    if not words:
+        return query
+    # 첫 단어가 2글자 이상이면 그대로 사용
+    if len(words[0]) >= 2:
+        return words[0]
+    # 첫 단어가 너무 짧으면 두 단어 조합 시도
+    if len(words) >= 2:
+        return words[0] + words[1]
+    return words[0]
+
+
 def _raw_search(target: str, query: str, display: int = 50) -> dict:
-    """법제처 API를 직접 호출하고 원시 dict를 반환합니다."""
+    """법제처 API를 직접 호출하고 원시 dict를 반환합니다.
+
+    전체 쿼리로 먼저 시도하고, 결과가 없으면 핵심 키워드로 재시도합니다.
+    """
     import requests
 
     oc = legislation_config.oc
     url = legislation_config.search_base_url
-    params = {
-        "OC": oc,
-        "target": target,
-        "type": "JSON",
-        "query": query,
-        "display": min(display, 100),
-    }
     headers = {
         "Referer": "https://open.law.go.kr/",
         "User-Agent": "mcp-kr-legislation/0.2.0",
     }
-    resp = requests.get(url, params=params, headers=headers, timeout=30)
-    resp.raise_for_status()
-    if not resp.text.strip():
-        return {}
-    return resp.json()
+
+    def _call(q: str) -> dict:
+        params = {
+            "OC": oc, "target": target, "type": "JSON",
+            "query": q, "display": min(display, 100),
+        }
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp.raise_for_status()
+        if not resp.text.strip():
+            return {}
+        try:
+            return resp.json()
+        except Exception:
+            return {}
+
+    # 1차 시도: 전체 쿼리
+    data = _call(query)
+    if data:
+        # 결과가 있는지 확인 (items가 존재하면 반환)
+        items = _extract_list(data)
+        if items:
+            return data
+
+    # 2차 시도: 핵심 키워드 추출
+    keyword = _extract_api_keyword(query)
+    if keyword != query:
+        fallback = _call(keyword)
+        if fallback:
+            return fallback
+
+    return data  # 원본 반환 (빈 결과라도)
 
 
 def _extract_list(data: dict, *hint_root_keys: str) -> list[dict]:

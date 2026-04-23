@@ -85,12 +85,28 @@ def _format_committee_search_results(data: dict, target: str, search_query: str,
             if not isinstance(item, dict):
                 continue
                 
-            # 제목 찾기
-            title = "제목 없음"
-            for key in title_keys:
-                if key in item and item[key] and str(item[key]).strip():
-                    title = str(item[key]).strip()
+            # 제목 찾기 - 안건명/의안명 우선, 없으면 결정문ID 기반 복합 제목
+            title = None
+            primary_keys = ['안건명', '의안명', '결정문제목', '사건명', '제목']
+            for key in primary_keys:
+                val = item.get(key, '')
+                if val and str(val).strip():
+                    title = str(val).strip()
                     break
+            if not title:
+                dec_id = item.get('결정문일련번호', '') or item.get('ID', '')
+                구분 = item.get('결정구분', '')
+                의결일 = item.get('의결일', '') or item.get('의결일자', '')
+                if dec_id:
+                    parts = [f"결정문 #{dec_id}"]
+                    if 구분:
+                        parts.append(구분)
+                    if 의결일:
+                        parts.append(의결일)
+                    title = " | ".join(parts)
+                else:
+                    구분 = item.get('결정구분', '') or item.get('회의종류', '')
+                    title = 구분 or "제목 없음"
             
             result_lines = [f"**{idx}. {title}**"]
             
