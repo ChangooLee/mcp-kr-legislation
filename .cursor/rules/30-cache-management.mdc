@@ -1,0 +1,47 @@
+---
+description: Cache management rules and patterns for this project
+globs: ["src/mcp_kr_legislation/utils/legislation_utils.py", "src/mcp_kr_legislation/tools/*.py"]
+---
+
+# 캐시 관리 규칙
+
+## 캐시 구조
+- **위치**: `~/.cache/mcp-kr-legislation/`
+- **형식**: `{md5_hash}.json` (메타데이터 + 실제 데이터)
+- **TTL**: 7일 (CACHE_DAYS)
+- **최대 크기**: 100MB (cleanup_cache_tool 수동 실행 필요)
+
+## 캐시 사용 패턴
+
+```python
+# 캐시 저장/로드
+from mcp_kr_legislation.utils.legislation_utils import (
+    get_cache_key, load_from_cache, save_to_cache
+)
+
+key = get_cache_key(f"target_{query}", "list")
+cached = load_from_cache(key)
+if cached:
+    return cached  # 캐시 히트
+# API 호출 후
+save_to_cache(key, data)
+```
+
+## _make_legislation_request 캐시 파라미터
+```python
+# 캐시 사용 (기본, 권장)
+data = _make_legislation_request("law", params, use_cache=True)
+
+# 캐시 우회 (강제 갱신 시만)
+data = _make_legislation_request("law", params, use_cache=False)
+```
+
+## 캐시 관리 도구 (MCP)
+- `get_cache_status()` — 현재 상태 조회
+- `cleanup_cache_tool(max_age_days=30)` — 오래된 캐시 정리
+- `invalidate_law_cache(law_id=...)` — 특정 법령 즉시 무효화
+
+## 캐시 무효화 시점
+- 법령 개정 확인 후 → `invalidate_law_cache(mst_번호)`
+- 정기 정리 (월 1회) → `cleanup_cache_tool(max_age_days=30)`
+- 디스크 부족 시 → `cleanup_cache_tool(max_size_mb=50)`

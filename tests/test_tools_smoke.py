@@ -24,6 +24,7 @@ EXPECTED_TOOL_MODULES = [
     "misc_tools",
     "precedent_tools",
     "specialized_tools",
+    "search_enhance_tools",
 ]
 
 REPRESENTATIVE_TOOLS = [
@@ -41,6 +42,19 @@ REPRESENTATIVE_TOOLS = [
     "search_moef_interpretation",
     "search_mois_interpretation",
     "search_law_appendix",
+    # BM25 enhanced search tools
+    "search_law_bm25",
+    "search_precedent_bm25",
+    "search_legal_term_bm25",
+    "search_committee_bm25",
+    "search_admin_rule_bm25",
+    "search_interpretation_bm25",
+    "search_all_bm25",
+    "explain_bm25_tokenize",
+    # Cache management tools
+    "get_cache_status",
+    "cleanup_cache_tool",
+    "invalidate_law_cache",
 ]
 
 

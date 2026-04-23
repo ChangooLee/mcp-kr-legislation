@@ -98,6 +98,93 @@ def load_from_cache(cache_key: str) -> Optional[Dict[str, Any]]:
         logger.error(f"캐시 로드 실패: {e}")
         return None
 
+def cleanup_cache(max_age_days: int = 30, max_size_mb: int = 100) -> dict:
+    """
+    오래된 캐시 파일과 크기 초과 파일을 정리합니다.
+
+    Args:
+        max_age_days: 이 일수보다 오래된 파일 삭제
+        max_size_mb: 전체 캐시 크기가 이 MB를 초과하면 오래된 파일부터 삭제
+
+    Returns:
+        {"deleted": int, "freed_bytes": int, "remaining": int}
+    """
+    result = {"deleted": 0, "freed_bytes": 0, "remaining": 0}
+    if not CACHE_DIR.exists():
+        return result
+
+    cutoff = datetime.now() - timedelta(days=max_age_days)
+    cache_files = sorted(CACHE_DIR.glob("*.json"), key=lambda f: f.stat().st_mtime)
+
+    # 1단계: 만료 파일 삭제
+    for cache_file in list(cache_files):
+        mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
+        if mtime < cutoff:
+            size = cache_file.stat().st_size
+            try:
+                cache_file.unlink()
+                result["deleted"] += 1
+                result["freed_bytes"] += size
+                cache_files.remove(cache_file)
+            except Exception as e:
+                logger.warning(f"캐시 삭제 실패: {cache_file} - {e}")
+
+    # 2단계: 크기 제한 초과 시 오래된 것부터 삭제
+    total_bytes = sum(f.stat().st_size for f in cache_files if f.exists())
+    max_bytes = max_size_mb * 1024 * 1024
+    for cache_file in cache_files:
+        if total_bytes <= max_bytes:
+            break
+        if cache_file.exists():
+            size = cache_file.stat().st_size
+            try:
+                cache_file.unlink()
+                result["deleted"] += 1
+                result["freed_bytes"] += size
+                total_bytes -= size
+            except Exception as e:
+                logger.warning(f"캐시 삭제 실패: {cache_file} - {e}")
+
+    result["remaining"] = len([f for f in CACHE_DIR.glob("*.json") if f.exists()])
+    logger.info(
+        f"캐시 정리 완료: {result['deleted']}개 삭제, "
+        f"{result['freed_bytes'] // 1024}KB 확보, {result['remaining']}개 잔여"
+    )
+    return result
+
+
+def invalidate_cache(law_id: str, section: str = "all") -> bool:
+    """특정 법령의 캐시를 즉시 무효화합니다."""
+    try:
+        cache_key = get_cache_key(law_id, section)
+        cache_path = get_cache_path(cache_key)
+        if cache_path.exists():
+            cache_path.unlink()
+            logger.info(f"캐시 무효화: {law_id}/{section}")
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"캐시 무효화 실패: {e}")
+        return False
+
+
+def get_cache_stats() -> dict:
+    """현재 캐시 상태를 반환합니다."""
+    if not CACHE_DIR.exists():
+        return {"files": 0, "total_bytes": 0, "oldest_days": 0, "newest_days": 0}
+    files = list(CACHE_DIR.glob("*.json"))
+    if not files:
+        return {"files": 0, "total_bytes": 0, "oldest_days": 0, "newest_days": 0}
+    mtimes = [datetime.fromtimestamp(f.stat().st_mtime) for f in files]
+    now = datetime.now()
+    return {
+        "files": len(files),
+        "total_bytes": sum(f.stat().st_size for f in files),
+        "oldest_days": (now - min(mtimes)).days,
+        "newest_days": (now - max(mtimes)).days,
+    }
+
+
 def format_date(date_str: str) -> str:
     """날짜 형식을 YYYY-MM-DD로 통일"""
     if date_str and len(date_str) == 8:

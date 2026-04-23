@@ -90,7 +90,23 @@ python scripts/cache_stats.py
 2. **캐시 크기 관리**: 주기적으로 만료된 캐시 정리
 3. **지식 그래프 동기화**: 캐시 저장 시 그래프도 함께 업데이트
 
+## 신규 캐시 관리 함수 (2026-04-23 추가)
+
+`src/mcp_kr_legislation/utils/legislation_utils.py`에 추가됨:
+
+| 함수 | 기능 |
+|------|------|
+| `cleanup_cache(max_age_days, max_size_mb)` | 오래된/초과 크기 파일 삭제 |
+| `invalidate_cache(law_id, section)` | 특정 법령 캐시 즉시 삭제 |
+| `get_cache_stats()` | 파일 수/크기/날짜 통계 |
+
+MCP 도구로도 제공 (search_enhance_tools.py):
+- `get_cache_status()` — 상태 조회
+- `cleanup_cache_tool(max_age_days=30)` — 정리
+- `invalidate_law_cache(law_id=...)` — 무효화
+
 ## 관련 파일
 
-- [src/mcp_kr_legislation/utils/data/](../../src/mcp_kr_legislation/utils/data/) - 캐시 디렉토리
-- [skills/graph-search/](graph-search/) - 지식 그래프 검색
+- `src/mcp_kr_legislation/utils/legislation_utils.py` - 실제 구현
+- `src/mcp_kr_legislation/tools/search_enhance_tools.py` - MCP 도구
+- [skills/graph-search/](../graph-search/) - 지식 그래프 검색

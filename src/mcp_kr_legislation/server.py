@@ -175,6 +175,7 @@ tool_modules = [
     "misc_tools",
     "precedent_tools",
     "specialized_tools",
+    "search_enhance_tools",  # BM25 재랭킹 검색 + 캐시 관리
 ]
 
 logger.info(f"🔧 도구 모듈 로딩 시작... (총 {len(tool_modules)}개)")

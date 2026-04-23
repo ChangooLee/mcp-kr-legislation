@@ -1,0 +1,54 @@
+---
+description: Contract for developing new MCP tools in this project
+globs: ["src/mcp_kr_legislation/tools/*.py"]
+---
+
+# MCP 도구 개발 계약
+
+## 도구 파일 패턴
+
+```python
+from ..server import mcp
+from ..utils.law_tools_utils import _make_legislation_request  # 또는 직접 구현
+
+@mcp.tool(
+    name="tool_name",
+    description="...",
+    tags={"카테고리", "기능"},
+)
+def tool_name(
+    param: Annotated[str, "파라미터 설명"],
+) -> TextContent:
+    """한 줄 설명"""
+    params = {"query": param, ...}
+    data = _make_legislation_request("target", params, use_cache=True)
+    # 결과 포맷팅
+    return TextContent(type="text", text=...)
+```
+
+## 필수 체크리스트
+- [ ] `@mcp.tool` 데코레이터에 `name`, `description`, `tags` 포함
+- [ ] `description`에 사용 예시 포함
+- [ ] `use_cache=True` 사용
+- [ ] 빈 입력 처리 (early return)
+- [ ] `TextContent` 반환
+- [ ] `server.py`의 `tool_modules`에 등록
+
+## 캐시 키 생성
+```python
+cache_key = get_cache_key(f"{target}_{param}", "list")
+```
+
+## 오류 처리
+```python
+try:
+    data = _make_legislation_request(target, params, use_cache=True)
+except Exception as e:
+    return TextContent(type="text", text=f"오류: {e}")
+```
+
+## 테스트
+```bash
+# 법제처 API 직접 확인
+curl "http://www.law.go.kr/DRF/lawSearch.do?OC=lchangoo&target=TARGET&type=JSON&query=검색어"
+```
