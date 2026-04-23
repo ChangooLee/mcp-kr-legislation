@@ -201,12 +201,58 @@ def search_administrative_rule_comparison(query: Optional[str] = None, display: 
 @mcp.tool(name="get_administrative_rule_comparison_detail", description="행정규칙 신구법 비교 상세내용을 조회합니다. 특정 행정규칙의 신구법 비교 본문을 제공합니다.")
 def get_administrative_rule_comparison_detail(comparison_id: Union[str, int]) -> TextContent:
     """행정규칙 신구법 비교 본문 조회"""
-    params = {"target": "admrulOldAndNew", "ID": str(comparison_id)}
+    params = {"ID": str(comparison_id)}
     try:
         data = _make_legislation_request("admrulOldAndNew", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("admrulOldAndNew", params)
-        result = _format_search_results(data, "admrulOldAndNew", f"비교ID:{comparison_id}", 50)
-        return TextContent(type="text", text=result)
+
+        svc = data.get("AdmRulOldAndNewService", {})
+        if svc:
+            new_info = svc.get("신조문_기본정보", {})
+            old_info = svc.get("구조문_기본정보", {})
+            new_arts = svc.get("신조문목록", [])
+            old_arts = svc.get("구조문목록", [])
+
+            rule_name = new_info.get("행정규칙명", old_info.get("행정규칙명", f"비교ID:{comparison_id}"))
+            result = f"**행정규칙 신구법 비교** — {rule_name}\n\n"
+
+            def _fmt_info(info: dict, label: str) -> str:
+                if not info:
+                    return ""
+                lines = [f"**{label}**"]
+                for k, v in info.items():
+                    if v:
+                        lines.append(f"  {k}: {v}")
+                return "\n".join(lines) + "\n"
+
+            result += _fmt_info(old_info, "구 규정 기본정보")
+            result += _fmt_info(new_info, "신 규정 기본정보")
+
+            def _fmt_arts(arts, label: str) -> str:
+                if not arts:
+                    return ""
+                if isinstance(arts, dict):
+                    arts = [arts]
+                lines = [f"\n**{label}** ({len(arts)}개 조문)"]
+                for art in arts[:20]:
+                    no = art.get("조문번호", "")
+                    title = art.get("조문제목", "")
+                    content = art.get("조문내용", "")
+                    header = f"제{no.lstrip('0')}조" if no else ""
+                    if title:
+                        header += f" ({title})"
+                    if header:
+                        lines.append(f"\n**{header}**")
+                    if content:
+                        lines.append(content[:500])
+                return "\n".join(lines)
+
+            result += _fmt_arts(old_arts, "구 조문")
+            result += _fmt_arts(new_arts, "신 조문")
+            return TextContent(type="text", text=result)
+
+        # 폴백: 검색 결과 포맷
+        fallback = _format_search_results(data, "admrulOldAndNew", f"비교ID:{comparison_id}", 50)
+        return TextContent(type="text", text=fallback)
     except Exception as e:
         return TextContent(type="text", text=f"행정규칙 신구법 비교 상세 조회 중 오류: {str(e)}")
 

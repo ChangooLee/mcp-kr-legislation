@@ -592,28 +592,37 @@ def search_committee_bm25(
     }
     label = f"{committee_names.get(committee, committee)} 결정문"
 
-    # 위원회별 루트 키 매핑
+    # 위원회별 루트 키 매핑 (실제 API 응답 루트키 기준)
     root_key_map = {
-        "ppc": "PpcSearch", "fsc": "FscSearch", "ftc": "FtcSearch",
-        "acr": "AcrSearch", "nlrc": "NlrcSearch", "ecc": "EccSearch",
-        "sfc": "SfcSearch", "nhrck": "NhrckSearch", "kcc": "KccSearch",
-        "iaciac": "IaciacSearch", "oclt": "OcltSearch",
+        "ppc": "Ppc", "fsc": "Fsc", "ftc": "Ftc",
+        "acr": "Acr", "nlrc": "Nlrc", "ecc": "Ecc",
+        "sfc": "Sfc", "nhrck": "Nhrck", "kcc": "Kcc",
+        "iaciac": "Iaciac", "oclt": "Oclt",
     }
 
-    try:
-        # ppc는 "안건명", 다른 위원회는 "사건명" 등 기관마다 필드명이 다름
-        # 자동 탐지 _extract_list가 처리하므로 text_keys는 후처리용
-        ppc_text_keys = ["안건명", "결정구분", "회의종류"]
-        default_text_keys = ["사건명", "결정유형명", "결정일자"]
-        used_text_keys = ppc_text_keys if committee == "ppc" else default_text_keys
+    # 위원회별 실제 필드명 매핑
+    # nlrc: 제목/사건번호, ppc: 안건명, fsc/ftc/etc: 사건명 or 제목
+    committee_fields: dict = {
+        "ppc":   {"title": ["안건명", "의안명"], "text_keys": ["안건명", "결정구분", "회의종류"],
+                  "display": [("안건명", "안건명"), ("결정구분", "결정구분"), ("의결일", "의결일")]},
+        "nlrc":  {"title": ["제목", "사건번호"],  "text_keys": ["제목", "사건번호", "등록일"],
+                  "display": [("제목", "사건명"), ("사건번호", "사건번호"), ("등록일", "등록일")]},
+    }
+    default_cf = {
+        "title": ["사건명", "제목", "안건명"],
+        "text_keys": ["사건명", "제목", "결정유형명", "결정일자"],
+        "display": [("사건명", "사건명"), ("제목", "제목"), ("결정일자", "결정일")],
+    }
+    cf = committee_fields.get(committee, default_cf)
 
+    try:
         ranked, total, from_cache = _bm25_search(
             target=committee,
             query=query,
             display=display,
             top_k=top_k,
-            root_key=root_key_map.get(committee, f"{committee.capitalize()}Search"),
-            text_keys=used_text_keys,
+            root_key=root_key_map.get(committee, committee.capitalize()),
+            text_keys=cf["text_keys"],
         )
     except Exception as e:
         return TextContent(type="text", text=f"API 오류: {e}")
@@ -621,11 +630,17 @@ def search_committee_bm25(
     if not ranked:
         return TextContent(type="text", text=f"'{query}' {label} 검색 결과가 없습니다.")
 
-    # ppc와 일반 위원회는 필드명이 다름
-    if committee == "ppc":
-        display_fields = [("안건명", "안건명"), ("결정구분", "결정구분"), ("의결일", "의결일")]
-    else:
-        display_fields = [("사건명", "사건명"), ("결정유형명", "결정유형"), ("결정일자", "결정일")]
+    # 제목이 없는 경우 여러 후보 필드 순서대로 시도
+    title_fields = cf.get("title", ["사건명", "제목", "안건명"])
+    for item in ranked:
+        if not any(item.get(k) for k in [f[0] for f in cf["display"][:1]]):
+            for tf in title_fields:
+                if item.get(tf):
+                    # 메인 표시 필드가 없으면 우선 필드로 보완
+                    item.setdefault(cf["display"][0][0], item[tf])
+                    break
+
+    display_fields = cf["display"]
 
     return TextContent(
         type="text",

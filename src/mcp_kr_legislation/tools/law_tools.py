@@ -783,9 +783,16 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             # 자치법규 별표서식은 licBylSearch 루트키와 ordinbyl 데이터키 사용
             search_data = data['licBylSearch']
             target_data = search_data.get('ordinbyl', [])
-        elif target in ("aiSearch", "aiRltLs") and target in data:
-            # 지능형 법령검색은 aiSearch/aiRltLs 루트키와 법령조문 데이터키 사용
-            search_data = data[target]
+        elif target in ("aiSearch", "aiRltLs"):
+            # 지능형 법령검색: aiSearch는 "aiSearch" 루트키, aiRltLs는 "aiRltLsSearch" 루트키 사용
+            if target in data:
+                search_data = data[target]
+            elif f"{target}Search" in data:
+                search_data = data[f"{target}Search"]
+            elif "aiRltLsSearch" in data:
+                search_data = data["aiRltLsSearch"]
+            else:
+                search_data = {}
             target_data = search_data.get('법령조문', [])
             if not isinstance(target_data, list):
                 target_data = [target_data] if target_data else []
@@ -1117,8 +1124,10 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         value = str(raw_value).strip()
                 
                 if value:
+                    if display_name in ('공포일자', '시행일자', '삭제일자', '비교일자') and len(value) >= 8 and value[:8].isdigit():
+                        value = f"{value[:4]}-{value[4:6]}-{value[6:8]}"
                     result += f"   {display_name}: {value}\n"
-            
+
             # 법령일련번호와 법령ID 모두 있는 경우 상세조회 가이드 추가
             mst = None
             law_id = None
@@ -1330,12 +1339,10 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                 if 파일링크:
                     result += f"   서식파일: https://www.law.go.kr{파일링크}\n"
             elif target in ("aiSearch", "aiRltLs"):
-                법령명 = item.get('법령명', '')
                 조문번호 = item.get('조문번호', '')
                 조문제목 = item.get('조문제목', '')
                 조문내용 = item.get('조문내용', '')
                 mst = item.get('법령일련번호', '')
-                시행일자 = item.get('시행일자', '')
                 if 조문번호:
                     result += f"   조문: 제{조문번호.lstrip('0')}조"
                     if 조문제목:
@@ -1344,8 +1351,6 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                 if 조문내용:
                     preview = re.sub(r'<[^>]+>', '', 조문내용)[:200].strip()
                     result += f"   내용 미리보기: {preview}...\n"
-                if 시행일자:
-                    result += f"   시행일자: {시행일자[:8]}\n"
                 if mst:
                     result += f"   상세조회: get_law_detail(mst=\"{mst}\")\n"
             elif target == "lstrm":
@@ -1409,6 +1414,17 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
             elif target == "lsRlt":
                 관계 = item.get('법령간관계', '')
                 if 관계:
+                    # 유형 코드 → 설명 보완
+                    _RLT_TYPE_MAP = {
+                        "1유형": "수권관계(상위→하위)",
+                        "2유형": "특별법관계",
+                        "3유형": "부속법령관계",
+                        "4유형": "위임관계",
+                    }
+                    for code, desc in _RLT_TYPE_MAP.items():
+                        if code in 관계 and desc not in 관계:
+                            관계 = f"{관계} ({desc})"
+                            break
                     result += f"   법령간관계: {관계}\n"
                 if law_id:
                     result += f"   상세조회: get_law_detail(law_id=\"{law_id}\")\n"
@@ -3526,9 +3542,11 @@ def get_one_view_detail(
         params = {}
         if mst:
             params["MST"] = str(mst)
+            is_detail = True
         else:
             params["display"] = min(display, 100)
-        data = _make_legislation_request("oneview", params, is_detail=True, use_cache=True)
+            is_detail = False  # 목록 검색은 lawSearch.do 사용
+        data = _make_legislation_request("oneview", params, is_detail=is_detail, use_cache=True)
         
         if not data:
             return TextContent(type="text", text="한눈보기 정보를 찾을 수 없습니다.")

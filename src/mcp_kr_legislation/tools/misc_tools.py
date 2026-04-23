@@ -36,20 +36,17 @@ from .law_tools import (
 사용 예시: get_ordinance_detail(ordinance_id="123456")""")
 def get_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
     """자치법규 상세내용 조회
-    
+
     Args:
-        ordinance_id: 자치법규ID
+        ordinance_id: 자치법규일련번호(MST) - search_local_ordinance 결과의 '자치법규일련번호' 필드값 사용
     """
     if not ordinance_id:
-        return TextContent(type="text", text="자치법규ID를 입력해주세요.")
-    
+        return TextContent(type="text", text="자치법규일련번호를 입력해주세요.")
+
     try:
-        # API 요청 파라미터 - 올바른 target과 엔드포인트 사용
-        params = {"target": "ordin", "ID": str(ordinance_id)}
-        
-        # 올바른 API 엔드포인트 사용 (lawService.do)
-        oc = os.getenv("LEGISLATION_API_KEY", "lchangoo")
-        url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&ID={ordinance_id}&type=JSON"
+        # MST 파라미터로 조회 (ID= 는 지원 안 됨, MST= 사용)
+        oc = os.getenv("LEGISLATION_OC", os.getenv("LEGISLATION_API_KEY", "lchangoo"))
+        url = f"http://www.law.go.kr/DRF/lawService.do?OC={oc}&target=ordin&MST={ordinance_id}&type=JSON"
         
         # API 요청 - 직접 requests 사용 (Referer 헤더 필수)
         headers = {"Referer": "https://open.law.go.kr/"}
@@ -128,77 +125,59 @@ def get_ordinance_detail(ordinance_id: Union[str, int]) -> TextContent:
 사용 예시: get_treaty_detail(treaty_id="123456")""")
 def get_treaty_detail(treaty_id: Union[str, int]) -> TextContent:
     """조약 상세내용 조회
-    
+
     Args:
-        treaty_id: 조약ID
+        treaty_id: 조약일련번호 - search_treaty 결과의 '조약일련번호' 필드값 사용
     """
     if not treaty_id:
-        return TextContent(type="text", text="조약ID를 입력해주세요.")
-    
+        return TextContent(type="text", text="조약일련번호를 입력해주세요.")
+
     try:
-        # API 요청 파라미터 - lawService.do에서 ID 파라미터 사용
-        params = {"target": "trty", "ID": str(treaty_id)}
-        
-        # API 요청 (is_detail=True로 lawService.do 호출)
-        data = _make_legislation_request("trty", params, is_detail=True, use_cache=True)
-        
-        # 결과 포맷팅
-        result = f"**조약 상세 정보** (ID: {treaty_id})\n"
-        result += "=" * 50 + "\n\n"
-        
-        if 'BothTrtyService' in data:
-            treaty_service = data['BothTrtyService']
-            
-            # 조약 기본정보
-            if '조약기본정보' in treaty_service:
-                basic_info = treaty_service['조약기본정보']
-                result += "**📋 기본정보**\n"
-                
-                info_fields = {
-                    '조약명(한글)': '조약명_한글',
-                    '조약명(영문)': '조약명_영문', 
-                    '조약번호': '조약번호',
-                    '서명일자': '서명일자',
-                    '발효일자': '발효일자',
-                    '서명장소': '서명장소',
-                    '관보게재일자': '관보게재일자',
-                    '국회비준동의여부': '국회비준동의여부',
-                    '국회비준동의일자': '국회비준동의일자'
-                }
-                
-                for display_name, field_key in info_fields.items():
-                    if field_key in basic_info and basic_info[field_key]:
-                        result += f"- **{display_name}**: {basic_info[field_key]}\n"
-            
-            # 추가정보
-            if '추가정보' in treaty_service:
-                add_info = treaty_service['추가정보']
-                result += "\n**🌏 체결 상대국**\n"
-                
-                if '체결대상국가한글' in add_info and add_info['체결대상국가한글']:
-                    result += f"- **상대국**: {add_info['체결대상국가한글']}\n"
-                if '양자조약분야명' in add_info and add_info['양자조약분야명']:
-                    result += f"- **분야**: {add_info['양자조약분야명']}\n"
-            
-            # 조약 내용
-            if '조약내용' in treaty_service and '조약내용' in treaty_service['조약내용']:
-                content = treaty_service['조약내용']['조약내용']
-                if content:
-                    result += f"\n**📄 조약 전문**\n{content[:500]}{'...' if len(content) > 500 else ''}\n"
-            
-            # 첨부파일
-            if '첨부파일' in treaty_service:
-                file_info = treaty_service['첨부파일']
-                if file_info.get('첨부파일명'):
-                    result += f"\n**📎 첨부파일**: {file_info['첨부파일명']}\n"
-                    
-        else:
-            result += "조약 정보를 찾을 수 없습니다.\n\n"
-        
-        result += "\n" + "=" * 50 + "\n"
-        
+        # 조약 상세 API(lawService.do)는 JSON 미지원 → 검색 API로 상세정보 취득
+        params = {"조약일련번호": str(treaty_id), "display": 1}
+        data = _make_legislation_request("trty", params, is_detail=False, use_cache=True)
+
+        trty_list = []
+        if "TrtySearch" in data:
+            raw = data["TrtySearch"].get("Trty", [])
+            trty_list = raw if isinstance(raw, list) else ([raw] if raw else [])
+
+        if not trty_list:
+            # 조약일련번호로 검색이 안 될 경우 조약번호 등으로 재시도
+            params2 = {"query": str(treaty_id), "display": 5}
+            data2 = _make_legislation_request("trty", params2, use_cache=True)
+            if "TrtySearch" in data2:
+                raw2 = data2["TrtySearch"].get("Trty", [])
+                trty_list = raw2 if isinstance(raw2, list) else ([raw2] if raw2 else [])
+            # ID 일치 항목 필터
+            trty_list = [t for t in trty_list if str(t.get("조약일련번호", "")) == str(treaty_id)] or trty_list[:1]
+
+        if not trty_list:
+            return TextContent(type="text", text=f"조약일련번호 {treaty_id}에 해당하는 조약을 찾을 수 없습니다.")
+
+        t = trty_list[0]
+        result = f"**조약 상세 정보** (일련번호: {treaty_id})\n\n"
+        field_map = [
+            ("조약명", "조약명"),
+            ("조약번호", "조약번호"),
+            ("조약구분명", "조약 구분"),
+            ("서명일자", "서명일자"),
+            ("발효일자", "발효일자"),
+            ("관보게제일자", "관보게재일자"),
+            ("국가번호", "국가번호"),
+        ]
+        for api_key, label in field_map:
+            val = t.get(api_key, "")
+            if val:
+                result += f"**{label}**: {val}\n"
+
+        detail_link = t.get("조약상세링크", "")
+        if detail_link:
+            result += f"\n**전문 보기**: https://www.law.go.kr{detail_link.replace('type=HTML', 'type=HTML')}\n"
+            result += "\n> 조약 전문은 법제처 상세 링크에서 확인할 수 있습니다.\n"
+
         return TextContent(type="text", text=result)
-        
+
     except Exception as e:
         logger.error(f"조약 상세조회 중 오류: {e}")
         return TextContent(type="text", text=f"조약 상세조회 중 오류가 발생했습니다: {str(e)}")
@@ -211,83 +190,60 @@ def get_treaty_detail(treaty_id: Union[str, int]) -> TextContent:
 사용 예시: get_ordinance_appendix_detail(appendix_id="123456")""")
 def get_ordinance_appendix_detail(appendix_id: Union[str, int]) -> TextContent:
     """자치법규 별표서식 상세내용 조회
-    
+
     Args:
-        appendix_id: 별표서식ID
+        appendix_id: 별표일련번호 - search_ordinance_appendix 결과의 '별표일련번호' 필드값 사용
     """
     if not appendix_id:
-        return TextContent(type="text", text="별표서식ID를 입력해주세요.")
-    
+        return TextContent(type="text", text="별표일련번호를 입력해주세요.")
+
     try:
-        # API 요청 파라미터
-        params = {"target": "ordinanceAppendix", "MST": str(appendix_id)}
-        url = _generate_api_url("ordinbyl", params)
-        
-        # API 요청
+        # 검색 API로 해당 별표 정보 가져오기 (ID= 파라미터로 직접 조회)
+        params = {"별표일련번호": str(appendix_id), "display": 1}
         data = _make_legislation_request("ordinbyl", params, use_cache=True)
-        
-        # 결과 포맷팅
-        result = f"**자치법규 별표서식 상세 정보** (ID: {appendix_id})\n"
-        result += "=" * 50 + "\n\n"
-        
-        if data:
-            # 데이터 구조에 따라 처리
-            appendix_info = None
-            if 'ordinanceAppendix' in data:
-                appendix_data = data['ordinanceAppendix']
-                appendix_info = appendix_data[0] if isinstance(appendix_data, list) else appendix_data
-            elif len(data) == 1:
-                key = list(data.keys())[0]
-                appendix_data = data[key]
-                appendix_info = appendix_data[0] if isinstance(appendix_data, list) else appendix_data
-            
-            if appendix_info:
-                # 기본 정보 출력
-                basic_fields = {
-                    '별표서식명': ['별표서식명', '명칭', 'title'],
-                    '별표서식ID': ['별표서식ID', 'ID', 'id'],
-                    '자치법규명': ['자치법규명', 'ordinance_name'],
-                    '자치단체': ['자치단체명', 'local_gov'],
-                    '별표종류': ['별표종류', 'appendix_type', 'type']
-                }
-                
-                for field_name, field_keys in basic_fields.items():
-                    value = None
-                    for key in field_keys:
-                        if key in appendix_info and appendix_info[key]:
-                            value = appendix_info[key]
-                            break
-                    
-                    if value:
-                        result += f"**{field_name}**: {value}\n"
-                
-                result += "\n" + "=" * 50 + "\n\n"
-                
-                # 별표서식 내용 출력
-                content_fields = ['내용', 'content', 'text', '별표내용', 'body']
-                content = None
-                
-                for field in content_fields:
-                    if field in appendix_info and appendix_info[field]:
-                        content = appendix_info[field]
-                        break
-                
-                if content:
-                    result += "**별표서식 내용:**\n\n"
-                    result += str(content)
-                    result += "\n\n"
-                else:
-                    result += "별표서식 내용을 찾을 수 없습니다.\n\n"
-            else:
-                result += "별표서식 정보를 찾을 수 없습니다.\n\n"
-        else:
-            result += "별표서식 정보를 찾을 수 없습니다.\n\n"
-        
-        result += "=" * 50 + "\n"
-        result += f"**API URL**: {url}\n"
-        
+
+        items = []
+        if "licBylSearch" in data:
+            raw = data["licBylSearch"].get("ordinbyl", [])
+            items = raw if isinstance(raw, list) else ([raw] if raw else [])
+
+        if not items:
+            # 별표일련번호 직접 검색이 안 되면 ID로 재시도
+            params2 = {"query": str(appendix_id), "display": 10}
+            data2 = _make_legislation_request("ordinbyl", params2, use_cache=True)
+            if "licBylSearch" in data2:
+                raw2 = data2["licBylSearch"].get("ordinbyl", [])
+                items = [i for i in (raw2 if isinstance(raw2, list) else [raw2]) if str(i.get("별표일련번호", "")) == str(appendix_id)]
+
+        if not items:
+            return TextContent(type="text", text=f"별표일련번호 {appendix_id}에 해당하는 별표서식을 찾을 수 없습니다.")
+
+        item = items[0]
+        result = f"**자치법규 별표서식 상세 정보** (별표일련번호: {appendix_id})\n\n"
+        field_map = [
+            ("별표명", "별표명"),
+            ("별표종류", "별표종류"),
+            ("관련자치법규명", "관련 자치법규"),
+            ("지자체기관명", "지자체"),
+            ("공포일자", "공포일자"),
+            ("공포번호", "공포번호"),
+            ("제개정구분명", "제개정 구분"),
+        ]
+        for api_key, label in field_map:
+            val = item.get(api_key, "")
+            if val:
+                result += f"**{label}**: {val}\n"
+
+        detail_link = item.get("별표자치법규상세링크", "")
+        file_link = item.get("별표서식파일링크", "")
+        if detail_link:
+            result += f"\n**상세 보기**: https://www.law.go.kr{detail_link}\n"
+        if file_link:
+            result += f"**서식 파일**: https://www.law.go.kr{file_link}\n"
+
+        result += "\n> 별표서식 본문은 상세 링크에서 확인할 수 있습니다.\n"
         return TextContent(type="text", text=result)
-        
+
     except Exception as e:
         logger.error(f"자치법규 별표서식 상세조회 중 오류: {e}")
-        return TextContent(type="text", text=f"자치법규 별표서식 상세조회 중 오류가 발생했습니다: {str(e)}") 
+        return TextContent(type="text", text=f"자치법규 별표서식 상세조회 중 오류가 발생했습니다: {str(e)}")
