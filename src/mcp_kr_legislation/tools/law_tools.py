@@ -1306,6 +1306,20 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                         break
                 if dec_id:
                     result += f"   상세조회: {detail_tool}(decision_id=\"{dec_id}\")\n"
+            elif target == "licbyl":
+                # 법령 별표서식: 별표일련번호로 상세 조회
+                별표id = item.get('별표일련번호', '')
+                관련법령명 = item.get('관련법령명', '')
+                별표종류 = item.get('별표종류', '')
+                파일링크 = item.get('별표서식파일링크', '')
+                if 관련법령명:
+                    result += f"   관련법령: {관련법령명}\n"
+                if 별표종류:
+                    result += f"   별표종류: {별표종류}\n"
+                if 별표id:
+                    result += f"   상세조회: get_law_appendix_detail(appendix_id=\"{별표id}\")\n"
+                elif 파일링크:
+                    result += f"   서식파일: https://www.law.go.kr{파일링크}\n"
             elif target == "admbyl":
                 별표id = item.get('별표일련번호', '')
                 관련규칙명 = item.get('관련행정규칙명', '')

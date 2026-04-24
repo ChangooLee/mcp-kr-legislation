@@ -161,15 +161,15 @@ def search_moe_interpretation(query: Optional[str] = None, display: int = 20, pa
     except Exception as e:
         return TextContent(type="text", text=f"교육부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_mote_interpretation", description="""산업통상자원부 법령해석을 검색합니다.
+@mcp.tool(name="search_motie_interpretation", description="""산업통상자원부 법령해석을 검색합니다.
 
 매개변수:
 - query: 검색어 (필수)
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_mote_interpretation("공장"), search_mote_interpretation("면적", display=50)""")
-def search_mote_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+사용 예시: search_motie_interpretation("공장"), search_motie_interpretation("면적", display=50)""")
+def search_motie_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """산업통상자원부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
@@ -183,15 +183,15 @@ def search_mote_interpretation(query: Optional[str] = None, display: int = 20, p
     except Exception as e:
         return TextContent(type="text", text=f"산업통상자원부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_maf_interpretation", description="""농림축산식품부 법령해석을 검색합니다.
+@mcp.tool(name="search_mafra_interpretation", description="""농림축산식품부 법령해석을 검색합니다.
 
 매개변수:
 - query: 검색어 (필수)
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_maf_interpretation("농업"), search_maf_interpretation("축산", display=50)""")
-def search_maf_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+사용 예시: search_mafra_interpretation("농업"), search_mafra_interpretation("축산", display=50)""")
+def search_mafra_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """농림축산식품부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
@@ -205,15 +205,15 @@ def search_maf_interpretation(query: Optional[str] = None, display: int = 20, pa
     except Exception as e:
         return TextContent(type="text", text=f"농림축산식품부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_moms_interpretation", description="""국방부 법령해석을 검색합니다.
+@mcp.tool(name="search_mnd_interpretation", description="""국방부 법령해석을 검색합니다.
 
 매개변수:
 - query: 검색어 (필수)
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_moms_interpretation("국방"), search_moms_interpretation("군사", display=50)""")
-def search_moms_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+사용 예시: search_mnd_interpretation("국방"), search_mnd_interpretation("군사", display=50)""")
+def search_mnd_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """국방부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
@@ -227,15 +227,15 @@ def search_moms_interpretation(query: Optional[str] = None, display: int = 20, p
     except Exception as e:
         return TextContent(type="text", text=f"국방부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_sme_interpretation", description="""중소벤처기업부 법령해석을 검색합니다.
+@mcp.tool(name="search_mss_interpretation", description="""중소벤처기업부 법령해석을 검색합니다.
 
 매개변수:
 - query: 검색어 (필수)
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_sme_interpretation("창업"), search_sme_interpretation("중소기업", display=50)""")
-def search_sme_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+사용 예시: search_mss_interpretation("창업"), search_mss_interpretation("중소기업", display=50)""")
+def search_mss_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """중소벤처기업부 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
@@ -249,15 +249,15 @@ def search_sme_interpretation(query: Optional[str] = None, display: int = 20, pa
     except Exception as e:
         return TextContent(type="text", text=f"중소벤처기업부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_nfa_interpretation", description="""산림청 법령해석을 검색합니다.
+@mcp.tool(name="search_kfs_interpretation", description="""산림청 법령해석을 검색합니다.
 
 매개변수:
 - query: 검색어 (필수)
 - display: 결과 개수 (최대 100)
 - page: 페이지 번호
 
-사용 예시: search_nfa_interpretation("산림"), search_nfa_interpretation("임업", display=50)""")
-def search_nfa_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+사용 예시: search_kfs_interpretation("산림"), search_kfs_interpretation("임업", display=50)""")
+def search_kfs_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
     """산림청 법령해석 검색"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
@@ -379,35 +379,35 @@ def get_moe_interpretation_detail(interpretation_id: Union[str, int]) -> TextCon
     return _get_cgmexpc_detail("moeCgmExpc", interpretation_id, "교육부")
 
 @mcp.tool(name="get_motie_interpretation_detail", description="""산업통상자원부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mote_interpretation 결과의 법령해석일련번호)
+- interpretation_id: 해석례ID (search_motie_interpretation 결과의 법령해석일련번호)
 사용 예시: get_motie_interpretation_detail(interpretation_id="123456")""")
 def get_motie_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """산업통상자원부 법령해석 상세 조회"""
     return _get_cgmexpc_detail("motieCgmExpc", interpretation_id, "산업통상자원부")
 
 @mcp.tool(name="get_mafra_interpretation_detail", description="""농림축산식품부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_maf_interpretation 결과의 법령해석일련번호)
+- interpretation_id: 해석례ID (search_mafra_interpretation 결과의 법령해석일련번호)
 사용 예시: get_mafra_interpretation_detail(interpretation_id="123456")""")
 def get_mafra_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """농림축산식품부 법령해석 상세 조회"""
     return _get_cgmexpc_detail("mafraCgmExpc", interpretation_id, "농림축산식품부")
 
 @mcp.tool(name="get_mnd_interpretation_detail", description="""국방부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_moms_interpretation 결과의 법령해석일련번호)
+- interpretation_id: 해석례ID (search_mnd_interpretation 결과의 법령해석일련번호)
 사용 예시: get_mnd_interpretation_detail(interpretation_id="123456")""")
 def get_mnd_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """국방부 법령해석 상세 조회"""
     return _get_cgmexpc_detail("mndCgmExpc", interpretation_id, "국방부")
 
 @mcp.tool(name="get_mss_interpretation_detail", description="""중소벤처기업부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_sme_interpretation 결과의 법령해석일련번호)
+- interpretation_id: 해석례ID (search_mss_interpretation 결과의 법령해석일련번호)
 사용 예시: get_mss_interpretation_detail(interpretation_id="123456")""")
 def get_mss_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """중소벤처기업부 법령해석 상세 조회"""
     return _get_cgmexpc_detail("mssCgmExpc", interpretation_id, "중소벤처기업부")
 
 @mcp.tool(name="get_kfs_interpretation_detail", description="""산림청 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_nfa_interpretation 결과의 법령해석일련번호)
+- interpretation_id: 해석례ID (search_kfs_interpretation 결과의 법령해석일련번호)
 사용 예시: get_kfs_interpretation_detail(interpretation_id="123456")""")
 def get_kfs_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
     """산림청 법령해석 상세 조회"""
