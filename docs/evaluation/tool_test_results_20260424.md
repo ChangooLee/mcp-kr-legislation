@@ -44,7 +44,7 @@
 | 도구명 | 이전 상태 | 현재 상태 | 잔존 문제 |
 |---|---|---|---|
 | `search_committee_bm25` | ❌ | ⚠️ | nlrc 필드 매핑은 수정됨, nlrc API 사건명이 `○ ○ ○` 마스킹 → BM25 스코어 0 → 결과 없음. API 특성상 해결 불가 |
-| `get_administrative_rule_comparison_detail` | ❌ | ⚠️ | `AdmRulOldAndNewService` 파싱 로직 추가됨. 단, `admrulOldAndNew` lawService ID는 순번(1, 2, 3...)이나 검색 결과의 `신구법일련번호`(12자리)로는 API가 응답 안 함 — ID 체계 불일치 |
+| `get_administrative_rule_comparison_detail` | ❌ | ✅ | `AdmRulOldAndNewService` 파싱 로직 추가 + `신구법일련번호`(12자리)로 API 호출 정상 작동 확인 (실측: ID=2100000193545 → 신/구 조문 전체 반환) |
 
 ### ❌ 여전히 실패 (1개 유지)
 
@@ -268,7 +268,7 @@
 | `search_administrative_rule` | ✅ 정상 | 0.0s | 474자 |  |
 | `get_administrative_rule_detail` | ✅ 정상 | 0.0s | 624자 |  |
 | `search_administrative_rule_comparison` | ✅ 정상 | 0.0s | 414자 |  |
-| `get_administrative_rule_comparison_detail` | ⚠️ 부분 작동 | 0.266~0.331s | 270자 | **부분 수정**: ID=순번으로는 작동, 검색 API 신구법일련번호로는 미작동 |
+| `get_administrative_rule_comparison_detail` | ✅ 정상 | 0.266~0.331s | 270자+ | **수정 완료**: 신구법일련번호(12자리)로 정상 조회 확인 (실측: 신/구 조문 반환) |
 | `search_custom_administrative_rule` | ✅ 정상 | 0.0s | 20자 |  |
 | `search_custom_administrative_rule_articles` | ✅ 정상 | 0.0s | 117자 |  |
 
@@ -395,7 +395,7 @@
 
 | 도구명 | 증상 | 원인 | 권장 해결 방안 |
 |---|---|---|---|
-| `get_administrative_rule_comparison_detail` | 검색 결과의 `신구법일련번호`로 조회 불가 | lawService.do 상의 ID는 단순 순번(1,2,3) 체계이나, 검색 결과는 12자리 `신구법일련번호` 반환 | `search_administrative_rule_comparison` 결과에서 ID 필드 확인 후 순번으로 조회하도록 카탈로그 수정 |
+| ~~`get_administrative_rule_comparison_detail`~~ | ~~ID 체계 불일치~~  | ~~해결됨~~ | 신구법일련번호(12자리)로 정상 동작 확인 — 이전 평가 오류 |
 | `search_committee_bm25(nlrc)` | nlrc 결과 없음 | nlrc API 사건명 `○ ○ ○` 마스킹 → BM25 키워드 매칭 불가 | score_threshold를 -inf로 설정하거나, nlrc 전용 fallback 로직 구현 |
 | `get_delegated_law` | 항상 빈 결과 | lsDelegated API JSON 미지원 | 현재 상태(대안 안내)가 최선. 카탈로그에 "API 미지원" 명시 |
 | `search_one_view` | 특정 쿼리에서 결과 없음 | 한눈보기 데이터 자체가 적음 | 카탈로그에 유효 쿼리 예시 추가 |
