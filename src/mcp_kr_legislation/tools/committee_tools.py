@@ -117,19 +117,17 @@ def _format_committee_search_results(data: dict, target: str, search_query: str,
                         result_lines.append(f"   {field_name}: {item[key]}")
                         break
             
-            # ID 정보 추가 (상세조회용) - target별 올바른 도구명 매핑
-            target_detail_tool_map = {
-                "ppc": "get_privacy_committee_detail", "fsc": "get_financial_committee_detail",
-                "ftc": "get_monopoly_committee_detail", "acr": "get_anticorruption_committee_detail",
-                "nlrc": "get_labor_committee_detail", "ecc": "get_environment_committee_detail",
-                "sfc": "get_securities_committee_detail", "nhrck": "get_human_rights_committee_detail",
-                "kcc": "get_broadcasting_committee_detail", "iaciac": "get_industrial_accident_committee_detail",
-                "oclt": "get_land_tribunal_detail", "eiac": "get_employment_insurance_committee_detail",
+            # ID 정보 추가 (상세조회용)
+            _target_to_committee_code = {
+                "ppc": "privacy", "fsc": "financial", "ftc": "monopoly",
+                "acr": "anticorruption", "nlrc": "labor", "ecc": "environment",
+                "sfc": "securities", "nhrck": "human_rights", "kcc": "broadcasting",
+                "iaciac": "industrial_accident", "oclt": "land", "eiac": "employment_insurance",
             }
-            detail_tool_name = target_detail_tool_map.get(target, f"get_{target}_committee_detail")
+            committee_code = _target_to_committee_code.get(target, target)
             for id_key in ['결정문일련번호', 'ID', 'id']:
                 if id_key in item and item[id_key]:
-                    result_lines.append(f"   상세조회: {detail_tool_name}(decision_id=\"{item[id_key]}\")")
+                    result_lines.append(f"   상세조회: get_committee_decision_detail(committee=\"{committee_code}\", decision_id=\"{item[id_key]}\")")
                     break
                     
             results.append("\\n".join(result_lines))
@@ -201,818 +199,121 @@ def _format_committee_detail(data: dict, target: str, decision_id: str, url: str
     return f"상세조회 응답 구조를 인식할 수 없습니다.\\n\\n**사용 가능한 키들:** {available_keys}\\n\\nAPI URL: {url}"
 
 # ===========================================
-# 위원회 결정문 도구들 (30개)
+# 위원회 결정문 도구들 (통합 2개)
 # ===========================================
 
-@mcp.tool(name="search_privacy_committee", description="""개인정보보호위원회 결정문을 검색합니다.
+# 위원회 코드 → (API 타겟, 한글명) 매핑
+COMMITTEE_TARGETS: dict[str, tuple[str, str]] = {
+    "privacy":             ("ppc",    "개인정보보호위원회"),
+    "financial":           ("fsc",    "금융위원회"),
+    "monopoly":            ("ftc",    "공정거래위원회"),
+    "anticorruption":      ("acr",    "국민권익위원회"),
+    "labor":               ("nlrc",   "노동위원회"),
+    "environment":         ("ecc",    "중앙환경분쟁조정위원회"),
+    "securities":          ("sfc",    "증권선물위원회"),
+    "human_rights":        ("nhrck",  "국가인권위원회"),
+    "broadcasting":        ("kcc",    "방송통신위원회"),
+    "industrial_accident": ("iaciac", "산업재해보상보험재심사위원회"),
+    "land":                ("oclt",   "중앙토지수용위원회"),
+    "employment_insurance":("eiac",   "고용보험심사위원회"),
+}
+
+_COMMITTEE_NAME_TO_CODE: dict[str, str] = {v[1]: k for k, v in COMMITTEE_TARGETS.items()}
+
+_COMMITTEE_LIST = "\n".join(
+    f"  {code}: {name}" for code, (_, name) in COMMITTEE_TARGETS.items()
+)
+
+
+def _resolve_committee(committee: str) -> tuple[str, str] | None:
+    key = committee.strip().lower()
+    if key in COMMITTEE_TARGETS:
+        return COMMITTEE_TARGETS[key]
+    code = _COMMITTEE_NAME_TO_CODE.get(committee.strip())
+    if code:
+        return COMMITTEE_TARGETS[code]
+    return None
+
+
+@mcp.tool(name="search_committee_decision", description=f"""위원회 결정문을 검색합니다. 12개 위원회를 단일 도구로 지원합니다.
 
 매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=의안명, 2=본문검색)
-- display: 결과 개수 (max=100)
+- committee: 위원회 코드 (필수). 아래 목록 참조.
+- query: 검색어
+- display: 결과 개수 (기본 20, 최대 100)
 - page: 페이지 번호
-- sort: 정렬 (lasc=의안명오름차순, ldes=의안명내림차순, dasc=개최일자오름차순, ddes=개최일자내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_privacy_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
+- sort: 정렬 (lasc=명오름차순, ldes=명내림차순, dasc=날짜오름차순, ddes=날짜내림차순)
+
+위원회 코드 목록:
+{_COMMITTEE_LIST}
+
+사용 예시:
+  search_committee_decision(committee="privacy", query="개인정보 수집")
+  search_committee_decision(committee="labor", query="부당해고", display=50)
+  search_committee_decision(committee="financial", query="금융규제")
+
+상세조회: 결과의 결정문일련번호(ID)로 get_committee_decision_detail 호출""")
+def search_committee_decision(
+    committee: Annotated[str, "위원회 코드 (예: privacy, labor, financial)"],
+    query: Annotated[Optional[str], "검색어"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+    sort: Annotated[Optional[str], "정렬 (lasc/ldes/dasc/ddes)"] = None,
 ) -> TextContent:
-    """개인정보보호위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=의안명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=의안명오름차순, ldes=의안명내림차순, dasc=개최일자오름차순, ddes=개최일자내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
+    resolved = _resolve_committee(committee)
+    if not resolved:
+        valid = ", ".join(COMMITTEE_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 위원회 코드: '{committee}'\n유효한 코드: {valid}")
+
+    target, committee_name = resolved
+    search_query = (query or "").strip()
+    if not search_query:
         return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
+
+    params: dict = {"query": search_query, "search": 2, "display": min(display, 100), "page": page}
     if sort:
         params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
 
     try:
-        data = _make_legislation_request("ppc", params, use_cache=True)
-        result = _format_committee_search_results(data, "ppc", search_query, display)
+        data = _make_legislation_request(target, params, use_cache=True)
+        result = _format_committee_search_results(data, target, search_query, display)
         result += format_result_guidance(extract_total_count(data), search_query)
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"개인정보보호위원회 결정문 검색 중 오류: {str(e)}")
+        return TextContent(type="text", text=f"{committee_name} 결정문 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_financial_committee", description="""금융위원회 결정문을 검색합니다.
 
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=안건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_financial_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """금융위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=안건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("fsc", params, use_cache=True)
-        url = _generate_api_url("fsc", params)
-        result = _format_committee_search_results(data, "fsc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"금융위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_monopoly_committee", description="""공정거래위원회 결정문을 검색합니다.
+@mcp.tool(name="get_committee_decision_detail", description=f"""위원회 결정문 상세내용을 조회합니다.
 
 매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=의결내용명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=의결내용명오름차순, ldes=의결내용명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_monopoly_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """공정거래위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=의결내용명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=의결내용명오름차순, ldes=의결내용명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("ftc", params, use_cache=True)
-        url = _generate_api_url("ftc", params)
-        result = _format_committee_search_results(data, "ftc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"공정거래위원회 결정문 검색 중 오류: {str(e)}")
+- committee: 위원회 코드 (search_committee_decision의 committee 파라미터와 동일)
+- decision_id: 결정문일련번호 (search_committee_decision 결과의 결정문일련번호 또는 ID 필드값)
 
-@mcp.tool(name="search_anticorruption_committee", description="""국민권익위원회 결정문을 검색합니다.
+위원회 코드 목록:
+{_COMMITTEE_LIST}
 
-매개변수:
-- query: 검색어 (선택) - 생략시 전체 목록 조회 (635건 이상)
-- search: 검색범위 (1=안건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
+⚠️ 주의: 'id' 필드(1,2,3...)가 아닌 '결정문일련번호' 필드값을 사용하세요.
 
 사용 예시:
-- search_anticorruption_committee() - 전체 목록 조회
-- search_anticorruption_committee("112신고") - 특정 키워드 검색""")
-def search_anticorruption_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
+  get_committee_decision_detail(committee="privacy", decision_id="6173")
+  get_committee_decision_detail(committee="labor", decision_id="123456")""")
+def get_committee_decision_detail(
+    committee: Annotated[str, "위원회 코드 (예: privacy, labor, financial)"],
+    decision_id: Annotated[Union[str, int], "결정문일련번호 (search_committee_decision 결과의 ID)"],
 ) -> TextContent:
-    """국민권익위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어 (선택, 생략시 전체 목록)
-        search: 검색범위 (1=안건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    search_query = query.strip() if query else ""
-    
-    # 파라미터 구성 - 검색어 없으면 전체 목록 조회
-    params = {"display": min(display, 100), "page": page}
-    if search_query:
-        params["query"] = search_query
-        params["search"] = search
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("acr", params, use_cache=True)
-        url = _generate_api_url("acr", params)
-        display_query = search_query if search_query else "전체 목록"
-        result = _format_committee_search_results(data, "acr", display_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국민권익위원회 결정문 검색 중 오류: {str(e)}")
+    resolved = _resolve_committee(committee)
+    if not resolved:
+        valid = ", ".join(COMMITTEE_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 위원회 코드: '{committee}'\n유효한 코드: {valid}")
 
-@mcp.tool(name="search_labor_committee", description="""노동위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=재정일자오름차순, ddes=재정일자내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_labor_committee(
-    query: Optional[str] = None,
-    search: int = 1,
-    display: int = 20,
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """노동위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=재정일자오름차순, ddes=재정일자내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("nlrc", params, use_cache=True)
-        url = _generate_api_url("nlrc", params)
-        result = _format_committee_search_results(data, "nlrc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"노동위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_environment_committee", description="""중앙환경분쟁조정위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, nasc=의결번호오름차순, ndes=의결번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_environment_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """중앙환경분쟁조정위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, nasc=의결번호오름차순, ndes=의결번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("ecc", params, use_cache=True)
-        url = _generate_api_url("ecc", params)
-        result = _format_committee_search_results(data, "ecc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"중앙환경분쟁조정위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_securities_committee", description="""증권선물위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_securities_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """증권선물위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("sfc", params, use_cache=True)
-        url = _generate_api_url("sfc", params)
-        result = _format_committee_search_results(data, "sfc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"증권선물위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_human_rights_committee", description="""국가인권위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_human_rights_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """국가인권위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("nhrck", params, use_cache=True)
-        url = _generate_api_url("nhrck", params)
-        result = _format_committee_search_results(data, "nhrck", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국가인권위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_broadcasting_committee", description="""방송통신위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=안건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=안건번호오름차순, ndes=안건번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_broadcasting_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """방송통신위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=안건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=안건명오름차순, ldes=안건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=안건번호오름차순, ndes=안건번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("kcc", params, use_cache=True)
-        url = _generate_api_url("kcc", params)
-        result = _format_committee_search_results(data, "kcc", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"방송통신위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_industrial_accident_committee", description="""산업재해보상보험 재심사위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건오름차순, ldes=사건내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_industrial_accident_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """산업재해보상보험재심사위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건오름차순, ldes=사건내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("iaciac", params, use_cache=True)
-        url = _generate_api_url("iaciac", params)
-        result = _format_committee_search_results(data, "iaciac", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"산업재해보상보험재심사위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_land_tribunal", description="""중앙토지수용위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=제목, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=제목오름차순, ldes=제목내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_land_tribunal(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """중앙토지수용위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=제목, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=제목오름차순, ldes=제목내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("oclt", params, use_cache=True)
-        url = _generate_api_url("oclt", params)
-        result = _format_committee_search_results(data, "oclt", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"중앙토지수용위원회 결정문 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_employment_insurance_committee", description="""고용보험심사위원회 결정문을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- search: 검색범위 (1=사건명, 2=본문검색)
-- display: 결과 개수 (max=100)
-- page: 페이지 번호
-- sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-- alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)""")
-def search_employment_insurance_committee(
-    query: Optional[str] = None, 
-    search: int = 2, 
-    display: int = 20, 
-    page: int = 1,
-    sort: Optional[str] = None,
-    alphabetical: Optional[str] = None
-) -> TextContent:
-    """고용보험심사위원회 결정문 검색 (풍부한 검색 파라미터 지원)
-    
-    Args:
-        query: 검색어
-        search: 검색범위 (1=사건명, 2=본문검색)
-        display: 결과 개수 (max=100)
-        page: 페이지 번호
-        sort: 정렬 (lasc=사건명오름차순, ldes=사건명내림차순, dasc=의결일자오름차순, ddes=의결일자내림차순, nasc=사건번호오름차순, ndes=사건번호내림차순)
-        alphabetical: 사전식 검색 (ga,na,da,ra,ma,ba,sa,a,ja,cha,ka,ta,pa,ha)
-    """
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    # search=2 (본문검색) 파라미터로 더 많은 결과 확보
-    params = {"query": search_query, "search": search, "display": min(display, 100), "page": page}
-    
-    # 고급 검색 파라미터 추가
-    if sort:
-        params["sort"] = sort
-    if alphabetical:
-        params["gana"] = alphabetical
-        
-    try:
-        data = _make_legislation_request("eiac", params, use_cache=True)
-        url = _generate_api_url("eiac", params)
-        result = _format_committee_search_results(data, "eiac", search_query, display)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"고용보험심사위원회 결정문 검색 중 오류: {str(e)}")
-
-# ===========================================
-# 위원회 결정문 상세 조회 도구들
-# ===========================================
-
-@mcp.tool(name="get_privacy_committee_detail", description="""개인정보보호위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문일련번호 - search_privacy_committee 도구의 결과에서 '결정문일련번호' 필드값 사용 (예: "6173")
-
-⚠️ 주의: 'id' 필드(1,2,3...)가 아닌 '결정문일련번호' 필드값을 사용하세요.
-
-사용 예시: get_privacy_committee_detail(decision_id="6173")""")
-def get_privacy_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """개인정보보호위원회 결정문 본문 조회 (ppc)"""
+    target, committee_name = resolved
     params = {"ID": str(decision_id)}
     try:
-        data = _make_legislation_request("ppc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("ppc", params, is_detail=True)
-        result = _format_committee_detail(data, "ppc", str(decision_id), url)
+        data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
+        url = _generate_api_url(target, params, is_detail=True)
+        result = _format_committee_detail(data, target, str(decision_id), url)
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"개인정보보호위원회 결정문 상세조회 중 오류: {str(e)}")
+        return TextContent(type="text", text=f"{committee_name} 결정문 상세조회 중 오류: {str(e)}")
 
-@mcp.tool(
-    name="get_financial_committee_detail", 
-    description="""금융위원회 결정문 상세내용을 조회합니다.
 
-매개변수:
-- decision_id: 결정문일련번호 - search_financial_committee 도구의 결과에서 '결정문일련번호' 필드값 사용
-
-⚠️ 주의: 'id' 필드(1,2,3...)가 아닌 '결정문일련번호' 필드값을 사용하세요.
-
-사용 예시: get_financial_committee_detail(decision_id="실제결정문일련번호")""",
-    tags={"금융위원회", "결정문", "상세조회", "금융규제", "위원회"}
-)
-def get_financial_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """금융위원회 결정문 본문 조회 (fsc)"""
-    if not decision_id:
-        return TextContent(type="text", text="결정문 ID를 입력해주세요.")
-    
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("fsc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("fsc", params, is_detail=True)
-        
-        # 응답 데이터 유효성 검사 강화
-        if not data or isinstance(data, str) and "error" in data.lower():
-            return TextContent(type="text", text=f"ID '{decision_id}'에 해당하는 금융위원회 결정문을 찾을 수 없습니다.\n\nsearch_financial_committee 도구로 올바른 ID를 먼저 확인해보세요.\n\nAPI URL: {url}")
-        
-        # JSON 파싱 오류 방지를 위한 안전한 처리
-        if isinstance(data, dict) and not data:
-            return TextContent(type="text", text=f"ID '{decision_id}'에 해당하는 결정문의 상세 내용이 없습니다.\n\nAPI URL: {url}")
-        
-        result = _format_committee_detail(data, "fsc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except json.JSONDecodeError as e:
-        return TextContent(type="text", text=f"응답 데이터 파싱 오류: {str(e)}\n\nAPI 응답 형식에 문제가 있을 수 있습니다. 다른 ID로 시도해보세요.")
-    except Exception as e:
-        return TextContent(type="text", text=f"금융위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_monopoly_committee_detail", description="""공정거래위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문일련번호 - search_monopoly_committee 도구의 결과에서 '결정문일련번호' 필드값 사용
-
-⚠️ 주의: 'id' 필드(1,2,3...)가 아닌 '결정문일련번호' 필드값을 사용하세요.
-
-사용 예시: get_monopoly_committee_detail(decision_id="실제결정문일련번호")""")
-def get_monopoly_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """공정거래위원회 결정문 본문 조회 (ftc)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("ftc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("ftc", params, is_detail=True)
-        result = _format_committee_detail(data, "ftc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"공정거래위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_anticorruption_committee_detail", description="""국민권익위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_anticorruption_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_anticorruption_committee_detail(decision_id="123456")""")
-def get_anticorruption_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """국민권익위원회 결정문 본문 조회 (acr)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("acr", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("acr", params, is_detail=True)
-        result = _format_committee_detail(data, "acr", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국민권익위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_labor_committee_detail", description="""노동위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_labor_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_labor_committee_detail(decision_id="123456")""")
-def get_labor_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """노동위원회 결정문 본문 조회 (nlrc)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("nlrc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("nlrc", params, is_detail=True)
-        result = _format_committee_detail(data, "nlrc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"노동위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_environment_committee_detail", description="""중앙환경분쟁조정위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_environment_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_environment_committee_detail(decision_id="123456")""")
-def get_environment_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """중앙환경분쟁조정위원회 결정문 본문 조회 (ecc)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("ecc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("ecc", params, is_detail=True)
-        result = _format_committee_detail(data, "ecc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"중앙환경분쟁조정위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_securities_committee_detail", description="""증권선물위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_securities_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_securities_committee_detail(decision_id="123456")""")
-def get_securities_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """증권선물위원회 결정문 본문 조회 (sfc)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("sfc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("sfc", params, is_detail=True)
-        result = _format_committee_detail(data, "sfc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"증권선물위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_human_rights_committee_detail", description="""국가인권위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_human_rights_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_human_rights_committee_detail(decision_id="123456")""")
-def get_human_rights_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """국가인권위원회 결정문 본문 조회 (nhrck)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("nhrck", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("nhrck", params, is_detail=True)
-        result = _format_committee_detail(data, "nhrck", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국가인권위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_broadcasting_committee_detail", description="""방송통신위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_broadcasting_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_broadcasting_committee_detail(decision_id="123456")""")
-def get_broadcasting_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """방송통신위원회 결정문 본문 조회 (kcc)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("kcc", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("kcc", params, is_detail=True)
-        result = _format_committee_detail(data, "kcc", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"방송통신위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_industrial_accident_committee_detail", description="""산업재해보상보험 재심사위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_industrial_accident_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_industrial_accident_committee_detail(decision_id="123456")""")
-def get_industrial_accident_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """산업재해보상보험 재심사위원회 결정문 본문 조회 (eiac)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("eiac", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("eiac", params, is_detail=True)
-        result = _format_committee_detail(data, "eiac", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"산업재해보상보험 재심사위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_land_tribunal_detail", description="""중앙토지수용위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_land_tribunal 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_land_tribunal_detail(decision_id="123456")""")
-def get_land_tribunal_detail(decision_id: Union[str, int]) -> TextContent:
-    """중앙토지수용위원회 결정문 본문 조회 (lx)"""
-    params = {"ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("oclt", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("oclt", params, is_detail=True)
-        result = _format_committee_detail(data, "oclt", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"중앙토지수용위원회 결정문 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_employment_insurance_committee_detail", description="""고용보험심사위원회 결정문 상세내용을 조회합니다.
-
-매개변수:
-- decision_id: 결정문ID - search_employment_insurance_committee 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_employment_insurance_committee_detail(decision_id="123456")""")
-def get_employment_insurance_committee_detail(decision_id: Union[str, int]) -> TextContent:
-    """고용보험심사위원회 결정문 본문 조회"""
-    params = {"target": "eiac", "ID": str(decision_id)}
-    try:
-        data = _make_legislation_request("eiac", params, is_detail=True, use_cache=True)
-        url = _generate_api_url("eiac", params, is_detail=True)
-        result = _format_committee_detail(data, "eiac", str(decision_id), url)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"고용보험심사위원회 결정문 상세 조회 중 오류: {str(e)}") 

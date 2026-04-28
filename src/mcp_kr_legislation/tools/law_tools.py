@@ -1372,53 +1372,28 @@ def _format_search_results(data: dict, target: str, search_query: str, max_resul
                 if term_id:
                     result += f"   상세조회: get_legal_term_detail(term_id=\"{term_id}\")\n"
             elif target.endswith("CgmExpc"):
-                _CGMEXPC_DETAIL_TOOL_MAP = {
-                    "moefCgmExpc": "get_moef_interpretation_detail",
-                    "ntsCgmExpc": "get_nts_interpretation_detail",
-                    "kcsCgmExpc": "get_kcs_interpretation_detail",
-                    "moisCgmExpc": "get_mois_interpretation_detail",
-                    "meCgmExpc": "get_me_interpretation_detail",
-                    "mcstCgmExpc": "get_mcst_interpretation_detail",
-                    "mojCgmExpc": "get_moj_interpretation_detail",
-                    "mogefCgmExpc": "get_mogef_interpretation_detail",
-                    "mofaCgmExpc": "get_mofa_interpretation_detail",
-                    "mouCgmExpc": "get_unikorea_interpretation_detail",
-                    "molegCgmExpc": "get_moleg_interpretation_detail",
-                    "mfdsCgmExpc": "get_mfds_interpretation_detail",
-                    "mpmCgmExpc": "get_mpm_interpretation_detail",
-                    "kmaCgmExpc": "get_kma_interpretation_detail",
-                    "khsCgmExpc": "get_cha_interpretation_detail",
-                    "rdaCgmExpc": "get_rda_interpretation_detail",
-                    "npaCgmExpc": "get_police_interpretation_detail",
-                    "dapaCgmExpc": "get_dapa_interpretation_detail",
-                    "mmaCgmExpc": "get_mma_interpretation_detail",
-                    "nfaCgmExpc": "get_fire_agency_interpretation_detail",
-                    "ppsCgmExpc": "get_pps_interpretation_detail",
-                    "kdcaCgmExpc": "get_kdca_interpretation_detail",
-                    "kcgCgmExpc": "get_kcg_interpretation_detail",
-                    "mpvaCgmExpc": "get_mpva_interpretation_detail",
-                    "kostatCgmExpc": "get_kostat_interpretation_detail",
-                    "kipoCgmExpc": "get_kipo_interpretation_detail",
-                    "naaccCgmExpc": "get_naacc_interpretation_detail",
-                    "msitCgmExpc": "get_msit_interpretation_detail",
-                    "okaCgmExpc": "get_oka_interpretation_detail",
-                    "molitCgmExpc": "get_molit_interpretation_detail",
-                    "moelCgmExpc": "get_moel_interpretation_detail",
-                    "mofCgmExpc": "get_mof_interpretation_detail",
-                    "mohwCgmExpc": "get_mohw_interpretation_detail",
-                    "moeCgmExpc": "get_moe_interpretation_detail",
-                    "motieCgmExpc": "get_motie_interpretation_detail",
-                    "mafraCgmExpc": "get_mafra_interpretation_detail",
-                    "mndCgmExpc": "get_mnd_interpretation_detail",
-                    "mssCgmExpc": "get_mss_interpretation_detail",
-                    "kfsCgmExpc": "get_kfs_interpretation_detail",
+                # API target → ministry code 역방향 매핑
+                _CGMEXPC_TO_MINISTRY = {
+                    "moefCgmExpc": "moef", "molitCgmExpc": "molit", "moelCgmExpc": "moel",
+                    "mofCgmExpc": "mof", "mohwCgmExpc": "mohw", "moeCgmExpc": "moe",
+                    "motieCgmExpc": "motie", "mafraCgmExpc": "mafra", "mndCgmExpc": "mnd",
+                    "mssCgmExpc": "mss", "kfsCgmExpc": "kfs", "ntsCgmExpc": "nts",
+                    "kcsCgmExpc": "kcs", "moisCgmExpc": "mois", "meCgmExpc": "me",
+                    "mcstCgmExpc": "mcst", "mojCgmExpc": "moj", "mogefCgmExpc": "mogef",
+                    "mofaCgmExpc": "mofa", "mouCgmExpc": "unikorea", "molegCgmExpc": "moleg",
+                    "mfdsCgmExpc": "mfds", "mpmCgmExpc": "mpm", "kmaCgmExpc": "kma",
+                    "khsCgmExpc": "cha", "rdaCgmExpc": "rda", "npaCgmExpc": "police",
+                    "dapaCgmExpc": "dapa", "mmaCgmExpc": "mma", "nfaCgmExpc": "fire_agency",
+                    "ppsCgmExpc": "pps", "kdcaCgmExpc": "kdca", "kcgCgmExpc": "kcg",
+                    "mpvaCgmExpc": "mpva", "kostatCgmExpc": "kostat", "kipoCgmExpc": "kipo",
+                    "naaccCgmExpc": "naacc", "msitCgmExpc": "msit", "okaCgmExpc": "oka",
                 }
                 interp_id = item.get('법령해석일련번호', '')
                 link = item.get('법령해석상세링크', '')
                 if interp_id:
-                    detail_tool = _CGMEXPC_DETAIL_TOOL_MAP.get(target)
-                    if detail_tool:
-                        result += f"   상세조회: {detail_tool}(interpretation_id=\"{interp_id}\")\n"
+                    ministry_code = _CGMEXPC_TO_MINISTRY.get(target)
+                    if ministry_code:
+                        result += f"   상세조회: get_ministry_interpretation_detail(ministry=\"{ministry_code}\", interpretation_id=\"{interp_id}\")\n"
                     elif link:
                         result += f"   상세보기: https://www.law.go.kr{link}\n"
                     else:

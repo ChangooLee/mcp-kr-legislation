@@ -196,216 +196,109 @@ def search_public_institution_regulation(query: Optional[str] = None, display: i
     except Exception as e:
         return TextContent(type="text", text=f"공공기관 규정 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_tax_tribunal", description="""조세심판원 특별행정심판례를 검색합니다.
-
-매개변수:
-- query: 검색어 (필수) - 세금 관련 키워드
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_tax_tribunal("양도소득세"), search_tax_tribunal("부가가치세")""")
-def search_tax_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """조세심판원 특별행정심판례 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("ttSpecialDecc", params, use_cache=True)
-        result = _format_search_results(data, "ttSpecialDecc", search_query, min(display, 100))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"조세심판원 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_maritime_safety_tribunal", description="""해양안전심판원 특별행정심판례를 검색합니다.
-
-매개변수:
-- query: 검색어 (필수) - 해양 안전 관련 키워드
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_maritime_safety_tribunal("충돌"), search_maritime_safety_tribunal("선박사고")""")
-def search_maritime_safety_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """해양안전심판원 특별행정심판례 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("kmstSpecialDecc", params, use_cache=True)
-        url = _generate_api_url("kmstSpecialDecc", params)
-        result = _format_search_results(data, "kmstSpecialDecc", search_query, min(display, 100))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"해양안전심판원 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="get_tax_tribunal_detail", description="""조세심판원 특별행정심판례 상세내용을 조회합니다.
-
-매개변수:
-- tribunal_id: 심판례ID
-
-사용 예시: get_tax_tribunal_detail(tribunal_id="1018160")""")
-def get_tax_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
-    """조세심판원 특별행정심판례 상세 조회"""
-    params = {"ID": str(tribunal_id)}
-    try:
-        data = _make_legislation_request("ttSpecialDecc", params, is_detail=True, use_cache=True)
-        if isinstance(data, dict) and 'SpecialDeccService' in data:
-            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "조세심판원"))
-        result = _format_search_results(data, "ttSpecialDecc", str(tribunal_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"조세심판원 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="get_maritime_safety_tribunal_detail", description="""해양안전심판원 특별행정심판례 상세내용을 조회합니다.
-
-매개변수:
-- tribunal_id: 심판례ID
-
-사용 예시: get_maritime_safety_tribunal_detail(tribunal_id="2")""")
-def get_maritime_safety_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
-    """해양안전심판원 특별행정심판례 상세 조회"""
-    params = {"ID": str(tribunal_id)}
-    try:
-        data = _make_legislation_request("kmstSpecialDecc", params, is_detail=True, use_cache=True)
-        if isinstance(data, dict) and 'SpecialDeccService' in data:
-            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "해양안전심판원"))
-        result = _format_search_results(data, "kmstSpecialDecc", str(tribunal_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"해양안전심판원 상세조회 중 오류: {str(e)}")
-
 # ===========================================
-# 추가 특별행정심판 도구들 (2026-01-21 추가)
+# 특별행정심판 도구들 (통합 2개)
 # ===========================================
 
-@mcp.tool(name="search_acrc_special_tribunal", description="""국민권익위원회 특별행정심판재결례를 검색합니다.
+TRIBUNAL_TARGETS: dict[str, tuple[str, str]] = {
+    "tax":        ("ttSpecialDecc",   "조세심판원"),
+    "maritime":   ("kmstSpecialDecc", "해양안전심판원"),
+    "acrc":       ("acrSpecialDecc",  "국민권익위원회(행정심판)"),
+    "mpm_appeal": ("adapSpecialDecc", "인사혁신처 소청심사위원회"),
+    "bai":        ("baiPvcs",         "감사원 사전컨설팅"),
+}
+
+_TRIBUNAL_LIST = "\n".join(
+    f"  {code}: {name}" for code, (_, name) in TRIBUNAL_TARGETS.items()
+)
+
+
+def _resolve_tribunal(tribunal: str) -> tuple[str, str] | None:
+    key = tribunal.strip().lower()
+    return TRIBUNAL_TARGETS.get(key)
+
+
+@mcp.tool(name="search_tribunal_decision", description=f"""특별행정심판례를 검색합니다. 조세심판원, 해양안전심판원, 국민권익위원회, 인사혁신처 소청심사를 지원합니다.
 
 매개변수:
-- query: 검색어 (선택) - 키워드
-- display: 결과 개수 (최대 100)
+- tribunal: 기관 코드 (필수). 아래 목록 참조.
+- query: 검색어
+- display: 결과 개수 (기본 20, 최대 100)
 - page: 페이지 번호
 
-사용 예시: search_acrc_special_tribunal("자동차"), search_acrc_special_tribunal("면허", display=50)""")
-def search_acrc_special_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """국민권익위원회 특별행정심판재결례 검색"""
-    params = {"display": min(display, 100), "page": page}
-    if query and query.strip():
-        params["query"] = query.strip()
-        search_query = query.strip()
-    else:
-        search_query = "전체"
-    
-    try:
-        data = _make_legislation_request("acrSpecialDecc", params, use_cache=True)
-        result = _format_search_results(data, "acrSpecialDecc", search_query, min(display, 100))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국민권익위원회 특별행정심판 검색 중 오류: {str(e)}")
+기관 코드 목록:
+{_TRIBUNAL_LIST}
 
-@mcp.tool(name="get_acrc_special_tribunal_detail", description="""국민권익위원회 특별행정심판재결례 상세내용을 조회합니다.
+사용 예시:
+  search_tribunal_decision(tribunal="tax", query="양도소득세")
+  search_tribunal_decision(tribunal="maritime", query="선박충돌")
+  search_tribunal_decision(tribunal="mpm_appeal", query="징계")
 
-매개변수:
-- tribunal_id: 재결례ID
+⚠️ 참고: bai(감사원) API는 현재 미오픈 상태입니다.
+상세조회: 결과의 ID로 get_tribunal_decision_detail 호출""")
+def search_tribunal_decision(
+    tribunal: Annotated[str, "기관 코드 (tax/maritime/acrc/mpm_appeal/bai)"],
+    query: Annotated[Optional[str], "검색어"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+) -> TextContent:
+    resolved = _resolve_tribunal(tribunal)
+    if not resolved:
+        valid = ", ".join(TRIBUNAL_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 기관 코드: '{tribunal}'\n유효한 코드: {valid}")
 
-사용 예시: get_acrc_special_tribunal_detail(tribunal_id="123456")""")
-def get_acrc_special_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
-    """국민권익위원회 특별행정심판재결례 상세 조회"""
-    params = {"ID": str(tribunal_id)}
-    try:
-        data = _make_legislation_request("acrSpecialDecc", params, is_detail=True, use_cache=True)
-        if isinstance(data, dict) and 'SpecialDeccService' in data:
-            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "국민권익위원회"))
-        result = _format_search_results(data, "acrSpecialDecc", str(tribunal_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국민권익위원회 특별행정심판 상세조회 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mpm_appeal_tribunal", description="""인사혁신처 소청심사위원회 특별행정심판재결례를 검색합니다.
-
-매개변수:
-- query: 검색어 (선택) - 키워드
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mpm_appeal_tribunal("징계"), search_mpm_appeal_tribunal("해임", display=50)""")
-def search_mpm_appeal_tribunal(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """인사혁신처 소청심사위원회 특별행정심판재결례 검색"""
-    params = {"display": min(display, 100), "page": page}
-    if query and query.strip():
-        params["query"] = query.strip()
-        search_query = query.strip()
-    else:
-        search_query = "전체"
-    
-    try:
-        data = _make_legislation_request("adapSpecialDecc", params, use_cache=True)
-        result = _format_search_results(data, "adapSpecialDecc", search_query, min(display, 100))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="get_mpm_appeal_tribunal_detail", description="""인사혁신처 소청심사위원회 특별행정심판재결례 상세내용을 조회합니다.
-
-매개변수:
-- tribunal_id: 재결례ID
-
-사용 예시: get_mpm_appeal_tribunal_detail(tribunal_id="123456")""")
-def get_mpm_appeal_tribunal_detail(tribunal_id: Union[str, int]) -> TextContent:
-    """인사혁신처 소청심사위원회 특별행정심판재결례 상세 조회"""
-    params = {"ID": str(tribunal_id)}
-    try:
-        data = _make_legislation_request("adapSpecialDecc", params, is_detail=True, use_cache=True)
-        if isinstance(data, dict) and 'SpecialDeccService' in data:
-            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(tribunal_id), "인사혁신처 소청심사위원회"))
-        result = _format_search_results(data, "adapSpecialDecc", str(tribunal_id))
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"인사혁신처 소청심사위원회 상세조회 중 오류: {str(e)}")
-
-# ===========================================
-# 사전컨설팅의견서 도구들 (감사원)
-# ===========================================
-
-@mcp.tool(name="search_bai_preconsulting", description="""감사원 사전컨설팅 의견서를 검색합니다.
-
-매개변수:
-- query: 검색어 (선택) - 키워드
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_bai_preconsulting("감사"), search_bai_preconsulting("공공기관", display=50)
-
-참고: 이 API는 2026년 기준 미오픈 상태일 수 있습니다.""")
-def search_bai_preconsulting(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """감사원 사전컨설팅 의견서 검색"""
-    return TextContent(
-        type="text",
-        text=(
+    target, tribunal_name = resolved
+    if target == "baiPvcs":
+        return TextContent(type="text", text=(
             "**감사원 사전컨설팅 의견서 API는 현재 미오픈 상태입니다.**\n\n"
-            "이 API(baiPvcs)는 법제처 OPEN API에 아직 공개되지 않아 데이터를 조회할 수 없습니다.\n\n"
-            "**대안:**\n"
-            "- 감사원 공식 홈페이지(https://www.bai.go.kr)에서 직접 검색하세요.\n"
-            "- 감사원 사전컨설팅 의견서는 감사원 홈페이지 > 정책자료 > 사전컨설팅 메뉴에서 확인할 수 있습니다."
-        )
-    )
+            "감사원 공식 홈페이지(https://www.bai.go.kr) > 정책자료 > 사전컨설팅에서 확인하세요."
+        ))
 
-@mcp.tool(name="get_bai_preconsulting_detail", description="""감사원 사전컨설팅 의견서 상세내용을 조회합니다.
+    search_query = (query or "").strip()
+    params: dict = {"display": min(display, 100), "page": page}
+    if search_query:
+        params["query"] = search_query
+    else:
+        search_query = "전체"
 
-매개변수:
-- opinion_id: 의견서ID
-
-사용 예시: get_bai_preconsulting_detail(opinion_id="123456")
-
-참고: 이 API는 2026년 기준 미오픈 상태일 수 있습니다.""")
-def get_bai_preconsulting_detail(opinion_id: Union[str, int]) -> TextContent:
-    """감사원 사전컨설팅 의견서 상세 조회"""
-    params = {"ID": str(opinion_id)}
     try:
-        data = _make_legislation_request("baiPvcs", params, is_detail=True, use_cache=True)
-        result = _format_search_results(data, "baiPvcs", str(opinion_id))
+        data = _make_legislation_request(target, params, use_cache=True)
+        result = _format_search_results(data, target, search_query, min(display, 100))
         return TextContent(type="text", text=result)
     except Exception as e:
-        return TextContent(type="text", text=f"감사원 사전컨설팅 의견서 상세조회 중 오류: {str(e)}")
+        return TextContent(type="text", text=f"{tribunal_name} 검색 중 오류: {str(e)}")
+
+
+@mcp.tool(name="get_tribunal_decision_detail", description=f"""특별행정심판례 상세내용을 조회합니다.
+
+매개변수:
+- tribunal: 기관 코드 (search_tribunal_decision의 tribunal 파라미터와 동일)
+- decision_id: 심판례 ID (search_tribunal_decision 결과의 ID 필드값)
+
+기관 코드 목록:
+{_TRIBUNAL_LIST}
+
+사용 예시:
+  get_tribunal_decision_detail(tribunal="tax", decision_id="1018160")
+  get_tribunal_decision_detail(tribunal="acrc", decision_id="123456")""")
+def get_tribunal_decision_detail(
+    tribunal: Annotated[str, "기관 코드 (tax/maritime/acrc/mpm_appeal/bai)"],
+    decision_id: Annotated[Union[str, int], "심판례 ID (search_tribunal_decision 결과의 ID)"],
+) -> TextContent:
+    resolved = _resolve_tribunal(tribunal)
+    if not resolved:
+        valid = ", ".join(TRIBUNAL_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 기관 코드: '{tribunal}'\n유효한 코드: {valid}")
+
+    target, tribunal_name = resolved
+    params = {"ID": str(decision_id)}
+    try:
+        data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
+        if isinstance(data, dict) and 'SpecialDeccService' in data:
+            return TextContent(type="text", text=_format_special_decc_detail(data['SpecialDeccService'], str(decision_id), tribunal_name))
+        result = _format_search_results(data, target, str(decision_id))
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"{tribunal_name} 상세조회 중 오류: {str(e)}")
+
+

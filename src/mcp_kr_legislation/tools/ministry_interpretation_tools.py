@@ -1,421 +1,91 @@
 """
-한국 법제처 OPEN API - 중앙부처해석 도구들
+한국 법제처 OPEN API - 중앙부처해석 도구들 (통합)
 
-각 중앙부처(기획재정부, 국토교통부, 고용노동부 등)의 법령해석 사례 
-검색 및 상세조회 기능을 제공합니다.
+39개 부처의 법령해석 검색/상세조회를 2개 도구로 통합:
+- search_ministry_interpretation: 검색
+- get_ministry_interpretation_detail: 상세조회
 """
 
 import logging
-import json
-import os
-import requests  # type: ignore
-from urllib.parse import urlencode
 from typing import Optional, Union, Annotated
 from mcp.types import TextContent
 
 from ..server import mcp
-from ..config import legislation_config
 
 logger = logging.getLogger(__name__)
 
-# 유틸리티 함수들 import
 from .law_tools import (
     _make_legislation_request,
-    _generate_api_url,
     _format_search_results,
 )
 
-# ===========================================
-# 중앙부처해석 도구들 (30개+)
-# ===========================================
+# 부처 코드 → (API 타겟, 한글명) 매핑
+MINISTRY_TARGETS: dict[str, tuple[str, str]] = {
+    # 원본 파일 (13개)
+    "moef":   ("moefCgmExpc",   "기획재정부"),
+    "molit":  ("molitCgmExpc",  "국토교통부"),
+    "moel":   ("moelCgmExpc",   "고용노동부"),
+    "mof":    ("mofCgmExpc",    "해양수산부"),
+    "mohw":   ("mohwCgmExpc",   "보건복지부"),
+    "moe":    ("moeCgmExpc",    "교육부"),
+    "motie":  ("motieCgmExpc",  "산업통상자원부"),
+    "mafra":  ("mafraCgmExpc",  "농림축산식품부"),
+    "mnd":    ("mndCgmExpc",    "국방부"),
+    "mss":    ("mssCgmExpc",    "중소벤처기업부"),
+    "kfs":    ("kfsCgmExpc",    "산림청"),
+    "nts":    ("ntsCgmExpc",    "국세청"),
+    "kcs":    ("kcsCgmExpc",    "관세청"),
+    # 확장 파일 (26개)
+    "mois":        ("moisCgmExpc",  "행정안전부"),
+    "me":          ("meCgmExpc",    "환경부"),
+    "mcst":        ("mcstCgmExpc",  "문화체육관광부"),
+    "moj":         ("mojCgmExpc",   "법무부"),
+    "mogef":       ("mogefCgmExpc", "성평등가족부"),
+    "mofa":        ("mofaCgmExpc",  "외교부"),
+    "unikorea":    ("mouCgmExpc",   "통일부"),
+    "moleg":       ("molegCgmExpc", "법제처"),
+    "mfds":        ("mfdsCgmExpc",  "식품의약품안전처"),
+    "mpm":         ("mpmCgmExpc",   "인사혁신처"),
+    "kma":         ("kmaCgmExpc",   "기상청"),
+    "cha":         ("khsCgmExpc",   "국가유산청"),
+    "rda":         ("rdaCgmExpc",   "농촌진흥청"),
+    "police":      ("npaCgmExpc",   "경찰청"),
+    "dapa":        ("dapaCgmExpc",  "방위사업청"),
+    "mma":         ("mmaCgmExpc",   "병무청"),
+    "fire_agency": ("nfaCgmExpc",   "소방청"),
+    "pps":         ("ppsCgmExpc",   "조달청"),
+    "kdca":        ("kdcaCgmExpc",  "질병관리청"),
+    "kcg":         ("kcgCgmExpc",   "해양경찰청"),
+    "mpva":        ("mpvaCgmExpc",  "국가보훈부"),
+    "kostat":      ("kostatCgmExpc","통계청"),
+    "kipo":        ("kipoCgmExpc",  "특허청"),
+    "naacc":       ("naaccCgmExpc", "행정중심복합도시건설청"),
+    "msit":        ("msitCgmExpc",  "과학기술정보통신부"),
+    "oka":         ("okaCgmExpc",   "재외동포청"),
+}
 
-@mcp.tool(name="search_moef_interpretation", description="""기획재정부 법령해석을 검색합니다.
+# 한글명 → 코드 역방향 매핑 (입력 편의)
+_MINISTRY_NAME_TO_CODE: dict[str, str] = {v[1]: k for k, v in MINISTRY_TARGETS.items()}
 
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
+_MINISTRY_LIST = "\n".join(
+    f"  {code}: {name}" for code, (_, name) in MINISTRY_TARGETS.items()
+)
 
-사용 예시: search_moef_interpretation("예산"), search_moef_interpretation("재정", display=50)""")
-def search_moef_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """기획재정부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("moefCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "moefCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"기획재정부 법령해석 검색 중 오류: {str(e)}")
 
-@mcp.tool(name="search_molit_interpretation", description="""국토교통부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_molit_interpretation("건축"), search_molit_interpretation("도로", display=50)""")
-def search_molit_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """국토교통부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("molitCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "molitCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국토교통부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_moel_interpretation", description="""고용노동부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_moel_interpretation("근로시간"), search_moel_interpretation("임금", display=50)""")
-def search_moel_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """고용노동부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("moelCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "moelCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"고용노동부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mof_interpretation", description="""해양수산부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mof_interpretation("어업"), search_mof_interpretation("항만", display=50)""")
-def search_mof_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """해양수산부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("mofCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "mofCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"해양수산부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mohw_interpretation", description="""보건복지부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mohw_interpretation("복지"), search_mohw_interpretation("의료", display=50)""")
-def search_mohw_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """보건복지부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("mohwCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "mohwCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"보건복지부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_moe_interpretation", description="""교육부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_moe_interpretation("교육"), search_moe_interpretation("학교", display=50)""")
-def search_moe_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """교육부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("moeCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "moeCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"교육부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_motie_interpretation", description="""산업통상자원부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_motie_interpretation("공장"), search_motie_interpretation("면적", display=50)""")
-def search_motie_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """산업통상자원부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("motieCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "motieCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"산업통상자원부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mafra_interpretation", description="""농림축산식품부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mafra_interpretation("농업"), search_mafra_interpretation("축산", display=50)""")
-def search_mafra_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """농림축산식품부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("mafraCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "mafraCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"농림축산식품부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mnd_interpretation", description="""국방부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mnd_interpretation("국방"), search_mnd_interpretation("군사", display=50)""")
-def search_mnd_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """국방부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("mndCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "mndCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국방부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_mss_interpretation", description="""중소벤처기업부 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_mss_interpretation("창업"), search_mss_interpretation("중소기업", display=50)""")
-def search_mss_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """중소벤처기업부 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("mssCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "mssCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"중소벤처기업부 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_kfs_interpretation", description="""산림청 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_kfs_interpretation("산림"), search_kfs_interpretation("임업", display=50)""")
-def search_kfs_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """산림청 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("kfsCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "kfsCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"산림청 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_nts_interpretation", description="""국세청 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_nts_interpretation("소득세"), search_nts_interpretation("부가가치세", display=50)""")
-def search_nts_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """국세청 법령해석 검색 (대용량 13만건+ 캐시 적용)"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("ntsCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "ntsCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"국세청 법령해석 검색 중 오류: {str(e)}")
-
-@mcp.tool(name="search_kcs_interpretation", description="""관세청 법령해석을 검색합니다.
-
-매개변수:
-- query: 검색어 (필수)
-- display: 결과 개수 (최대 100)
-- page: 페이지 번호
-
-사용 예시: search_kcs_interpretation("관세"), search_kcs_interpretation("수입", display=50)""")
-def search_kcs_interpretation(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """관세청 법령해석 검색"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    params = {"query": search_query, "display": min(display, 100), "page": page}
-    try:
-        data = _make_legislation_request("kcsCgmExpc", params, use_cache=True)
-        result = _format_search_results(data, "kcsCgmExpc", search_query)
-        return TextContent(type="text", text=result)
-    except Exception as e:
-        return TextContent(type="text", text=f"관세청 법령해석 검색 중 오류: {str(e)}")
-
-# ===========================================
-# 중앙부처해석 상세 조회 도구들
-# ===========================================
-
-@mcp.tool(name="get_moef_interpretation_detail", description="""기획재정부 법령해석 상세내용을 조회합니다.
-
-매개변수:
-- interpretation_id: 해석례ID - search_moef_interpretation 도구의 결과에서 'ID' 필드값 사용
-
-사용 예시: get_moef_interpretation_detail(interpretation_id="123456")""")
-def get_moef_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """기획재정부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("moefCgmExpc", interpretation_id, "기획재정부")
-
-@mcp.tool(name="get_nts_interpretation_detail", description="""국세청 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_nts_interpretation 결과의 법령해석일련번호)
-사용 예시: get_nts_interpretation_detail(interpretation_id="123456")""")
-def get_nts_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """국세청 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("ntsCgmExpc", interpretation_id, "국세청")
-
-@mcp.tool(name="get_kcs_interpretation_detail", description="""관세청 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_kcs_interpretation 결과의 법령해석일련번호)
-사용 예시: get_kcs_interpretation_detail(interpretation_id="123456")""")
-def get_kcs_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """관세청 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("kcsCgmExpc", interpretation_id, "관세청")
-
-@mcp.tool(name="get_molit_interpretation_detail", description="""국토교통부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_molit_interpretation 결과의 법령해석일련번호)
-사용 예시: get_molit_interpretation_detail(interpretation_id="123456")""")
-def get_molit_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """국토교통부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("molitCgmExpc", interpretation_id, "국토교통부")
-
-@mcp.tool(name="get_moel_interpretation_detail", description="""고용노동부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_moel_interpretation 결과의 법령해석일련번호)
-사용 예시: get_moel_interpretation_detail(interpretation_id="123456")""")
-def get_moel_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """고용노동부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("moelCgmExpc", interpretation_id, "고용노동부")
-
-@mcp.tool(name="get_mof_interpretation_detail", description="""금융위원회 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mof_interpretation 결과의 법령해석일련번호)
-사용 예시: get_mof_interpretation_detail(interpretation_id="123456")""")
-def get_mof_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """금융위원회 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("mofCgmExpc", interpretation_id, "금융위원회")
-
-@mcp.tool(name="get_mohw_interpretation_detail", description="""보건복지부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mohw_interpretation 결과의 법령해석일련번호)
-사용 예시: get_mohw_interpretation_detail(interpretation_id="123456")""")
-def get_mohw_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """보건복지부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("mohwCgmExpc", interpretation_id, "보건복지부")
-
-@mcp.tool(name="get_moe_interpretation_detail", description="""교육부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_moe_interpretation 결과의 법령해석일련번호)
-사용 예시: get_moe_interpretation_detail(interpretation_id="123456")""")
-def get_moe_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """교육부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("moeCgmExpc", interpretation_id, "교육부")
-
-@mcp.tool(name="get_motie_interpretation_detail", description="""산업통상자원부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_motie_interpretation 결과의 법령해석일련번호)
-사용 예시: get_motie_interpretation_detail(interpretation_id="123456")""")
-def get_motie_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """산업통상자원부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("motieCgmExpc", interpretation_id, "산업통상자원부")
-
-@mcp.tool(name="get_mafra_interpretation_detail", description="""농림축산식품부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mafra_interpretation 결과의 법령해석일련번호)
-사용 예시: get_mafra_interpretation_detail(interpretation_id="123456")""")
-def get_mafra_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """농림축산식품부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("mafraCgmExpc", interpretation_id, "농림축산식품부")
-
-@mcp.tool(name="get_mnd_interpretation_detail", description="""국방부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mnd_interpretation 결과의 법령해석일련번호)
-사용 예시: get_mnd_interpretation_detail(interpretation_id="123456")""")
-def get_mnd_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """국방부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("mndCgmExpc", interpretation_id, "국방부")
-
-@mcp.tool(name="get_mss_interpretation_detail", description="""중소벤처기업부 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_mss_interpretation 결과의 법령해석일련번호)
-사용 예시: get_mss_interpretation_detail(interpretation_id="123456")""")
-def get_mss_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """중소벤처기업부 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("mssCgmExpc", interpretation_id, "중소벤처기업부")
-
-@mcp.tool(name="get_kfs_interpretation_detail", description="""산림청 법령해석 상세내용을 조회합니다.
-- interpretation_id: 해석례ID (search_kfs_interpretation 결과의 법령해석일련번호)
-사용 예시: get_kfs_interpretation_detail(interpretation_id="123456")""")
-def get_kfs_interpretation_detail(interpretation_id: Union[str, int]) -> TextContent:
-    """산림청 법령해석 상세 조회"""
-    return _get_cgmexpc_detail("kfsCgmExpc", interpretation_id, "산림청")
+def _resolve_ministry(ministry: str) -> tuple[str, str] | None:
+    """부처 코드 또는 한글명으로 (API타겟, 한글명) 반환. 없으면 None."""
+    key = ministry.strip().lower()
+    if key in MINISTRY_TARGETS:
+        return MINISTRY_TARGETS[key]
+    # 한글명 매칭
+    code = _MINISTRY_NAME_TO_CODE.get(ministry.strip())
+    if code:
+        return MINISTRY_TARGETS[code]
+    return None
 
 
 def _get_cgmexpc_detail(target: str, interpretation_id: Union[str, int], ministry_name: str) -> TextContent:
-    """부처 법령해석 상세조회 공통 함수 - HTML 응답 처리 포함"""
+    """부처 법령해석 상세조회 공통 함수"""
     params = {"ID": str(interpretation_id)}
     try:
         data = _make_legislation_request(target, params, is_detail=True, use_cache=True)
@@ -423,3 +93,70 @@ def _get_cgmexpc_detail(target: str, interpretation_id: Union[str, int], ministr
         return TextContent(type="text", text=result)
     except Exception as e:
         return TextContent(type="text", text=f"{ministry_name} 법령해석 상세조회 중 오류: {str(e)}")
+
+
+@mcp.tool(name="search_ministry_interpretation", description=f"""중앙부처 법령해석을 검색합니다. 39개 부처를 단일 도구로 지원합니다.
+
+매개변수:
+- ministry: 부처 코드 (필수). 아래 목록 참조.
+- query: 검색어
+- display: 결과 개수 (기본 20, 최대 100)
+- page: 페이지 번호
+
+부처 코드 목록:
+{_MINISTRY_LIST}
+
+사용 예시:
+  search_ministry_interpretation(ministry="moef", query="예산집행")
+  search_ministry_interpretation(ministry="moel", query="근로시간", display=50)
+  search_ministry_interpretation(ministry="nts", query="소득세")
+
+상세조회: 결과의 법령해석일련번호(ID)로 get_ministry_interpretation_detail 호출""")
+def search_ministry_interpretation(
+    ministry: Annotated[str, "부처 코드 (예: moef, moel, nts)"],
+    query: Annotated[Optional[str], "검색어"] = None,
+    display: Annotated[int, "결과 개수 (최대 100)"] = 20,
+    page: Annotated[int, "페이지 번호"] = 1,
+) -> TextContent:
+    resolved = _resolve_ministry(ministry)
+    if not resolved:
+        valid = ", ".join(MINISTRY_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 부처 코드: '{ministry}'\n유효한 코드: {valid}")
+
+    target, ministry_name = resolved
+    search_query = (query or "").strip()
+    if not search_query:
+        return TextContent(type="text", text="검색어를 입력해주세요.")
+
+    params = {"query": search_query, "display": min(display, 100), "page": page}
+    try:
+        data = _make_legislation_request(target, params, use_cache=True)
+        result = _format_search_results(data, target, search_query)
+        return TextContent(type="text", text=result)
+    except Exception as e:
+        return TextContent(type="text", text=f"{ministry_name} 법령해석 검색 중 오류: {str(e)}")
+
+
+@mcp.tool(name="get_ministry_interpretation_detail", description=f"""중앙부처 법령해석 상세내용을 조회합니다.
+
+매개변수:
+- ministry: 부처 코드 (search_ministry_interpretation의 ministry 파라미터와 동일)
+- interpretation_id: 법령해석일련번호 (search_ministry_interpretation 결과의 ID 필드값)
+
+부처 코드 목록:
+{_MINISTRY_LIST}
+
+사용 예시:
+  get_ministry_interpretation_detail(ministry="moef", interpretation_id="123456")
+  get_ministry_interpretation_detail(ministry="nts", interpretation_id="78901")""")
+def get_ministry_interpretation_detail(
+    ministry: Annotated[str, "부처 코드 (예: moef, moel, nts)"],
+    interpretation_id: Annotated[Union[str, int], "법령해석일련번호 (search_ministry_interpretation 결과의 ID)"],
+) -> TextContent:
+    resolved = _resolve_ministry(ministry)
+    if not resolved:
+        valid = ", ".join(MINISTRY_TARGETS.keys())
+        return TextContent(type="text", text=f"알 수 없는 부처 코드: '{ministry}'\n유효한 코드: {valid}")
+
+    target, ministry_name = resolved
+    return _get_cgmexpc_detail(target, interpretation_id, ministry_name)

@@ -171,7 +171,6 @@ tool_modules = [
     "legal_term_tools",
     "linkage_tools",
     "ministry_interpretation_tools",
-    "ministry_interpretation_tools_extended",
     "misc_tools",
     "precedent_tools",
     "specialized_tools",

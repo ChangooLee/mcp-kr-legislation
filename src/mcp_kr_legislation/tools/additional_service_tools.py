@@ -8,7 +8,7 @@
 """
 
 import logging
-from typing import Optional
+from typing import Optional, Annotated
 from mcp.types import TextContent
 
 from ..server import mcp
@@ -16,188 +16,92 @@ from ..config import legislation_config
 
 logger = logging.getLogger(__name__)
 
-# 유틸리티 함수들 import
-from .law_tools import (
-    _make_legislation_request,
-    _generate_api_url,
-    _format_search_results
-)
-
 # ===========================================
-# 부가서비스 도구들 (6개) - HTML 전용 API
+# 부가서비스 도구들 (2개) - HTML 전용 API
 # ===========================================
 
-@mcp.tool(name="search_knowledge_base", description="""지식베이스를 검색합니다. 법령 관련 지식과 정보를 종합적으로 제공합니다.
-
-주의: FAQ, QNA 등 지식베이스 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
-
-매개변수:
-- query: 검색어 (필수)
-
-사용 예시: search_knowledge_base("법령 해석")
-
-대안: 법령해석례 검색은 search_legal_interpretation 도구를 사용하세요.""")
-def search_knowledge_base(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """지식베이스 검색 (HTML 전용)"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    base_url = "http://www.law.go.kr/DRF/lawSearch.do"
-    oc = legislation_config.oc
-    
-    # HTML URL 생성
-    urls = []
-    targets = [
-        ("FAQ", "faq"),
-        ("QNA", "qna"),
-        ("상담사례", "counsel"),
-        ("민원사례", "civil"),
-    ]
-    
-    for name, target in targets:
-        urls.append(f"- {name}: {base_url}?OC={oc}&target={target}&type=HTML&query={search_query}")
-    
-    result = f"""지식베이스 검색: '{search_query}'
-
-⚠️ 이 API들은 HTML만 지원합니다. 아래 URL에서 직접 확인해주세요:
-
-{chr(10).join(urls)}
-
-💡 대안 도구:
-- 법령해석례 검색: search_legal_interpretation("{search_query}")
-- 판례 검색: search_precedent("{search_query}")
-- 헌재결정례 검색: search_constitutional_court("{search_query}")"""
-    
-    return TextContent(type="text", text=result)
+_KB_SOURCE_MAP = {
+    "faq":              ("faq",        "FAQ(자주 묻는 질문)"),
+    "qna":              ("qna",        "QNA(질의응답)"),
+    "counsel":          ("counsel",    "상담사례"),
+    "precedent_counsel":("precCounsel","판례상담"),
+}
 
 
-@mcp.tool(name="search_faq", description="""자주 묻는 질문(FAQ)을 검색합니다.
+@mcp.tool(name="search_legal_kb", description="""법제처 지식베이스를 검색합니다. FAQ, QNA, 상담사례, 판례상담을 단일 도구로 지원합니다.
 
-주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
+⚠️ 이 API는 HTML만 지원합니다. 웹 URL을 제공합니다.
 
 매개변수:
 - query: 검색어 (필수)
+- source: 검색 출처 (기본 "all")
+  - "all": 모든 출처 (FAQ + QNA + 상담사례 + 판례상담)
+  - "faq": 자주 묻는 질문
+  - "qna": 질의응답
+  - "counsel": 상담사례
+  - "precedent_counsel": 판례상담
 
-사용 예시: search_faq("법률 용어")""")
-def search_faq(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """FAQ 검색 (HTML 전용)"""
+사용 예시:
+  search_legal_kb("임대차 분쟁")
+  search_legal_kb("계약 해제", source="precedent_counsel")
+  search_legal_kb("법률 용어", source="faq")
+
+💡 대안: 구조화된 데이터가 필요하면
+  - 법령해석례: search_legal_interpretation
+  - 판례: search_precedent""")
+def search_legal_kb(
+    query: Annotated[str, "검색어"],
+    source: Annotated[str, "출처 (all/faq/qna/counsel/precedent_counsel)"] = "all",
+) -> TextContent:
+    """법제처 지식베이스 검색 (HTML 전용)"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
-    
+
     search_query = query.strip()
     oc = legislation_config.oc
-    url = f"http://www.law.go.kr/DRF/lawSearch.do?OC={oc}&target=faq&type=HTML&query={search_query}"
-    
-    return TextContent(type="text", text=f"""FAQ 검색: '{search_query}'
+    base = "http://www.law.go.kr/DRF/lawSearch.do"
 
-⚠️ 이 API는 HTML만 지원합니다.
+    src = source.strip().lower()
 
-직접 확인: {url}""")
+    if src == "all":
+        targets = list(_KB_SOURCE_MAP.items())
+    elif src in _KB_SOURCE_MAP:
+        targets = [(src, _KB_SOURCE_MAP[src])]
+    else:
+        valid = ", ".join(_KB_SOURCE_MAP.keys()) + ", all"
+        return TextContent(type="text", text=f"알 수 없는 source: '{source}'\n유효한 값: {valid}")
 
+    lines = [f"법제처 지식베이스 검색: '{search_query}'", "",
+             "⚠️ 이 API는 HTML만 지원합니다. 아래 URL에서 직접 확인해주세요:", ""]
+    for code, (api_target, label) in targets:
+        url = f"{base}?OC={oc}&target={api_target}&type=HTML&query={search_query}"
+        lines.append(f"- {label}: {url}")
 
-@mcp.tool(name="search_qna", description="""질의응답(QNA)을 검색합니다.
+    lines += ["", "💡 구조화된 데이터가 필요하면:",
+              f'  - 법령해석례: search_legal_interpretation("{search_query}")',
+              f'  - 판례: search_precedent("{search_query}")']
 
-주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
-
-매개변수:
-- query: 검색어 (필수)
-
-사용 예시: search_qna("판례 조회 방법")""")
-def search_qna(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """질의응답 검색 (HTML 전용)"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    oc = legislation_config.oc
-    url = f"http://www.law.go.kr/DRF/lawSearch.do?OC={oc}&target=qna&type=HTML&query={search_query}"
-    
-    return TextContent(type="text", text=f"""QNA 검색: '{search_query}'
-
-⚠️ 이 API는 HTML만 지원합니다.
-
-직접 확인: {url}""")
-
-
-@mcp.tool(name="search_counsel", description="""상담 사례를 검색합니다.
-
-주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
-
-매개변수:
-- query: 검색어 (필수)
-
-사용 예시: search_counsel("임대차 분쟁")
-
-대안: 법령해석례 검색은 search_legal_interpretation 도구를 사용하세요.""")
-def search_counsel(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """상담 검색 (HTML 전용)"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    oc = legislation_config.oc
-    url = f"http://www.law.go.kr/DRF/lawSearch.do?OC={oc}&target=counsel&type=HTML&query={search_query}"
-    
-    return TextContent(type="text", text=f"""상담 검색: '{search_query}'
-
-⚠️ 이 API는 HTML만 지원합니다.
-
-직접 확인: {url}
-
-💡 대안: 법령해석례 검색은 search_legal_interpretation("{search_query}")를 사용하세요.""")
-
-
-@mcp.tool(name="search_precedent_counsel", description="""판례 상담을 검색합니다.
-
-주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
-
-매개변수:
-- query: 검색어 (필수)
-
-사용 예시: search_precedent_counsel("계약 해제")
-
-대안: 판례 검색은 search_precedent 도구를 사용하세요.""")
-def search_precedent_counsel(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
-    """판례 상담 검색 (HTML 전용)"""
-    if not query or not query.strip():
-        return TextContent(type="text", text="검색어를 입력해주세요.")
-    
-    search_query = query.strip()
-    oc = legislation_config.oc
-    url = f"http://www.law.go.kr/DRF/lawSearch.do?OC={oc}&target=precCounsel&type=HTML&query={search_query}"
-    
-    return TextContent(type="text", text=f"""판례 상담 검색: '{search_query}'
-
-⚠️ 이 API는 HTML만 지원합니다.
-
-직접 확인: {url}
-
-💡 대안: 판례 검색은 search_precedent("{search_query}")를 사용하세요.""")
+    return TextContent(type="text", text="\n".join(lines))
 
 
 @mcp.tool(name="search_civil_petition", description="""민원 사례를 검색합니다.
 
-주의: 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
+⚠️ 이 API는 HTML만 지원합니다. 직접 웹 URL이 제공됩니다.
 
 매개변수:
 - query: 검색어 (필수)
 
 사용 예시: search_civil_petition("건축허가")""")
-def search_civil_petition(query: Optional[str] = None, display: int = 20, page: int = 1) -> TextContent:
+def search_civil_petition(query: Annotated[Optional[str], "검색어"] = None) -> TextContent:
     """민원 검색 (HTML 전용)"""
     if not query or not query.strip():
         return TextContent(type="text", text="검색어를 입력해주세요.")
-    
+
     search_query = query.strip()
     oc = legislation_config.oc
     url = f"http://www.law.go.kr/DRF/lawSearch.do?OC={oc}&target=civil&type=HTML&query={search_query}"
-    
-    return TextContent(type="text", text=f"""민원 검색: '{search_query}'
 
-⚠️ 이 API는 HTML만 지원합니다.
-
-직접 확인: {url}""")
+    return TextContent(type="text", text=f"민원 검색: '{search_query}'\n\n⚠️ 이 API는 HTML만 지원합니다.\n\n직접 확인: {url}")
 
 
-logger.info("부가서비스 도구가 로드되었습니다! (6개 도구 - HTML 전용)")
+logger.info("부가서비스 도구가 로드되었습니다! (2개 도구 - HTML 전용)")

@@ -1,4 +1,4 @@
-# 법제처 MCP 도구 카탈로그 (213개)
+# 법제처 MCP 도구 카탈로그 (97개)
 
 실제 API 응답 결과를 기반으로 작성된 도구 설명서. 다중 도구 연계(Multi-Tool Orchestration)를 위한 참조 문서.
 
@@ -60,13 +60,9 @@
 | `search_one_view` | 법령일련번호 | `get_one_view_detail` | `law_id` |
 | `search_law_appendix` | 별표일련번호 | `get_law_appendix_detail` | `appendix_id` |
 | `search_legal_term` | 용어일련번호 | `get_legal_term_detail` | `term_id` |
-| `search_tax_tribunal` | 결정례일련번호 | `get_tax_tribunal_detail` | `tribunal_id` |
-| `search_maritime_safety_tribunal` | 결정례일련번호 | `get_maritime_safety_tribunal_detail` | `tribunal_id` |
-| `search_acrc_special_tribunal` | 재결례일련번호 | `get_acrc_special_tribunal_detail` | `tribunal_id` |
-| `search_mpm_appeal_tribunal` | 재결례일련번호 | `get_mpm_appeal_tribunal_detail` | `tribunal_id` |
-| `search_bai_preconsulting` | 의견서일련번호 | `get_bai_preconsulting_detail` | `opinion_id` |
-| 각 부처 `search_*_interpretation` | 해석례일련번호 | 각 `get_*_interpretation_detail` | `interpretation_id` |
-| 각 `search_*_committee` | 결정문번호 | 각 `get_*_committee_detail` | `decision_id` |
+| `search_tribunal_decision(tribunal="tax"...)` | 심판례 ID | `get_tribunal_decision_detail` | `tribunal`, `decision_id` |
+| `search_ministry_interpretation(ministry="moef"...)` | 해석례일련번호 | `get_ministry_interpretation_detail` | `ministry`, `interpretation_id` |
+| `search_committee_decision(committee="privacy"...)` | 결정문일련번호 | `get_committee_decision_detail` | `committee`, `decision_id` |
 
 ---
 
@@ -364,12 +360,20 @@
 **파라미터**: `interpretation_id`(해석례일련번호)  
 **반환**: 질의요지, 회답, 이유, 관련 법령 조문
 
-### 부처별 법령해석 (각 38개 = search 19 + detail 19)
+### 부처별 법령해석 (통합 2개)
 
-패턴: `search_{청약코드}_interpretation(query, display, page)` → 해석례일련번호 반환  
-→ `get_{청약코드}_interpretation_detail(interpretation_id)` 로 본문 조회
+#### `search_ministry_interpretation`
+**목적**: 39개 부처 법령해석례 통합 검색.  
+**파라미터**: `ministry`(부처 코드, 필수), `query`, `display`, `page`  
+**반환 필드**: 해석례일련번호, 제목, 회답일자, 소관부처명  
+**체인**: ID → `get_ministry_interpretation_detail(ministry="...", interpretation_id=...)`
 
-| 도구 코드 | 기관명 |
+#### `get_ministry_interpretation_detail`
+**목적**: 부처 법령해석례 본문 조회.  
+**파라미터**: `ministry`(부처 코드), `interpretation_id`(해석례일련번호)  
+**반환**: 질의요지, 회답, 이유, 관련 법령
+
+| 부처 코드 | 기관명 |
 |---|---|
 | `moef` | 기획재정부 |
 | `molit` | 국토교통부 |
@@ -385,10 +389,10 @@
 | `nts` | 국세청 |
 | `kcs` | 관세청 |
 | `mois` | 행정안전부 |
-| `me` | 환경부(기후에너지환경부) |
+| `me` | 환경부 |
 | `mcst` | 문화체육관광부 |
 | `moj` | 법무부 |
-| `mogef` | 성평등가족부(구 여성가족부) |
+| `mogef` | 성평등가족부 |
 | `mofa` | 외교부 |
 | `unikorea` | 통일부 |
 | `moleg` | 법제처 |
@@ -411,62 +415,64 @@
 | `msit` | 과학기술정보통신부 |
 | `oka` | 재외동포청 |
 
-**공통 반환 필드**: 해석례일련번호, 제목(또는 질의요지), 회답일자, 소관부처명  
-**공통 Detail 반환**: 질의요지, 회답, 이유, 관련 법령
-
 ---
 
 ## 10. 위원회 결정문 도구
 
-각 행정위원회의 결정문 검색·상세 조회.
+각 행정위원회의 결정문 검색·상세 조회 (통합 2개).
 
-패턴: `search_{위원회코드}_committee(query, display, page)` → 결정문번호 반환  
-→ `get_{위원회코드}_committee_detail(decision_id)` 로 본문 조회
+#### `search_committee_decision`
+**목적**: 12개 위원회 결정문 통합 검색.  
+**파라미터**: `committee`(위원회 코드, 필수), `query`, `display`, `page`, `sort`  
+**반환 필드**: 결정문일련번호, 안건명(또는 제목), 의결일자  
+**체인**: ID → `get_committee_decision_detail(committee="...", decision_id=...)`
 
-| 도구 코드 | 기관명 | API target |
-|---|---|---|
-| `privacy` | 개인정보보호위원회 | `ppc` |
-| `financial` | 금융위원회 | `fsc` |
-| `monopoly` | 공정거래위원회 | `ftc` |
-| `anticorruption` | 국민권익위원회 | `acr` |
-| `labor` | 노동위원회 | `nlrc` |
-| `environment` | 중앙환경분쟁조정위원회 | `ecc` |
-| `securities` | 증권선물위원회 | `sfc` |
-| `human_rights` | 국가인권위원회 | `nhrck` |
-| `broadcasting` | 방송통신위원회 | `kcc` |
-| `industrial_accident` | 산업재해보상보험 재심사위원회 | `iaciac` |
-| `land_tribunal` | 중앙토지수용위원회 | `oclt` |
-| `employment_insurance` | 고용보험심사위원회 | (별도) |
+#### `get_committee_decision_detail`
+**목적**: 위원회 결정문 본문 조회.  
+**파라미터**: `committee`(위원회 코드), `decision_id`(결정문일련번호)  
+**반환**: 결정 요지, 결정 이유, 관련 법령
 
-**공통 반환 필드**: 결정문번호(ID), 사건명(또는 제목), 결정일자(또는 의결일)  
-**노동위원회(nlrc) 특이사항**: 반환 필드명이 `제목` (사건명 아님), 사건번호 별도 제공  
-**상세 반환**: 결정 요지, 결정 이유, 관련 법령
+| 위원회 코드 | 기관명 |
+|---|---|
+| `privacy` | 개인정보보호위원회 |
+| `financial` | 금융위원회 |
+| `monopoly` | 공정거래위원회 |
+| `anticorruption` | 국민권익위원회 |
+| `labor` | 노동위원회 |
+| `environment` | 중앙환경분쟁조정위원회 |
+| `securities` | 증권선물위원회 |
+| `human_rights` | 국가인권위원회 |
+| `broadcasting` | 방송통신위원회 |
+| `industrial_accident` | 산업재해보상보험재심사위원회 |
+| `land` | 중앙토지수용위원회 |
+| `employment_insurance` | 고용보험심사위원회 |
+
+**특이사항**: 노동위원회(labor)는 반환 필드명이 `제목` (사건명 아님)
 
 ---
 
 ## 11. 특별행정심판 도구
 
-조세·해양·국민권익·인사혁신처 특별행정심판.
+조세·해양·국민권익·인사혁신처 특별행정심판 (통합 2개).
 
-### `search_tax_tribunal` / `get_tax_tribunal_detail`
-**목적**: 조세심판원 특별행정심판례 검색·상세.  
-**반환(search)**: 결정례일련번호, 사건명, 결정일  
-**체인**: 결정례일련번호 → `get_tax_tribunal_detail(tribunal_id=...)`
+#### `search_tribunal_decision`
+**목적**: 5개 기관 특별행정심판례 통합 검색.  
+**파라미터**: `tribunal`(기관 코드, 필수), `query`, `display`, `page`  
+**반환 필드**: 사건명(또는 사건번호), 의결일자, 재결청  
+**체인**: ID → `get_tribunal_decision_detail(tribunal="...", decision_id=...)`
 
-### `search_maritime_safety_tribunal` / `get_maritime_safety_tribunal_detail`
-**목적**: 해양안전심판원 특별행정심판례 검색·상세.
+#### `get_tribunal_decision_detail`
+**목적**: 특별행정심판례 본문 조회.  
+**파라미터**: `tribunal`(기관 코드), `decision_id`(심판례 ID)  
+**반환**: 청구취지, 주문, 재결요지, 이유
 
-### `search_acrc_special_tribunal` / `get_acrc_special_tribunal_detail`
-**목적**: 국민권익위원회 특별행정심판 재결례 검색·상세.
-
-### `search_mpm_appeal_tribunal` / `get_mpm_appeal_tribunal_detail`
-**목적**: 인사혁신처 소청심사위원회 특별행정심판 재결례 검색·상세.
-
-### `search_bai_preconsulting` / `get_bai_preconsulting_detail`
-**목적**: 감사원 사전컨설팅 의견서 검색·상세.  
-**파라미터(search)**: `query`, `display`, `page`  
-**반환(search)**: 의견서일련번호, 제목, 의결일자  
-**체인**: 의견서일련번호 → `get_bai_preconsulting_detail(opinion_id=...)`
+| 기관 코드 | 기관명 | 비고 |
+|---|---|---|
+| `tax` | 조세심판원 | |
+| `maritime` | 해양안전심판원 | |
+| `acrc` | 국민권익위원회(행정심판) | |
+| `mpm_appeal` | 인사혁신처 소청심사위원회 | |
+| `bai` | 감사원 사전컨설팅 | ⚠️ API 미오픈 |
 
 ---
 
@@ -663,40 +669,21 @@ AI 기반 법령·관련법령 검색.
 
 ## 18. BM25 재랭킹 도구
 
-BM25 알고리즘 기반 검색 품질 개선.
+BM25 알고리즘 기반 검색 품질 개선 (통합 1개).
 
-### `search_law_bm25`
-**목적**: 법령 BM25 재랭킹 검색 (관련도 높은 결과 우선 정렬).  
-**파라미터**: `query`, `top_k`(반환 수, 기본=10), `display`(API 후보 수)  
-**특이사항**: 내부적으로 search_law_unified 후 BM25로 재정렬
+### `search_bm25`
+**목적**: 법제처 전체 DB BM25 재랭킹 통합 검색. 관련도 높은 결과를 우선 정렬.  
+**파라미터**:
+- `query`: 검색어 (필수)
+- `target`: 검색 대상 (기본="all"). `all`=법령+판례+행정규칙+법령용어 통합, `law`=법령, `prec`=판례, `ccurt`=헌재, `admrul`=행정규칙, `lstrm`=법령용어, `expc`=법령해석, `decc`=위원회결정문
+- `top_k`: 반환 결과 수 (기본=10)
+- `display`: API 후보 수 (기본=50)
 
-### `search_precedent_bm25`
-**목적**: 판례 BM25 재랭킹 검색.  
-**파라미터**: `query`, `top_k`, `display`
-
-### `search_legal_term_bm25`
-**목적**: 법령용어 BM25 재랭킹 검색.  
-**파라미터**: `query`, `top_k`, `display`
-
-### `search_committee_bm25`
-**목적**: 위원회 결정문 BM25 재랭킹 검색 (다수 위원회 통합 검색).  
-**파라미터**: `query`, `committee`(위원회 코드, 선택), `top_k`, `display`  
-**특이사항**: nlrc(노동위원회)는 `제목` 필드 사용으로 수정 완료 (버그 수정됨)
-
-### `search_admin_rule_bm25`
-**목적**: 행정규칙 BM25 재랭킹 검색.  
-**파라미터**: `query`, `top_k`, `display`
-
-### `search_interpretation_bm25`
-**목적**: 법령해석례 BM25 재랭킹 검색 (다수 부처 통합 검색).  
-**파라미터**: `query`, `ministry`(부처 코드, 선택), `top_k`, `display`
-
-### `search_all_bm25`
-**목적**: 전체 법제처 DB 통합 BM25 재랭킹 검색 (법령·판례·해석례·행정규칙 통합).  
-**파라미터**: `query`, `targets`(대상 목록, 선택), `top_k`, `display`
+**반환**: 제목, BM25 점수, 관련 필드  
+**특이사항**: target="all"은 4개 대상을 병렬 검색 후 통합 랭킹
 
 ### `explain_bm25_tokenize`
-**목적**: BM25 토큰화 결과 설명 (검색어가 어떻게 분석되는지 디버깅).  
+**목적**: BM25 토큰화 결과 설명 (검색어 분석 디버깅).  
 **파라미터**: `query`  
 **반환**: 토큰 목록, BM25 점수 계산 설명
 
@@ -726,35 +713,21 @@ vcode(기관코드)로 범위를 제한한 맞춤형 검색.
 
 ## 20. 지식베이스 · 상담 도구
 
-법제처 FAQ, 질의응답, 상담 사례.
+법제처 FAQ, 질의응답, 상담 사례 (통합 2개). ⚠️ HTML 전용 API — 웹 URL 제공.
 
-### `search_knowledge_base`
-**목적**: 법령 관련 지식베이스 검색 (법제처 지식 DB).  
-**파라미터**: `query`, `display`, `page`
+### `search_legal_kb`
+**목적**: 법제처 지식베이스(FAQ·QNA·상담·판례상담) 통합 검색. 웹 URL 안내.  
+**파라미터**:
+- `query`: 검색어 (필수)
+- `source`: 출처 (기본="all"). `all`=전체, `faq`=FAQ, `qna`=QNA, `counsel`=상담사례, `precedent_counsel`=판례상담
 
-### `search_faq`
-**목적**: 자주 묻는 질문(FAQ) 검색.  
-**파라미터**: `query`, `display`, `page`
-
-### `search_qna`
-**목적**: 질의응답(QNA) 검색.  
-**파라미터**: `query`, `display`, `page`
-
-### `search_counsel`
-**목적**: 상담 사례 검색 (법률 상담 Q&A).  
-**파라미터**: `query`, `display`, `page`
-
-### `search_precedent_counsel`
-**목적**: 판례 상담 검색 (판례 기반 법률 상담).  
-**파라미터**: `query`, `display`, `page`
+**반환**: 해당 검색 결과 웹 URL  
+**대안**: 구조화 데이터는 `search_legal_interpretation`, `search_precedent` 사용
 
 ### `search_civil_petition`
-**목적**: 민원 사례 검색.  
-**파라미터**: `query`, `display`, `page`
-
-### `search_all_legal_documents`
-**목적**: 법령·판례·해석례·행정규칙·자치법규 등 전체 통합 검색.  
-**파라미터**: `query`, `targets`(대상 유형 목록), `display`, `page`
+**목적**: 민원 사례 검색. 웹 URL 안내.  
+**파라미터**: `query`  
+**반환**: 민원 검색 결과 웹 URL
 
 ---
 
